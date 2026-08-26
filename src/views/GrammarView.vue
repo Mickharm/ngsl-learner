@@ -8,7 +8,7 @@ import SessionHeader from '@/components/SessionHeader.vue'
 import AudioButton from '@/components/AudioButton.vue'
 import { inlineMd } from '@/lib/format'
 import { matchesAnswer, worthJudging } from '@/lib/answer'
-import { judgeSentence } from '@/lib/gemini'
+import { judgeSentence, generateDrills } from '@/lib/gemini'
 import { useSettings } from '@/stores/settings'
 
 /**
@@ -42,7 +42,8 @@ const bank = ref([])
 const verdict = ref(null)      // { correct, source: 'local'|'ai'|'revealed', explain }
 const judging = ref(false)
 
-const drills = computed(() => point.value?.drills || [])
+const generated = ref(null)
+const drills = computed(() => generated.value || point.value?.drills || [])
 const drill = computed(() => drills.value[drillIndex.value] || null)
 const isNew = computed(() => point.value && !grammar.recOf(point.value.id))
 
@@ -67,6 +68,7 @@ function resetDrill () {
 watch(drill, resetDrill, { immediate: true })
 
 function startDrills () {
+  generated.value = null
   stage.value = 'drill'
   drillIndex.value = 0
   answers.value = []
@@ -187,21 +189,55 @@ function finishDrills () {
   }
 }
 
+const extraLoading = ref(false)
+
+/**
+ * Six fixed questions per point is one sitting. With a paid quota there is no
+ * reason to stop there — generate more on the same rule, aimed at the mistakes
+ * this point is known for.
+ */
+async function moreDrills (count = 6) {
+  if (!settings.hasGeminiKey) { toast.error('需要 Gemini API Key 才能出新題目'); return }
+  extraLoading.value = true
+  try {
+    const seen = point.value.drills.map(d => d.answer || d.q || d.wrong).filter(Boolean)
+    const fresh = await generateDrills({
+      topic: point.value.title,
+      focus: `${point.value.pattern} — ${point.value.summary}`,
+      count,
+      avoid: seen,
+      weak: point.value.pitfalls.slice(0, 3),
+      key: settings.state.geminiKey,
+      model: settings.state.geminiModel
+    })
+    if (!fresh.length) { toast.error('這次沒有產生出可用的題目，再試一次'); return }
+    generated.value = fresh
+    drillIndex.value = 0
+    answers.value = []
+    stage.value = 'drill'
+    resetDrill()
+  } catch (e) {
+    toast.error(e.message)
+  } finally {
+    extraLoading.value = false
+  }
+}
+
 function done () {
   session.markDone('grammar')
-  router.push('/article')
+  router.push('/essentials')
 }
 
 function skipPhase () {
   session.markDone('grammar')
-  router.push('/article')
+  router.push('/essentials')
 }
 
 onMounted(() => {
   session.startClock()
   if (!point.value) {
     session.markDone('grammar')
-    router.replace('/article')
+    router.replace('/essentials')
   }
 })
 onUnmounted(() => session.stopClock())
@@ -400,8 +436,11 @@ onUnmounted(() => session.stopClock())
           </p>
         </div>
 
-        <button class="btn btn--primary btn--block zh" @click="done">繼續，進入閱讀</button>
-        <button class="btn btn--ghost btn--block zh" @click="stage = 'teach'">再看一次說明</button>
+        <button class="btn btn--ghost btn--block zh" :disabled="extraLoading" @click="moreDrills(6)">
+          {{ extraLoading ? '出題中…' : '再來 6 題（AI 出新題）' }}
+        </button>
+        <button class="btn btn--primary btn--block zh" @click="done">繼續，進入基礎知識</button>
+        <button class="btn btn--quiet btn--sm btn--block zh" @click="stage = 'teach'">再看一次說明</button>
       </template>
     </main>
   </div>

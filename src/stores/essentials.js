@@ -1,39 +1,41 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
-import GRAMMAR, { GRAMMAR_BY_ID } from '@/data/grammar'
-import { newCard, schedule, GRADE, STATE, isMastered } from '@/lib/srs'
+import ESSENTIALS, { ESSENTIAL_BY_ID } from '@/data/essentials'
+import { newCard, schedule, GRADE, isMastered } from '@/lib/srs'
 import { useAuth } from './auth'
 import { useProgress } from './progress'
 
 /**
- * Grammar points run on the same SRS engine as vocabulary, but the "card" is a
- * concept rather than a word, and a review means re-doing its drills. A point
- * is only introduced once the learner's vocabulary has reached its band, so
- * grammar never runs ahead of the words needed to practise it.
+ * Foundation units, on the same SRS engine as everything else.
+ *
+ * Storage reuses the grammar_progress table: the row shape is identical (a
+ * taught point with a schedule) and the ids cannot collide — grammar points
+ * are g01…g30, essentials are e01…e12 — so this needs no migration. Each
+ * store filters the table by its own prefix.
  */
 
-const BAND_GATE = { B1: 0, B2: 400, B3: 1100 }
+const PREFIX = 'e'
 
-export const useGrammar = defineStore('grammar', () => {
+export const useEssentials = defineStore('essentials', () => {
   const auth = useAuth()
   const progress = useProgress()
 
-  const rows = ref(new Map())    // grammarId -> record
+  const rows = ref(new Map())
   const loaded = ref(false)
 
   async function load () {
     if (!auth.userId) { loaded.value = true; return }
-    // The essentials store shares this table; ids are g01… vs e01… so each
-    // side filters by its own prefix rather than needing a second table.
     const { data } = await supabase
       .from('grammar_progress').select('*')
       .eq('user_id', auth.userId)
-      .like('grammar_id', 'g%')
+      .like('grammar_id', `${PREFIX}%`)
+
     const next = new Map()
     for (const r of data || []) {
       next.set(r.grammar_id, {
-        grammarId: r.grammar_id,
+        wordId: r.grammar_id,
+        unitId: r.grammar_id,
         state: r.state,
         ease: r.ease,
         intervalDays: r.interval_days,
@@ -45,8 +47,7 @@ export const useGrammar = defineStore('grammar', () => {
         correct: r.correct,
         attempts: r.attempts,
         lastReviewedAt: null,
-        introducedAt: null,
-        wordId: r.grammar_id
+        introducedAt: null
       })
     }
     rows.value = next
@@ -57,7 +58,7 @@ export const useGrammar = defineStore('grammar', () => {
     if (!auth.userId) return
     await supabase.from('grammar_progress').upsert({
       user_id: auth.userId,
-      grammar_id: rec.grammarId,
+      grammar_id: rec.unitId,
       state: rec.state,
       ease: rec.ease,
       interval_days: rec.intervalDays,
@@ -73,25 +74,25 @@ export const useGrammar = defineStore('grammar', () => {
 
   function recOf (id) { return rows.value.get(id) || null }
 
-  /** Grammar points whose band the learner's vocabulary has reached. */
-  const available = computed(() => {
-    const seen = progress.stats.seen
-    return GRAMMAR.filter(g => seen >= (BAND_GATE[g.band] ?? 0))
-  })
+  /**
+   * Essentials are not gated by vocabulary size. They are what a beginner
+   * needs on day one — telling someone they must learn 400 words before they
+   * can find out how to say a date would be backwards.
+   */
+  const all = computed(() => ESSENTIALS)
 
   const dueList = computed(() => {
     const now = Date.now()
-    return available.value.filter(g => {
-      const r = rows.value.get(g.id)
+    return ESSENTIALS.filter(u => {
+      const r = rows.value.get(u.id)
       return r && r.dueAt <= now
     })
   })
 
-  /** The next unseen point in study order. */
-  const nextNew = computed(() => available.value.find(g => !rows.value.has(g.id)) || null)
+  const nextNew = computed(() => ESSENTIALS.find(u => !rows.value.has(u.id)) || null)
 
-  /** What today's grammar slot should be: a due review, else a new point. */
-  const todayPoint = computed(() => dueList.value[0] || nextNew.value || null)
+  /** Today's unit: a due review first, otherwise the next unseen one. */
+  const todayUnit = computed(() => dueList.value[0] || nextNew.value || null)
 
   const stats = computed(() => {
     let started = 0, mastered = 0, correct = 0, attempts = 0
@@ -101,42 +102,49 @@ export const useGrammar = defineStore('grammar', () => {
       correct += r.correct
       attempts += r.attempts
     }
-    return { total: GRAMMAR.length, started, mastered, correct, attempts, accuracy: attempts ? correct / attempts : null }
+    return {
+      total: ESSENTIALS.length, started, mastered, correct, attempts,
+      accuracy: attempts ? correct / attempts : null
+    }
   })
 
-  /**
-   * Record a completed drill set. `ratio` is the share answered correctly,
-   * which maps onto the same four-grade scale the vocabulary cards use.
-   */
-  function submit (grammarId, { correct, total }) {
-    const g = GRAMMAR_BY_ID[grammarId]
-    if (!g) return null
+  /** Units the learner keeps getting wrong — fed to the drill generator. */
+  const weakUnits = computed(() =>
+    [...rows.value.values()]
+      .filter(r => r.attempts >= 4 && r.correct / r.attempts < 0.75)
+      .map(r => ESSENTIAL_BY_ID[r.unitId])
+      .filter(Boolean)
+  )
 
-    const ratio = total ? correct / total : 0
+  function submit (unitId, { correct, total }) {
+    const unit = ESSENTIAL_BY_ID[unitId]
+    if (!unit || !total) return null
+
+    const ratio = correct / total
     const grade =
       ratio >= 0.95 ? GRADE.EASY :
       ratio >= 0.75 ? GRADE.GOOD :
       ratio >= 0.5 ? GRADE.HARD : GRADE.AGAIN
 
-    const base = rows.value.get(grammarId) || { ...newCard(grammarId), grammarId, correct: 0, attempts: 0 }
+    const base = rows.value.get(unitId) || { ...newCard(unitId), unitId, correct: 0, attempts: 0 }
     const scheduled = schedule(base, grade, Date.now())
     const rec = {
       ...scheduled,
-      grammarId,
+      unitId,
       correct: base.correct + correct,
       attempts: base.attempts + total
     }
 
     const next = new Map(rows.value)
-    next.set(grammarId, rec)
+    next.set(unitId, rec)
     rows.value = next
     persist(rec)
 
     progress.bumpDay({ grammar_correct: correct, grammar_total: total })
-    if (grade === GRADE.AGAIN) progress.logError('grammar', grammarId, { correct, total })
+    if (grade === GRADE.AGAIN) progress.logError('essential', unitId, { correct, total, title: unit.title })
 
     return { rec, grade }
   }
 
-  return { rows, loaded, load, recOf, available, dueList, nextNew, todayPoint, stats, submit, all: GRAMMAR, STATE }
+  return { rows, loaded, load, recOf, all, dueList, nextNew, todayUnit, stats, weakUnits, submit }
 })

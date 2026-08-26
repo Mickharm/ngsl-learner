@@ -379,6 +379,204 @@ ${wordList}
 }
 
 /* ------------------------------------------------------------------ *
+ * Generated practice
+ *
+ * Fixed drill banks run dry: twelve units with six questions each is one
+ * afternoon. With a paid Gemini quota the sensible shape is a fixed teaching
+ * layer (explanations and tables, which must be right every time and work
+ * offline) plus practice generated on demand, aimed at what this learner keeps
+ * getting wrong.
+ *
+ * Generated drills reuse the shapes the drill runner already understands, so
+ * nothing downstream needs to know where a question came from.
+ * ------------------------------------------------------------------ */
+
+const DRILL_SCHEMA = {
+  type: 'ARRAY',
+  items: {
+    type: 'OBJECT',
+    properties: {
+      type: { type: 'STRING', description: 'choice | correct | order' },
+      q: { type: 'STRING', description: 'choice only: the question, English, with _____ for the blank' },
+      options: { type: 'ARRAY', items: { type: 'STRING' }, description: 'choice only: exactly 4' },
+      answer: { type: 'STRING', description: 'correct/order: the full correct sentence. choice: leave empty' },
+      answerIndex: { type: 'INTEGER', description: 'choice only: 0-based index of the correct option' },
+      wrong: { type: 'STRING', description: 'correct only: the sentence containing one error' },
+      tokens: { type: 'ARRAY', items: { type: 'STRING' }, description: 'order only: the scrambled words, no punctuation' },
+      zh: { type: 'STRING', description: 'order only: the Chinese sentence to translate' },
+      explain: { type: 'STRING', description: 'Traditional Chinese explanation of why the answer is right' }
+    },
+    required: ['type', 'explain']
+  }
+}
+
+const DRILL_SYSTEM = `你是為台灣工程師出英文練習題的命題老師。學習者字彙量約 400-500 字、文法從零開始，目標是 TOEIC 600 與旅遊會話。
+
+命題規則：
+1. 中文一律繁體，禁止簡體。
+2. 除了題目考的目標點以外，只使用最高頻的 1000 字以內字彙。句長 6-14 字。
+3. 情境限定日常、旅遊、職場——不要抽象或教科書式的句子。
+4. choice 題：options 必須剛好 4 個，answerIndex 是 0-based。錯誤選項要是「真的有人會選」的錯，不是明顯亂填。選項長度要接近，不要讓正確答案特別長。
+5. correct 題：wrong 必須剛好含一個文法錯誤，answer 是修正後的完整句子。
+6. order 題：tokens 是打散的單字（不含標點），answer 是正確語序的完整句子，zh 是對應中文。tokens 必須剛好能拼出 answer。
+7. explain 一律繁體中文，直接說明為什麼對、錯的選項錯在哪，不要客套。
+8. 提到選項時用字母（選項 A / 選項 B），不要用數字。
+9. 每題只考一個點，不要混合多個文法概念。`
+
+/**
+ * Generate fresh practice for a topic.
+ *
+ * @param {string} topic     what to practise, in Chinese (a unit title)
+ * @param {string} focus     the rule in one line, so the model does not drift
+ * @param {string[]} types   which drill shapes to produce
+ * @param {string[]} avoid   sentences already used, so questions do not repeat
+ * @param {string[]} weak    points this learner keeps missing
+ */
+export async function generateDrills ({
+  topic, focus = '', count = 6, types = ['choice', 'correct', 'order'],
+  avoid = [], weak = [], words = [], key, model = DEFAULT_MODEL, signal
+} = {}) {
+  const prompt = `為「${topic}」出 ${count} 題練習。
+
+考點：${focus || topic}
+題型：只用這些型別 ${types.join(' / ')}，數量盡量平均分配。
+${weak.length ? `這位學習者特別容易錯的地方，請多考：${weak.join('、')}\n` : ''}${words.length ? `盡量把這些單字融入句子：${words.join(', ')}\n` : ''}${avoid.length ? `避免重複這些已出過的句子：\n${avoid.slice(0, 12).map(a => '- ' + a).join('\n')}\n` : ''}
+直接輸出題目陣列。`
+
+  const text = await withRetry(() => callGemini({
+    key, model, signal,
+    systemInstruction: DRILL_SYSTEM,
+    prompt,
+    schema: DRILL_SCHEMA,
+    temperature: 0.9
+  }))
+
+  const raw = parseJson(text)
+  if (!Array.isArray(raw)) throw new GeminiError('題目格式不正確')
+  return raw.map(normalizeDrill).filter(Boolean)
+}
+
+/**
+ * Generated questions arrive close to the right shape but not always usable —
+ * a choice with three options, an order drill whose tokens cannot spell the
+ * answer. Reject those rather than showing the learner a broken question.
+ */
+function normalizeDrill (d) {
+  if (!d || typeof d !== 'object') return null
+  const explain = d.explain || ''
+
+  if (d.type === 'choice') {
+    const options = (d.options || []).map(o => String(o).trim()).filter(Boolean)
+    const answer = Number(d.answerIndex)
+    if (options.length !== 4 || !Number.isInteger(answer) || answer < 0 || answer > 3) return null
+    if (!d.q || !d.q.includes('_')) return null
+    if (new Set(options.map(o => o.toLowerCase())).size !== 4) return null
+    return { type: 'choice', q: String(d.q).trim(), options, answer, explain, generated: true }
+  }
+
+  if (d.type === 'correct') {
+    if (!d.wrong || !d.answer) return null
+    if (String(d.wrong).trim() === String(d.answer).trim()) return null
+    return { type: 'correct', wrong: String(d.wrong).trim(), answer: String(d.answer).trim(), explain, generated: true }
+  }
+
+  if (d.type === 'order') {
+    const tokens = (d.tokens || []).map(t => String(t).replace(/[.,?!]/g, '').trim()).filter(Boolean)
+    if (tokens.length < 3 || !d.answer) return null
+    const want = String(d.answer).replace(/[.,?!]/g, '').toLowerCase().split(/\s+/).sort().join(' ')
+    const got = tokens.map(t => t.toLowerCase()).sort().join(' ')
+    if (want !== got) return null           // tokens cannot build the answer
+    return { type: 'order', tokens, answer: String(d.answer).trim(), zh: d.zh || '', explain, generated: true }
+  }
+
+  return null
+}
+
+/* ------------------------------------------------------------------ *
+ * Production practice
+ *
+ * Recognition is not production. A learner can pass every multiple-choice
+ * question and still be unable to say anything, which is exactly the gap
+ * between "TOEIC 600" and "can hold a conversation". This asks for a sentence
+ * and grades what comes back.
+ * ------------------------------------------------------------------ */
+
+const PRODUCTION_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    ok: { type: 'BOOLEAN', description: 'true if it is a usable English sentence that fulfils the task' },
+    score: { type: 'INTEGER', description: '0-3: 0 unusable, 1 understandable but wrong, 2 correct, 3 correct and natural' },
+    usedTarget: { type: 'BOOLEAN', description: 'did they actually use the target word/pattern correctly' },
+    corrected: { type: 'STRING', description: 'their sentence with the minimum fixes; empty if already correct' },
+    explain_zh: { type: 'STRING', description: 'Traditional Chinese. What was wrong, or what was good. One or two sentences.' },
+    better: { type: 'STRING', description: 'a more natural way a native speaker would say roughly the same thing' }
+  },
+  required: ['ok', 'score', 'usedTarget', 'explain_zh']
+}
+
+const PRODUCTION_SYSTEM = `你是英文寫作教練，學生是台灣工程師，程度 CEFR A2-B1，目標是能開口說英文。
+
+批改原則：
+1. 標準是「這句話說出去，母語者聽得懂而且不覺得奇怪」，不是完美無瑕。
+2. score：0 = 無法理解或根本沒用英文；1 = 看得懂但有明顯文法錯；2 = 正確；3 = 正確且自然。
+3. 只要句子正確且完成任務就給 ok = true，即使很簡單。不要因為句子短就扣分。
+4. corrected 只做**最小必要修改**，不要重寫整句、不要換掉學生選的字。
+5. better 給一個更自然的說法，讓學生看到母語者會怎麼講；如果原句已經很自然，就重複原句。
+6. explain_zh 一律繁體中文，具體指出問題，不要只說「很好」。
+7. 中式英文（直譯自中文的句子）即使文法對也要指出來，並在 better 給自然說法。`
+
+/**
+ * Grade a sentence the learner wrote.
+ * @param {string} task     what they were asked to do, in Chinese
+ * @param {string} target   the word or pattern they had to use
+ * @param {string} learner  what they wrote
+ */
+export async function judgeProduction ({ task, target, learner, key, model = DEFAULT_MODEL, signal } = {}) {
+  const prompt = `任務：${task}
+必須用到：${target}
+學生寫的句子：${learner}
+
+批改這個句子。`
+
+  const text = await withRetry(() => callGemini({
+    key, model, signal,
+    systemInstruction: PRODUCTION_SYSTEM,
+    prompt,
+    schema: PRODUCTION_SCHEMA,
+    temperature: 0.2
+  }))
+  return parseJson(text)
+}
+
+/** A writing task for a word, phrased so there is something real to say. */
+const TASK_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    task_zh: { type: 'STRING', description: 'Traditional Chinese instruction, one sentence, concrete and answerable' },
+    hint_en: { type: 'STRING', description: 'a short English sentence frame or starter, e.g. "I usually ___ when ..."' }
+  },
+  required: ['task_zh', 'hint_en']
+}
+
+export async function generateWritingTask ({ word, meaning, key, model = DEFAULT_MODEL, signal } = {}) {
+  const prompt = `為單字「${word}」（意思：${meaning}）設計一個造句任務。
+
+要求：
+- task_zh 用繁體中文，一句話，要具體到學生馬上知道要寫什麼（例如「用 achieve 描述你今年完成的一件事」），不要出「請用 achieve 造句」這種空洞題目。
+- 情境限定日常、旅遊或職場。
+- hint_en 給一個很短的句型起頭，幫助程度不高的學生開口。`
+
+  const text = await withRetry(() => callGemini({
+    key, model, signal,
+    systemInstruction: DRILL_SYSTEM,
+    prompt,
+    schema: TASK_SCHEMA,
+    temperature: 0.9
+  }))
+  return parseJson(text)
+}
+
+/* ------------------------------------------------------------------ *
  * Sentence judging
  *
  * Grammar drills used to compare the learner's sentence to one reference

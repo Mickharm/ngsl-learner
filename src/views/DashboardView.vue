@@ -121,6 +121,7 @@ onUnmounted(() => session.stopClock())
     <section class="quest">
       <div class="quest__head">
         <h2 class="section-title zh">今日關卡</h2>
+        <span class="quest__est zh">約 <span class="num">{{ session.plan.estimatedMinutes }}</span> 分鐘</span>
         <span class="quest__count num">{{ session.completedCount }}/{{ session.PHASES.length }}</span>
       </div>
 
@@ -156,6 +157,10 @@ onUnmounted(() => session.stopClock())
                 <template v-else-if="p.key === 'grammar'">
                   {{ session.grammarPoint?.title || '30 個文法點都排過一輪了' }}
                 </template>
+                <template v-else-if="p.key === 'essentials'">
+                  {{ session.essentialUnit?.title || '12 個基礎單元都排過一輪了' }}
+                </template>
+                <template v-else-if="p.key === 'write'">用今天的字寫句子，AI 批改</template>
                 <template v-else-if="p.key === 'article'">用今天的單字生成短文</template>
                 <template v-else>看今天的成績</template>
               </span>
@@ -268,7 +273,8 @@ onUnmounted(() => session.stopClock())
 
 /* quest */
 .quest { margin-bottom: var(--sp-5); }
-.quest__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-3); }
+.quest__head { display: flex; align-items: baseline; gap: var(--sp-3); margin-bottom: var(--sp-3); }
+.quest__est { font-size: var(--step--2); color: var(--ink-3); margin-left: auto; }
 .quest__count { font-size: var(--step--1); color: var(--ink-3); }
 
 .steps { position: relative; }

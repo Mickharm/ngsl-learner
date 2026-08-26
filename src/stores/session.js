@@ -4,10 +4,11 @@ import { useProgress, todayKey } from './progress'
 import { useSettings } from './settings'
 import { useWords } from './words'
 import { useGrammar } from './grammar'
+import { useEssentials } from './essentials'
 import { STATE } from '@/lib/srs'
 
 /**
- * The day's quest. Five phases, each unlocked by the one before it, so the
+ * The day's quest. Seven phases, each unlocked by the one before it, so the
  * learner cannot binge new words while a review backlog rots — the single
  * failure mode that kills vocabulary apps.
  *
@@ -17,14 +18,16 @@ import { STATE } from '@/lib/srs'
 
 /**
  * The dashboard itself is the day's briefing, so it is not a step in its own
- * list — the quest is the five things the learner actually has to do.
+ * list — the quest is the things the learner actually has to do.
  */
 export const PHASES = [
-  { key: 'learn',   label: '新單字', route: '/learn',   minutes: 18 },
-  { key: 'review',  label: '複習',   route: '/review',  minutes: 22 },
-  { key: 'grammar', label: '文法',   route: '/grammar', minutes: 15 },
-  { key: 'article', label: '閱讀',   route: '/article', minutes: 20 },
-  { key: 'summary', label: '結算',   route: '/summary', minutes: 3 }
+  { key: 'learn',      label: '新單字',   route: '/learn',      minutes: 15 },
+  { key: 'review',     label: '複習',     route: '/review',     minutes: 15 },
+  { key: 'grammar',    label: '文法',     route: '/grammar',    minutes: 12 },
+  { key: 'essentials', label: '基礎知識', route: '/essentials', minutes: 12 },
+  { key: 'write',      label: '造句',     route: '/write',      minutes: 12 },
+  { key: 'article',    label: '閱讀',     route: '/article',    minutes: 15 },
+  { key: 'summary',    label: '結算',     route: '/summary',    minutes: 3 }
 ]
 
 const LS_KEY = 'ngsl.session'
@@ -42,6 +45,7 @@ export const useSession = defineStore('session', () => {
   const settings = useSettings()
   const words = useWords()
   const grammar = useGrammar()
+  const essentials = useEssentials()
 
   const phase = ref(readPhaseState())
   const activeTimer = ref(null)
@@ -104,15 +108,21 @@ export const useSession = defineStore('session', () => {
   const dayWordIds = computed(() => [...new Set([...newIds.value, ...reviewIds.value])])
 
   const grammarPoint = computed(() => grammar.todayPoint)
+  const essentialUnit = computed(() => essentials.todayUnit)
 
   const plan = computed(() => ({
     newCount: newIds.value.length,
     reviewCount: reviewCards.value.length,
     grammar: grammarPoint.value,
+    essential: essentialUnit.value,
     estimatedMinutes: Math.round(
-      newIds.value.length * 1.1 +
+      newIds.value.length * 0.9 +
       reviewCards.value.length * 0.35 +
-      (grammarPoint.value ? 15 : 0) + 20
+      (grammarPoint.value ? 12 : 0) +
+      (essentialUnit.value ? 12 : 0) +
+      12 +   // production
+      15 +   // reading
+      3      // wrap-up
     )
   }))
 
@@ -153,6 +163,8 @@ export const useSession = defineStore('session', () => {
       learn: newIds.value.length === 0,
       review: reviewCards.value.length === 0,
       grammar: !grammarPoint.value,
+      essentials: !essentialUnit.value,
+      write: false,
       article: false,
       summary: false
     }
@@ -215,7 +227,7 @@ export const useSession = defineStore('session', () => {
   }
 
   return {
-    PHASES, phase, newIds, reviewCards, reviewIds, dayWordIds, grammarPoint, plan,
+    PHASES, phase, newIds, reviewCards, reviewIds, dayWordIds, grammarPoint, essentialUnit, plan,
     learnStarted, newCountLocked,
     phaseStatus, currentPhase, completedCount, allDone, minutesToday,
     isDone, markDone, lockNewIds, startClock, stopClock, prepareData, resetToday, rollIfNewDay

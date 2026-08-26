@@ -179,7 +179,27 @@ await page.route('**/generativelanguage.googleapis.com/**', async route => {
   const req = route.request()
   let payload
   const body = req.postData() || ''
-  if (body.includes('used_words') || body.includes('CEFR A2-B1 的英文短文')) payload = ARTICLE
+  // Route by the response schema the app asked for — that is what actually
+  // distinguishes the calls, and it does not drift when prompt wording changes.
+  if (body.includes('usedTarget')) {
+    payload = {
+      ok: true, score: 2, usedTarget: true,
+      corrected: '', explain_zh: '句子文法正確，目標單字也用對了。',
+      better: 'I managed to finish the report before the deadline.'
+    }
+  } else if (body.includes('task_zh')) {
+    payload = { task_zh: '用 achieve 描述你今年完成的一件事', hint_en: 'This year I managed to ___' }
+  } else if (body.includes('answerIndex')) {
+    // generated drills — one of each shape, plus one deliberately broken
+    payload = [
+      { type: 'choice', q: 'The train leaves _____ 7 a.m.', options: ['at', 'on', 'in', 'by'], answerIndex: 0, explain: '幾點用 at。' },
+      { type: 'correct', wrong: 'She go to work by bus.', answer: 'She goes to work by bus.', explain: '第三人稱單數加 s。' },
+      { type: 'order', tokens: ['we', 'left', 'the', 'office', 'early'], answer: 'We left the office early.', zh: '我們提早離開辦公室。', explain: '主詞在動詞前。' },
+      { type: 'choice', q: 'broken', options: ['a', 'b'], answerIndex: 0, explain: 'should be dropped' }
+    ]
+  } else if (body.includes('severity')) {
+    payload = { correct: true, severity: 'none', explain_zh: '這樣寫也對，和參考答案只是說法不同。', corrected: '' }
+  } else if (body.includes('used_words') || body.includes('CEFR A2-B1 的英文短文')) payload = ARTICLE
   else if (body.includes('key_phrases')) {
     payload = {
       scene: 'At the hotel front desk', scene_zh: '在飯店櫃檯',
@@ -267,7 +287,11 @@ for (let i = 0; i < 60; i++) {
 await shot('04-placement-result')
 
 await tap('.opt-card--rec')
-await page.waitForTimeout(900)
+// placement writes a few hundred cards and then routes; wait for the dashboard
+// to actually be on screen or the shot catches the fading placement result
+await page.waitForTimeout(1200)
+await page.locator('.quest').first().waitFor({ state: 'visible', timeout: 8000 }).catch(() => {})
+await page.waitForTimeout(500)
 await shot('05-dashboard')
 
 // Changing the daily new-word count before answering anything must re-plan
@@ -359,6 +383,51 @@ if (await page.locator('button:has-text("開始練習")').first().isVisible().ca
     }
   }
   if (await page.locator('.build').first().isVisible().catch(() => false)) await shot('14-grammar-order')
+}
+
+// essentials
+await page.goto(URL_BASE + '#/essentials', { waitUntil: 'networkidle' })
+await page.waitForTimeout(900)
+await shot('14a-essentials-teach')
+checks.push([
+  'essentials unit renders its reference table',
+  await page.locator('.ess__table tbody tr').count().then(n => n > 0).catch(() => false),
+  'no table rows'
+])
+if (await page.locator('button:has-text("開始練習")').first().isVisible().catch(() => false)) {
+  await tap('button:has-text("開始練習")')
+  await shot('14b-essentials-drill')
+
+  // the sort drill is new — make sure it can be completed and marked
+  const buckets = page.locator('.sortrow')
+  if (await buckets.count().catch(() => 0)) {
+    const rows = await buckets.count()
+    for (let i = 0; i < rows; i++) {
+      await buckets.nth(i).locator('.bkt').first().click().catch(() => {})
+      await page.waitForTimeout(60)
+    }
+    const canCheck = await page.locator('button:has-text("檢查答案")').first().isEnabled().catch(() => false)
+    checks.push(['sort drill becomes checkable once every item is placed', canCheck, 'check button still disabled'])
+    await page.locator('button:has-text("檢查答案")').first().click().catch(() => {})
+    await page.waitForTimeout(500)
+    await shot('14c-essentials-sort')
+  }
+}
+
+// production writing
+await page.goto(URL_BASE + '#/write', { waitUntil: 'networkidle' })
+await page.waitForTimeout(1600)
+await shot('14d-write-task')
+const boxVisible = await page.locator('.wr__box').isVisible().catch(() => false)
+if (boxVisible) {
+  await page.locator('.wr__box').fill('I managed to achieve my goal this year.')
+  await page.locator('button:has-text("送出批改")').click().catch(() => {})
+  await page.waitForTimeout(1200)
+  const graded = await page.locator('.fb__explain').first().isVisible().catch(() => false)
+  checks.push(['production sentence gets graded feedback', graded, 'no feedback shown'])
+  await shot('14e-write-feedback')
+} else {
+  checks.push(['production sentence gets graded feedback', false, 'writing box never appeared'])
 }
 
 // article
