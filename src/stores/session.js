@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useProgress, todayKey } from './progress'
 import { useSettings } from './settings'
 import { useWords } from './words'
@@ -59,11 +59,34 @@ export const useSession = defineStore('session', () => {
 
   /* ---------------- the day's plan ---------------- */
 
-  /** New word ids to introduce today (fixed once the phase starts). */
+  /**
+   * Today's list is frozen only once the learner has actually answered a new
+   * card. Freezing on mere arrival at the screen made the daily-count setting
+   * look broken: change it, and the dashboard kept showing the old number with
+   * no way to tell why.
+   */
+  const learnStarted = computed(() => (progress.today.new_count || 0) > 0)
+
+  /** New word ids to introduce today. */
   const newIds = computed(() => {
     rollIfNewDay()
     if (phase.value.newIds?.length) return phase.value.newIds
     return progress.newCandidates(settings.state.newPerDay)
+  })
+
+  /** True when the setting cannot change today's plan any more. */
+  const newCountLocked = computed(() =>
+    learnStarted.value || !!phase.value.done?.learn
+  )
+
+  // Re-plan today when the target changes and nothing has been answered yet.
+  watch(() => settings.state.newPerDay, () => {
+    if (newCountLocked.value) return
+    if (!phase.value.newIds?.length) return
+    const next = { ...phase.value }
+    delete next.newIds
+    phase.value = next
+    save()
   })
 
   /** Cards due for review, capped, weakest first. Learning-step cards always come. */
@@ -103,10 +126,15 @@ export const useSession = defineStore('session', () => {
     save()
   }
 
-  /** Freeze the new-word selection so a mid-session grade cannot shuffle it. */
+  /**
+   * Freeze the new-word selection so a mid-session grade cannot shuffle it.
+   * Until the first answer lands, the list is re-planned on every entry, so
+   * opening the screen and backing out does not commit the learner to a count
+   * they have since changed.
+   */
   function lockNewIds () {
     rollIfNewDay()
-    if (!phase.value.newIds?.length) {
+    if (!phase.value.newIds?.length || !newCountLocked.value) {
       phase.value = { ...phase.value, newIds: progress.newCandidates(settings.state.newPerDay) }
       save()
     }
@@ -188,6 +216,7 @@ export const useSession = defineStore('session', () => {
 
   return {
     PHASES, phase, newIds, reviewCards, reviewIds, dayWordIds, grammarPoint, plan,
+    learnStarted, newCountLocked,
     phaseStatus, currentPhase, completedCount, allDone, minutesToday,
     isDone, markDone, lockNewIds, startClock, stopClock, prepareData, resetToday, rollIfNewDay
   }

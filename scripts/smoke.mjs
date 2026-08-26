@@ -270,6 +270,36 @@ await tap('.opt-card--rec')
 await page.waitForTimeout(900)
 await shot('05-dashboard')
 
+// Changing the daily new-word count before answering anything must re-plan
+// today. Reproducing the real bug needs the learn screen to be opened first —
+// that is what used to freeze the list — and then abandoned without answering.
+const checks = []
+await page.goto(URL_BASE + '#/learn', { waitUntil: 'networkidle' })
+await page.waitForTimeout(1500)          // let lockNewIds() run
+await page.goto(URL_BASE + '#/', { waitUntil: 'networkidle' })
+await page.waitForTimeout(400)
+
+await page.goto(URL_BASE + '#/settings', { waitUntil: 'networkidle' })
+await page.waitForTimeout(700)
+await page.locator('#new').evaluate(el => {
+  el.value = '20'
+  el.dispatchEvent(new Event('input', { bubbles: true }))
+})
+await page.waitForTimeout(500)
+await shot('05b-settings-daily-count')
+
+const effect = await page.locator('.effect').first().innerText().catch(() => '')
+checks.push([
+  'settings names the count that will actually be used',
+  /今天就會套用[^0-9]*20|今天只排得出[^0-9]*20/.test(effect),
+  effect.replace(/\s+/g, ' ')
+])
+
+await page.goto(URL_BASE + '#/', { waitUntil: 'networkidle' })
+await page.waitForTimeout(700)
+const learnStep = await page.locator('.step').first().innerText().catch(() => '')
+checks.push(['dashboard reflects the new count', /20 個新字/.test(learnStep), learnStep.replace(/\s+/g, ' ')])
+
 // learn phase
 await page.goto(URL_BASE + '#/learn', { waitUntil: 'networkidle' })
 await page.waitForTimeout(1400)
@@ -352,6 +382,11 @@ const overflow = await page.evaluate(() => {
 
 console.log('\n--- results ---')
 console.log('screens captured:', shots.length)
+let checkFail = 0
+for (const [label, ok, detail] of checks) {
+  if (!ok) checkFail++
+  console.log(`${ok ? 'ok  ' : 'FAIL'} ${label}${ok ? '' : `  → ${detail}`}`)
+}
 console.log('body overflow  :', overflow.scrollW > overflow.clientW + 1 ? `FAIL (${overflow.scrollW} > ${overflow.clientW})` : 'ok')
 const real = errors.filter(e => !/favicon|manifest|sw\.js|workbox|TUNNEL_CONNECTION_FAILED|fonts\.(googleapis|gstatic)|Failed to load resource.*404/i.test(e))
 console.log('console errors :', real.length ? 'FAIL' : 'none')
@@ -359,4 +394,4 @@ for (const e of real.slice(0, 12)) console.log('   !', e.slice(0, 220))
 
 await browser.close()
 server.close()
-process.exit(real.length ? 1 : 0)
+process.exit(real.length || checkFail ? 1 : 0)

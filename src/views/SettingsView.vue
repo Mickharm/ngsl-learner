@@ -190,6 +190,20 @@ const enrichedPct = computed(() => (words.enrichedCount / TOTAL_WORDS) * 100)
           <strong class="num">{{ Math.ceil(TOTAL_WORDS / s.newPerDay / 30) }}</strong> 個月。
           新字越多，之後每天的複習量也越大。
         </p>
+
+        <!-- say plainly whether this takes effect today, and what today will be -->
+        <p class="effect zh" :class="session.newCountLocked ? 'effect--later' : 'effect--now'">
+          <template v-if="session.newCountLocked">
+            今天的新字已經開始了，清單不會中途變動——這個設定<strong>明天生效</strong>。
+          </template>
+          <template v-else-if="session.plan.newCount < s.newPerDay">
+            今天只排得出 <strong class="num">{{ session.plan.newCount }}</strong> 個新字：
+            目前解鎖的關卡裡沒有更多沒學過的字了。把已解鎖範圍的字複習到 80% 就會開下一關。
+          </template>
+          <template v-else>
+            今天就會套用：<strong class="num">{{ session.plan.newCount }}</strong> 個新字。
+          </template>
+        </p>
       </div>
 
       <div class="field">
@@ -405,6 +419,17 @@ const enrichedPct = computed(() => (words.enrichedCount / TOTAL_WORDS) * 100)
 .grp__title { font-size: var(--step-0); font-weight: 700; letter-spacing: -0.01em; }
 
 .val { font-size: var(--step-0); color: var(--jade); }
+
+.effect {
+  font-size: var(--step--2);
+  line-height: 1.7;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid;
+}
+.effect strong { font-weight: 700; }
+.effect--now { color: var(--jade); background: var(--jade-wash); border-color: var(--jade); }
+.effect--later { color: var(--amber); background: var(--amber-wash); border-color: var(--amber); }
 
 .note { font-size: var(--step--2); color: var(--ink-3); line-height: 1.7; }
 .note strong { color: var(--jade); }
