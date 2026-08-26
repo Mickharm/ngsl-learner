@@ -7,7 +7,7 @@ import { useProgress } from '@/stores/progress'
 import { useWords } from '@/stores/words'
 import { useSession } from '@/stores/session'
 import { useToast } from '@/stores/toast'
-import { testConnection, listModels } from '@/lib/gemini'
+import { testConnection, listModels, resolveModel } from '@/lib/gemini'
 import { whenVoicesReady, englishVoices, speak, ttsSupported } from '@/lib/tts'
 import { TOTAL_WORDS } from '@/config'
 
@@ -39,7 +39,13 @@ async function runTest () {
   testResult.value = null
   try {
     const r = await testConnection({ key: keyInput.value.trim() || s.value.geminiKey, model: s.value.geminiModel })
-    testResult.value = { ok: true, text: `連線成功 · ${r.ms} ms` }
+    if (r.switched) settings.set({ geminiModel: r.model })
+    testResult.value = {
+      ok: true,
+      text: r.switched
+        ? `連線成功 · ${r.ms} ms — 原本設定的模型不存在，已自動改用 ${r.model}`
+        : `連線成功 · ${r.ms} ms · 模型 ${r.model}`
+    }
   } catch (e) {
     testResult.value = { ok: false, text: e.message }
   } finally {
@@ -51,6 +57,17 @@ async function loadModels () {
   try {
     models.value = await listModels(keyInput.value.trim() || s.value.geminiKey)
     toast.info(`找到 ${models.value.length} 個可用模型`)
+  } catch (e) {
+    toast.error(e.message)
+  }
+}
+
+/** Ask the API what it has and take the best fit, so nobody has to guess. */
+async function autoPickModel () {
+  try {
+    const picked = await resolveModel(keyInput.value.trim() || s.value.geminiKey, null)
+    settings.set({ geminiModel: picked })
+    toast.info(`已選用 ${picked}`)
   } catch (e) {
     toast.error(e.message)
   }
@@ -242,7 +259,15 @@ const enrichedPct = computed(() => (words.enrichedCount / TOTAL_WORDS) * 100)
         <select v-else id="model" class="input input--mono" :value="s.geminiModel" @change="settings.set({ geminiModel: $event.target.value })">
           <option v-for="m in models" :key="m" :value="m">{{ m }}</option>
         </select>
-        <p class="note zh">建議 <code>gemini-2.0-flash</code>：便宜、夠快，這個用途品質已經足夠。</p>
+        <div class="row row-2 wrap">
+          <button class="btn btn--ghost btn--sm zh" :disabled="!(keyInput.trim() || s.geminiKey)" @click="autoPickModel">
+            自動偵測可用模型
+          </button>
+        </div>
+        <p class="note zh">
+          不用自己記模型名稱。Google 會改名或下架模型，遇到 404 時 App 會自己去問
+          有哪些能用並換過去，這裡只是讓你看得到目前用的是哪一個。
+        </p>
       </div>
 
       <div class="hr" />

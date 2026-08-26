@@ -9,6 +9,9 @@
 
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models'
 
+/** Current at time of writing; resolveModel() takes over if it ever 404s. */
+export const DEFAULT_MODEL = 'gemini-3.5-flash'
+
 export class GeminiError extends Error {
   constructor (message, { status = 0, retryable = false } = {}) {
     super(message)
@@ -21,13 +24,79 @@ export class GeminiError extends Error {
 function describeStatus (status, body) {
   if (status === 400) return 'API Key 格式錯誤或請求無效（400）'
   if (status === 401 || status === 403) return 'API Key 無效或沒有權限（' + status + '）'
-  if (status === 404) return '找不到指定的模型，請到設定頁換一個 model（404）'
+  if (status === 404) return '這個 API Key 沒有這個模型（404）'
   if (status === 429) return '已達 Gemini 免費額度上限，請稍後再試（429）'
   if (status >= 500) return 'Gemini 服務暫時異常（' + status + '）'
   return `Gemini 回應錯誤（${status}）${body ? '：' + String(body).slice(0, 160) : ''}`
 }
 
-async function callGemini ({ key, model, systemInstruction, prompt, schema, temperature = 0.7, signal }) {
+/* ------------------------------------------------------------------ *
+ * Model resolution
+ *
+ * Model IDs get renamed and retired on Google's schedule, not ours, so a
+ * hard-coded default is a time bomb: the app breaks one morning with a 404 and
+ * the learner is told to "pick a model" they have no way to pick from. Instead
+ * we ask the API what it has and choose, then remember the answer.
+ * ------------------------------------------------------------------ */
+
+let resolvedModel = null
+let onModelChange = null
+
+/** Let the settings store persist a model we discovered on the user's behalf. */
+export function onModelResolved (fn) { onModelChange = fn }
+
+export function getResolvedModel () { return resolvedModel }
+
+/**
+ * Rank candidates for this app's job: high volume, short outputs, latency
+ * matters more than depth. Flash tiers win; previews and special-purpose
+ * variants lose.
+ */
+function scoreModel (name) {
+  const n = name.toLowerCase()
+  if (/embedding|aqa|imagen|veo|tts|image|audio|live|native/.test(n)) return -1
+
+  let score = 0
+  if (n.includes('flash')) score += 40
+  else if (n.includes('pro')) score += 20
+
+  // Newest major.minor wins, e.g. gemini-3.5-flash > gemini-3.1-flash-lite
+  const v = n.match(/gemini-(\d+)(?:\.(\d+))?/)
+  if (v) score += Number(v[1]) * 6 + (v[2] ? Number(v[2]) : 0)
+
+  if (/preview|exp|experimental/.test(n)) score -= 12
+  if (n.includes('lite')) score -= 4          // fine, just second choice
+  if (/-\d{3,}$/.test(n)) score -= 3          // dated snapshot pin
+
+  return score
+}
+
+/**
+ * Find a model this key can actually call. Returns the chosen id.
+ * `preferred` is kept if the API still lists it.
+ */
+export async function resolveModel (key, preferred) {
+  const available = await listModels(key)
+  if (!available.length) throw new GeminiError('這個 API Key 沒有任何可用的模型')
+
+  if (preferred && available.includes(preferred)) {
+    resolvedModel = preferred
+    return preferred
+  }
+
+  const best = available
+    .map(name => ({ name, score: scoreModel(name) }))
+    .filter(m => m.score > 0)
+    .sort((a, b) => b.score - a.score)[0]
+
+  if (!best) throw new GeminiError('找不到適合的文字生成模型')
+
+  resolvedModel = best.name
+  onModelChange?.(best.name)
+  return best.name
+}
+
+async function callGemini ({ key, model, systemInstruction, prompt, schema, temperature = 0.7, signal, _retriedModel = false }) {
   if (!key) throw new GeminiError('尚未設定 Gemini API Key，請到「設定」頁面填入。')
 
   const generationConfig = { temperature, maxOutputTokens: 8192 }
@@ -60,6 +129,19 @@ async function callGemini ({ key, model, systemInstruction, prompt, schema, temp
 
   if (!res.ok) {
     const text = await res.text().catch(() => '')
+
+    // A renamed or retired model is recoverable without bothering the learner:
+    // ask what this key can call, switch to it, and run the request again.
+    if (res.status === 404 && !_retriedModel) {
+      const next = await resolveModel(key, null).catch(() => null)
+      if (next && next !== model) {
+        return callGemini({
+          key, model: next, systemInstruction, prompt, schema, temperature, signal,
+          _retriedModel: true
+        })
+      }
+    }
+
     throw new GeminiError(describeStatus(res.status, text), {
       status: res.status,
       retryable: res.status === 429 || res.status >= 500
@@ -176,7 +258,7 @@ const WORD_SYSTEM = `你是一位專為台灣工程師設計英文教材的教�
  * @param {string[]} headwords  batch of NGSL headwords (keep ≤ 25 per call)
  * @returns {Promise<Object[]>} enriched entries, keyed back by headword
  */
-export async function enrichWords (headwords, { key, model = 'gemini-2.0-flash', signal } = {}) {
+export async function enrichWords (headwords, { key, model = DEFAULT_MODEL, signal } = {}) {
   const list = headwords.map((w, i) => `${i + 1}. ${w}`).join('\n')
   const prompt = `為以下 ${headwords.length} 個英文單字產生學習資料。務必依照原順序輸出同樣數量的項目，headword 必須與輸入完全一致。
 
@@ -240,7 +322,7 @@ const TOPIC_LABEL = {
 }
 
 export async function generateArticle ({
-  words, topic = 'daily', grammarPoint = null, key, model = 'gemini-2.0-flash', signal
+  words, topic = 'daily', grammarPoint = null, key, model = DEFAULT_MODEL, signal
 } = {}) {
   const wordList = words.map(w => w.headword).join(', ')
   const grammarLine = grammarPoint
@@ -310,7 +392,7 @@ const DIALOGUE_SCHEMA = {
   required: ['scene', 'scene_zh', 'lines', 'key_phrases']
 }
 
-export async function generateDialogue ({ sceneKey, sceneLabel, words = [], key, model = 'gemini-2.0-flash', signal } = {}) {
+export async function generateDialogue ({ sceneKey, sceneLabel, words = [], key, model = DEFAULT_MODEL, signal } = {}) {
   const wordHint = words.length
     ? `\n盡量用上這些單字：${words.map(w => w.headword).join(', ')}`
     : ''
@@ -336,14 +418,23 @@ export async function generateDialogue ({ sceneKey, sceneLabel, words = [], key,
  * 4. Connection test
  * ------------------------------------------------------------------ */
 
-export async function testConnection ({ key, model = 'gemini-2.0-flash' } = {}) {
+export async function testConnection ({ key, model = DEFAULT_MODEL } = {}) {
   const started = performance.now()
+  // Settle on a model this key can call before timing anything, so the result
+  // reports the model that will actually be used day to day.
+  const chosen = await resolveModel(key, model)
   const text = await callGemini({
-    key, model,
+    key, model: chosen,
     prompt: 'Reply with exactly: OK',
     temperature: 0
   })
-  return { ok: /ok/i.test(text), ms: Math.round(performance.now() - started), raw: text.trim().slice(0, 80) }
+  return {
+    ok: /ok/i.test(text),
+    ms: Math.round(performance.now() - started),
+    model: chosen,
+    switched: chosen !== model,
+    raw: text.trim().slice(0, 80)
+  }
 }
 
 export async function listModels (key) {

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { supabase } from '@/lib/supabase'
 import { DEFAULT_SETTINGS } from '@/config'
+import { onModelResolved } from '@/lib/gemini'
 import { useAuth } from './auth'
 
 const LOCAL_KEY = 'ngsl.settings'
@@ -82,6 +83,12 @@ export const useSettings = defineStore('settings', () => {
     applyTheme()
     persist()
   }
+
+  // gemini.js switches models by itself when the configured one 404s; keep the
+  // discovery so the next session does not have to repeat it.
+  onModelResolved(model => {
+    if (model && model !== state.value.geminiModel) set({ geminiModel: model })
+  })
 
   watch(() => auth.userId, id => { if (id) load() })
 

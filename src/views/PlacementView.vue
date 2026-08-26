@@ -62,9 +62,9 @@ async function saveKey () {
   keyBusy.value = true
   keyError.value = ''
   try {
-    await testConnection({ key: keyInput.value.trim(), model: settings.state.geminiModel })
-    settings.set({ geminiKey: keyInput.value.trim() })
-    toast.info('API Key 已儲存')
+    const r = await testConnection({ key: keyInput.value.trim(), model: settings.state.geminiModel })
+    settings.set({ geminiKey: keyInput.value.trim(), geminiModel: r.model })
+    toast.info(`API Key 已儲存 · 模型 ${r.model}`)
   } catch (e) {
     keyError.value = e.message
   } finally {

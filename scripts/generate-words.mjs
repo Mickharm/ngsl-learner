@@ -42,7 +42,7 @@ const BATCH = Number(flag('batch', 20))
 const DRY = has('dry')
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash'
+const MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash'
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://hlwmqtbgpconoclmxwll.supabase.co'
 const SUPABASE_KEY = process.env.SUPABASE_KEY
 

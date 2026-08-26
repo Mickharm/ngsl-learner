@@ -98,6 +98,7 @@ npm run build:base     # NGSL_2801_full.csv → src/data/words.base.json
 npm run dev            # http://localhost:5173/ngsl-learner/
 npm run build
 npm run smoke          # 用 Playwright 走完整個流程並截圖到 .shots/
+npm run test:models    # 離線驗證模型自動挑選邏輯
 npm run deploy         # 把 dist/ 推到 gh-pages 分支
 ```
 
@@ -146,6 +147,9 @@ src/
 ## 已知限制
 
 - Gemini 免費額度有 rate limit，一次產生 2801 字可能會撞到 429（腳本會自動退避重試）。
+- 模型名稱不用自己維護：Google 改名或下架時 API 回 404，`resolveModel()` 會去問
+  `ListModels` 挑一個能用的（偏好 flash 系列、避開 embedding/image/tts/live 變體）
+  並存回設定。預設值只是起點，不是硬依賴。
 - Web Speech 的發音品質取決於裝置。iPhone 上到「設定 → 輔助使用 → 朗讀內容 → 語音」
   下載 Enhanced/Premium 的英文語音，差別很大。
 - 文法點目前是固定 30 個，沒有做到 TOEIC 全部文法範圍。

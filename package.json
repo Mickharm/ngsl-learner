@@ -10,7 +10,8 @@
     "build:base": "node scripts/build-base.mjs",
     "gen:words": "node scripts/generate-words.mjs",
     "smoke": "npm run build && node scripts/smoke.mjs",
-    "deploy": "node scripts/deploy-pages.mjs"
+    "deploy": "node scripts/deploy-pages.mjs",
+    "test:models": "node scripts/test-model-resolution.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
