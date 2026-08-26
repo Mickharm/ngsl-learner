@@ -227,7 +227,11 @@ await page.goto(URL_BASE, { waitUntil: 'networkidle' })
 await shot('01-login')
 
 // sign in through the real form (the stub answers /auth/v1/token)
-await page.fill('#email', 'mick@example.com')
+// the login screen opens on the profile chooser, so pick one first
+await page.locator('.who').first().waitFor({ state: 'visible', timeout: 8000 })
+await shot('01a-profile-picker')
+await page.locator('.who').first().click()
+await page.waitForTimeout(350)
 await page.fill('#pw', 'stub-password')
 await page.click('button[type="submit"]')
 await page.waitForTimeout(1400)

@@ -1,40 +1,79 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import { useToast } from '@/stores/toast'
-import { TOTAL_WORDS } from '@/config'
+import { TOTAL_WORDS, PROFILES } from '@/config'
 import { DRILL_COUNT } from '@/data/grammar'
+
+/**
+ * Two named profiles instead of an email field. Public signup is disabled in
+ * Supabase, so there is no reason to make either person remember that "Dai"
+ * is spelled dai@ngsl.app — the app knows.
+ *
+ * The manual form stays available behind a link: it is what the first-run
+ * registration uses, and the escape hatch if a third account is ever added.
+ */
 
 const auth = useAuth()
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
 
-const mode = ref('signin')
+const picked = ref(null)          // a PROFILES entry, or null on the chooser
+const manual = ref(false)
+const mode = ref('signin')        // signin | signup
 const email = ref('')
 const password = ref('')
-const name = ref('')
 const err = ref('')
+const pwField = ref(null)
 
-const isSignUp = computed(() => mode.value === 'signup')
-const canSubmit = computed(() =>
-  /.+@.+\..+/.test(email.value) && password.value.length >= 6 && !auth.busy
+const activeEmail = computed(() =>
+  manual.value ? email.value.trim() : (picked.value?.email || '')
 )
+const activeName = computed(() =>
+  manual.value ? email.value.split('@')[0] : (picked.value?.name || '')
+)
+
+const canSubmit = computed(() =>
+  /.+@.+\..+/.test(activeEmail.value) && password.value.length >= 6 && !auth.busy
+)
+
+async function choose (p) {
+  picked.value = p
+  manual.value = false
+  err.value = ''
+  password.value = ''
+  await nextTick()
+  pwField.value?.focus()
+}
+
+function back () {
+  picked.value = null
+  manual.value = false
+  password.value = ''
+  err.value = ''
+}
+
+function openManual () {
+  manual.value = true
+  picked.value = null
+  err.value = ''
+}
 
 async function submit () {
   err.value = ''
   try {
-    if (isSignUp.value) {
-      const res = await auth.signUp(email.value.trim(), password.value, name.value.trim())
+    if (mode.value === 'signup') {
+      const res = await auth.signUp(activeEmail.value, password.value, activeName.value)
       if (!res.session) {
-        toast.info('註冊成功，請到信箱點擊確認信後再登入')
+        toast.info('帳號已建立，請重新登入')
         mode.value = 'signin'
         return
       }
       router.push('/setup')
     } else {
-      await auth.signIn(email.value.trim(), password.value)
+      await auth.signIn(activeEmail.value, password.value)
       router.push(route.query.next || '/')
     }
   } catch (e) {
@@ -72,26 +111,34 @@ async function submit () {
         </div>
       </section>
 
-      <form class="form card card--pad" @submit.prevent="submit">
-        <div class="switch">
+      <!-- ---------- profile chooser ---------- -->
+      <section v-if="!picked && !manual" class="pick">
+        <p class="pick__label zh">你是誰？</p>
+        <div class="pick__grid">
           <button
-            type="button" class="switch__btn zh"
-            :class="{ 'switch__btn--on': !isSignUp }"
-            @click="mode = 'signin'; err = ''"
-          >登入</button>
-          <button
-            type="button" class="switch__btn zh"
-            :class="{ 'switch__btn--on': isSignUp }"
-            @click="mode = 'signup'; err = ''"
-          >註冊</button>
+            v-for="p in PROFILES" :key="p.email"
+            class="who" :class="`who--${p.accent}`"
+            @click="choose(p)"
+          >
+            <span class="who__initial">{{ p.name[0] }}</span>
+            <span class="who__name">{{ p.name }}</span>
+          </button>
         </div>
+        <button class="btn btn--quiet btn--sm zh" @click="openManual">用其他帳號登入</button>
+      </section>
 
-        <div v-if="isSignUp" class="field">
-          <label class="label" for="name">顯示名稱</label>
-          <input id="name" v-model="name" class="input" type="text" autocomplete="nickname" placeholder="Mick">
-        </div>
+      <!-- ---------- password / manual form ---------- -->
+      <form v-else class="form card card--pad" @submit.prevent="submit">
+        <header v-if="picked" class="who__head">
+          <span class="who__chip" :class="`who--${picked.accent}`">{{ picked.name[0] }}</span>
+          <div class="who__meta">
+            <div class="who__hi zh">{{ picked.name }}</div>
+            <div class="who__mail">{{ picked.email }}</div>
+          </div>
+          <button type="button" class="btn btn--quiet btn--sm zh" @click="back">換人</button>
+        </header>
 
-        <div class="field">
+        <div v-if="manual" class="field">
           <label class="label" for="email">Email</label>
           <input
             id="email" v-model="email" class="input" type="email"
@@ -103,22 +150,33 @@ async function submit () {
         <div class="field">
           <label class="label" for="pw">密碼</label>
           <input
-            id="pw" v-model="password" class="input" type="password"
-            :autocomplete="isSignUp ? 'new-password' : 'current-password'"
+            id="pw" ref="pwField" v-model="password" class="input" type="password"
+            :autocomplete="mode === 'signup' ? 'new-password' : 'current-password'"
             placeholder="至少 6 個字元" required minlength="6"
           >
         </div>
 
         <p v-if="err" class="err zh">{{ err }}</p>
 
-        <button class="btn btn--primary btn--block" type="submit" :disabled="!canSubmit">
-          <span class="zh">{{ auth.busy ? '處理中…' : (isSignUp ? '建立帳號' : '登入') }}</span>
+        <button class="btn btn--primary btn--block zh" type="submit" :disabled="!canSubmit">
+          {{ auth.busy ? '處理中…' : (mode === 'signup' ? '建立帳號' : '進入') }}
         </button>
 
-        <p class="hint zh">
-          進度存在雲端，換手機、換瀏覽器都接得上。兩個人各自註冊，資料互不干擾。
-        </p>
+        <button
+          type="button" class="btn btn--quiet btn--sm btn--block zh"
+          @click="mode = mode === 'signup' ? 'signin' : 'signup'; err = ''"
+        >
+          {{ mode === 'signup' ? '← 回到登入' : '第一次使用？建立這個帳號' }}
+        </button>
+
+        <button v-if="manual" type="button" class="btn btn--quiet btn--sm btn--block zh" @click="back">
+          ← 回到選擇使用者
+        </button>
       </form>
+
+      <p class="hint zh">
+        進度存在雲端，換手機、換瀏覽器都接得上。兩個帳號的資料完全獨立，只有單字的翻譯與例句是共用的。
+      </p>
     </div>
   </main>
 </template>
@@ -161,36 +219,68 @@ async function submit () {
 }
 .brand__sub { font-size: var(--step--1); color: var(--ink-2); text-align: center; }
 
-.figures {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-4);
-}
+.figures { display: flex; align-items: center; justify-content: center; gap: var(--sp-4); }
 .fig { display: flex; flex-direction: column; align-items: center; gap: 1px; }
 .fig__n { font-size: var(--step-1); color: var(--ink); }
 .fig__l { font-size: var(--step--2); color: var(--ink-3); }
 .fig__rule { width: 1px; height: 26px; background: var(--rule); }
 
-.form { display: flex; flex-direction: column; gap: var(--sp-4); }
+/* ---- chooser ---- */
+.pick { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); }
+.pick__label { font-size: var(--step--1); color: var(--ink-2); font-weight: 600; }
+.pick__grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); width: 100%; }
 
-.switch {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3px;
-  padding: 3px;
-  background: var(--surface-2);
-  border-radius: var(--radius);
+.who {
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-5) var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  transition: transform 0.12s ease, border-color 0.15s, box-shadow 0.15s;
 }
-.switch__btn {
-  padding: 9px;
-  border-radius: 9px;
-  font-size: var(--step--1);
+.who:active { transform: scale(0.97); }
+.who:hover { box-shadow: var(--shadow-2); }
+
+.who__initial {
+  width: 54px; height: 54px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--font-word);
+  font-size: var(--step-3);
   font-weight: 600;
-  color: var(--ink-3);
-  transition: background 0.15s, color 0.15s;
+  line-height: 1;
 }
-.switch__btn--on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
+.who__name { font-size: var(--step-1); font-weight: 700; letter-spacing: -0.01em; }
+
+.who--jade { border-top: 3px solid var(--jade); }
+.who--jade .who__initial { background: var(--jade-wash); color: var(--jade); }
+.who--violet { border-top: 3px solid var(--violet); }
+.who--violet .who__initial { background: var(--violet-wash); color: var(--violet); }
+
+/* ---- form ---- */
+.form { display: flex; flex-direction: column; gap: var(--sp-3); }
+
+.who__head {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--rule);
+}
+.who__chip {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--font-word); font-size: var(--step-1); font-weight: 600;
+  border-top: none !important;
+  flex-shrink: 0;
+}
+.who__chip.who--jade { background: var(--jade-wash); color: var(--jade); }
+.who__chip.who--violet { background: var(--violet-wash); color: var(--violet); }
+.who__meta { flex: 1; min-width: 0; }
+.who__hi { font-size: var(--step-0); font-weight: 700; line-height: 1.2; }
+.who__mail {
+  font-family: var(--font-mono); font-size: var(--step--2); color: var(--ink-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 .err {
   font-size: var(--step--1);
@@ -199,6 +289,7 @@ async function submit () {
   border: 1px solid var(--rose-edge);
   border-radius: var(--radius);
   padding: var(--sp-3);
+  line-height: 1.6;
 }
 
 .hint { font-size: var(--step--2); color: var(--ink-3); line-height: 1.6; text-align: center; }
