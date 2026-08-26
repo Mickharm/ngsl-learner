@@ -105,7 +105,7 @@ npm run deploy         # 把 dist/ 推到 gh-pages 分支
 `workflow` scope。若要改成 push 就自動建置的 GitHub Actions，
 `deploy/README.md` 有完整步驟。
 
-`npm run smoke` 會把 Supabase 與 Gemini 都 stub 在網路層，跑完 22 個畫面，
+`npm run smoke` 會把 Supabase 與 Gemini 都 stub 在網路層，跑完 23 個畫面，
 檢查 console error 與水平溢出。改完 UI 跑一次再 push。
 
 ### 專案結構
