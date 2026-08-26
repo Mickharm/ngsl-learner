@@ -9,7 +9,7 @@ const progress = useProgress()
 const tabs = computed(() => [
   { to: '/', label: '今日', icon: 'today' },
   { to: '/browse', label: '單字庫', icon: 'book' },
-  { to: '/errors', label: '錯題', icon: 'flag', badge: progress.errors.length },
+  { to: '/errors', label: '錯題', icon: 'flag', badge: progress.mistakeCount },
   { to: '/stats', label: '數據', icon: 'chart' },
   { to: '/settings', label: '設定', icon: 'gear' }
 ])

@@ -29,6 +29,8 @@ const trouble = computed(() =>
     .filter(x => x.word)
 )
 
+const questionErrors = computed(() => progress.questionErrors)
+
 const grouped = computed(() => {
   const g = { grammar: [], article: [], cloze: [], word: [] }
   for (const e of progress.errors) (g[e.kind] ||= []).push(e)
@@ -48,6 +50,8 @@ function grade (g) {
   const w = current.value
   if (!w) return
   progress.gradeCard(w.id, g, { mode: 'card' })
+  // Answering it well again is what takes a word off the list.
+  if (g >= GRADE.GOOD) progress.clearWordErrors(w.id)
   if (step.value + 1 < queue.value.length) {
     step.value++
     revealed.value = false
@@ -87,7 +91,7 @@ function grade (g) {
           常忘單字 <span class="num">{{ trouble.length }}</span>
         </button>
         <button class="seg__btn zh" :class="{ 'seg__btn--on': tab === 'qs' }" @click="tab = 'qs'">
-          答錯題目 <span class="num">{{ (grouped.grammar?.length || 0) + (grouped.article?.length || 0) }}</span>
+          答錯題目 <span class="num">{{ questionErrors.length }}</span>
         </button>
       </div>
 
@@ -107,7 +111,11 @@ function grade (g) {
               <span class="titem__zh zh">{{ t.word.meanings?.[0]?.zh || '尚未產生翻譯' }}</span>
             </div>
             <div class="titem__meta">
-              <span class="chip chip--rose">忘 {{ t.card.lapses }}</span>
+              <!-- lapses only counts failures from the review state, so a word
+                   missed while still new shows 0; label it by what happened. -->
+              <span class="chip chip--rose">
+                {{ t.card.lapses > 0 ? `忘 ${t.card.lapses}` : '答錯' }}
+              </span>
               <span class="titem__ease num">ease {{ t.card.ease.toFixed(2) }}</span>
             </div>
           </div>

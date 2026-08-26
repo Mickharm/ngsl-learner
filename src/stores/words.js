@@ -31,6 +31,48 @@ export const useWords = defineStore('words', () => {
 
   const baseById = new Map(base.map(w => [w.id, w]))
 
+  /**
+   * Any inflected surface form → word id, so a word tapped inside an article
+   * ("waited", "achieving") resolves to its headword. Built once; the base
+   * list already ships every family member the NGSL data knows about.
+   */
+  const idBySurface = (() => {
+    const m = new Map()
+    for (const w of base) {
+      const key = w.h.toLowerCase()
+      if (!m.has(key)) m.set(key, w.id)
+      for (const f of w.f || []) {
+        const fk = String(f).toLowerCase()
+        if (fk && !m.has(fk)) m.set(fk, w.id)
+      }
+    }
+    return m
+  })()
+
+  /** Resolve a word as it appears in running text. Returns an id or null. */
+  function lookup (surface) {
+    if (!surface) return null
+    const k = String(surface).toLowerCase().replace(/[^a-z'-]/g, '')
+    if (!k) return null
+    if (idBySurface.has(k)) return idBySurface.get(k)
+    // cheap morphology for forms the family list misses
+    for (const strip of ['s', 'es', 'ed', 'ing', "'s"]) {
+      if (k.endsWith(strip)) {
+        const stem = k.slice(0, -strip.length)
+        if (idBySurface.has(stem)) return idBySurface.get(stem)
+        if (strip === 'ing' || strip === 'ed') {
+          if (idBySurface.has(stem + 'e')) return idBySurface.get(stem + 'e')
+          // running → run, stopped → stop
+          if (stem.length > 2 && stem.at(-1) === stem.at(-2) && idBySurface.has(stem.slice(0, -1))) {
+            return idBySurface.get(stem.slice(0, -1))
+          }
+        }
+      }
+    }
+    if (k.endsWith('ies') && idBySurface.has(k.slice(0, -3) + 'y')) return idBySurface.get(k.slice(0, -3) + 'y')
+    return null
+  }
+
   const total = base.length
   const enrichedCount = computed(() => enriched.value.size)
 
@@ -207,6 +249,6 @@ export const useWords = defineStore('words', () => {
 
   return {
     total, enriched, enrichedCount, hydrating, enriching, enrichProgress, bandCounts,
-    get, getMany, range, search, baseOf, hydrate, ensureEnriched, missing, allBase: base
+    get, getMany, range, search, baseOf, lookup, hydrate, ensureEnriched, missing, allBase: base
   }
 })

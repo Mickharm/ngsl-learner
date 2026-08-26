@@ -369,13 +369,69 @@ export const useProgress = defineStore('progress', () => {
     await supabase.from('error_log').update({ resolved_at: new Date().toISOString() }).eq('id', id)
   }
 
-  /** Words the learner gets wrong most often — the forced-rotation list. */
-  const troubleWords = computed(() => {
-    return [...cards.value.values()]
-      .filter(c => c.lapses > 0)
-      .sort((a, b) => (b.lapses - a.lapses) || (a.ease - b.ease))
-      .slice(0, 40)
+  /** Open mistakes that are questions rather than words. */
+  const questionErrors = computed(() =>
+    errors.value.filter(e => e.kind === 'grammar' || e.kind === 'article')
+  )
+
+  /**
+   * Words that are currently weak.
+   *
+   * Two signals feed this, and using only one of them was a bug: `lapses` is
+   * incremented only when a card fails from the REVIEW state, so pressing
+   * 忘記 on a brand-new word logged an error (and bumped the tab badge) while
+   * leaving lapses at 0 — the notebook showed a count with nothing in it.
+   *
+   * A word leaves the list once it has been answered correctly twice running
+   * and has no unresolved error rows, so the notebook reflects what still
+   * needs work rather than growing forever.
+   */
+  const troubleWordIds = computed(() => {
+    const ids = new Set()
+
+    for (const e of errors.value) {
+      if (e.kind !== 'word' && e.kind !== 'cloze') continue
+      const id = Number(e.ref_id)
+      if (Number.isFinite(id)) ids.add(id)
+    }
+    for (const c of cards.value.values()) {
+      if (c.lapses > 0 && c.streak < 2) ids.add(c.wordId)
+    }
+
+    // Anything already relearned drops out, whichever signal put it there.
+    for (const id of [...ids]) {
+      const c = cards.value.get(id)
+      if (c && c.streak >= 2 && c.lastGrade >= GRADE.GOOD && !hasOpenError(id)) ids.delete(id)
+    }
+    return ids
   })
+
+  function hasOpenError (wordId) {
+    return errors.value.some(
+      e => (e.kind === 'word' || e.kind === 'cloze') && Number(e.ref_id) === wordId
+    )
+  }
+
+  /** Weakest first: most lapses, then lowest ease. */
+  const troubleWords = computed(() => {
+    const out = []
+    for (const id of troubleWordIds.value) {
+      const c = cards.value.get(id) || newCard(id)
+      out.push(c)
+    }
+    return out.sort((a, b) => (b.lapses - a.lapses) || (a.ease - b.ease)).slice(0, 60)
+  })
+
+  /** What the tab badge shows — must equal what the page can actually list. */
+  const mistakeCount = computed(() => troubleWordIds.value.size + questionErrors.value.length)
+
+  /** Clear the open word-level errors once a word is answered well again. */
+  function clearWordErrors (wordId) {
+    const open = errors.value.filter(
+      e => (e.kind === 'word' || e.kind === 'cloze') && Number(e.ref_id) === wordId
+    )
+    for (const e of open) resolveError(e.id)
+  }
 
   const streak = computed(() => {
     const done = new Set(history.value.filter(h => h.total_count > 0).map(h => h.day))
@@ -417,7 +473,8 @@ export const useProgress = defineStore('progress', () => {
 
   return {
     cards, today, history, errors, loaded, syncing,
-    seenIds, dueCards, learningCards, stats, unlockedStage, troubleWords, streak, dayAccuracy,
+    seenIds, dueCards, learningCards, stats, unlockedStage, streak, dayAccuracy,
+    troubleWords, troubleWordIds, questionErrors, mistakeCount, clearWordErrors,
     load, loadDay, loadHistory, loadErrors, flush,
     cardOf, newCandidates, gradeCard, markKnown, bumpDay, setDay, logError, resolveError, resetAll,
     retrievability, daysBetween

@@ -7,6 +7,9 @@ import { useToast } from '@/stores/toast'
 import SessionHeader from '@/components/SessionHeader.vue'
 import AudioButton from '@/components/AudioButton.vue'
 import { inlineMd } from '@/lib/format'
+import { matchesAnswer, worthJudging } from '@/lib/answer'
+import { judgeSentence } from '@/lib/gemini'
+import { useSettings } from '@/stores/settings'
 
 /**
  * Grammar phase: read the point, then drill it. Drills are the same three
@@ -18,6 +21,7 @@ const grammar = useGrammar()
 const session = useSession()
 const toast = useToast()
 const router = useRouter()
+const settings = useSettings()
 
 const point = computed(() => grammar.todayPoint)
 const stage = ref('teach')            // teach | drill | result
@@ -30,6 +34,14 @@ const settled = ref(false)
 const built = ref([])
 const bank = ref([])
 
+/**
+ * How the last free-text answer was judged. Strict local matching decides most
+ * of them; the model is consulted only when the answer is close enough to the
+ * reference to plausibly be a valid alternative phrasing.
+ */
+const verdict = ref(null)      // { correct, source: 'local'|'ai'|'revealed', explain }
+const judging = ref(false)
+
 const drills = computed(() => point.value?.drills || [])
 const drill = computed(() => drills.value[drillIndex.value] || null)
 const isNew = computed(() => point.value && !grammar.recOf(point.value.id))
@@ -39,6 +51,8 @@ const correctCount = computed(() => answers.value.filter(a => a.correct).length)
 function resetDrill () {
   picked.value = null
   settled.value = false
+  verdict.value = null
+  judging.value = false
   built.value = []
   const d = drill.value
   if (d?.type === 'order') {
@@ -87,26 +101,77 @@ function popToken (idx) {
   bank.value = [...bank.value, item]
 }
 const builtSentence = computed(() => built.value.map(b => b.t).join(' '))
-function checkOrder () {
+
+/**
+ * Settle a free-text answer. Local matching is authoritative when it says yes;
+ * when it says no, the model gets a look, because English gives more than one
+ * correct way to say the same thing and marking those wrong teaches the
+ * learner to chase the reference wording instead of the grammar.
+ */
+async function settleFreeText (learner, { task, targetError = '' }) {
   if (settled.value) return
-  const target = drill.value.answer.replace(/[.?!]$/, '').toLowerCase()
-  const got = builtSentence.value.toLowerCase()
-  settled.value = true
-  answers.value.push({ correct: got === target })
+  const reference = drill.value.answer
+
+  if (matchesAnswer(learner, reference)) {
+    settled.value = true
+    verdict.value = { correct: true, source: 'local', explain: '' }
+    answers.value.push({ correct: true })
+    return
+  }
+
+  const canAsk = settings.hasGeminiKey && worthJudging(learner, reference)
+  if (!canAsk) {
+    settled.value = true
+    verdict.value = { correct: false, source: 'local', explain: '' }
+    answers.value.push({ correct: false })
+    return
+  }
+
+  judging.value = true
+  try {
+    const r = await judgeSentence({
+      learner, reference, task, targetError,
+      key: settings.state.geminiKey,
+      model: settings.state.geminiModel
+    })
+    settled.value = true
+    verdict.value = {
+      correct: !!r.correct,
+      source: 'ai',
+      explain: r.explain_zh || '',
+      corrected: r.corrected || ''
+    }
+    answers.value.push({ correct: !!r.correct })
+  } catch (e) {
+    // The model is an appeal court, not the only court. If it cannot be
+    // reached, fall back to the strict result rather than blocking the drill.
+    settled.value = true
+    verdict.value = { correct: false, source: 'local', explain: `無法連線 AI 批改（${e.message}），改用嚴格比對。` }
+    answers.value.push({ correct: false })
+  } finally {
+    judging.value = false
+  }
+}
+
+function checkOrder () {
+  settleFreeText(builtSentence.value, { task: '把中文翻成正確英文語序（句子重組）' })
 }
 
 /* ---- correction drill ---- */
 const typed = ref('')
 watch(drill, () => { typed.value = '' })
+
 function checkCorrection () {
-  if (settled.value) return
-  const norm = s => s.toLowerCase().replace(/[.,!?]/g, '').replace(/\s+/g, ' ').trim()
-  settled.value = true
-  answers.value.push({ correct: norm(typed.value) === norm(drill.value.answer) })
+  settleFreeText(typed.value, {
+    task: '找出並修正句子中的一個文法錯誤',
+    targetError: drill.value.wrong || ''
+  })
 }
+
 function revealCorrection () {
   if (settled.value) return
   settled.value = true
+  verdict.value = { correct: false, source: 'revealed', explain: '' }
   answers.value.push({ correct: false })
 }
 
@@ -254,9 +319,9 @@ onUnmounted(() => session.stopClock())
           <button
             v-if="!settled"
             class="btn btn--primary btn--block zh"
-            :disabled="bank.length > 0"
+            :disabled="bank.length > 0 || judging"
             @click="checkOrder"
-          >{{ bank.length ? `還有 ${bank.length} 個字` : '檢查答案' }}</button>
+          >{{ judging ? 'AI 批改中…' : (bank.length ? `還有 ${bank.length} 個字` : '檢查答案') }}</button>
         </template>
 
         <!-- correction -->
@@ -275,8 +340,10 @@ onUnmounted(() => session.stopClock())
             autocorrect="off"
           />
           <div v-if="!settled" class="row row-2">
-            <button class="btn btn--primary grow zh" :disabled="!typed.trim()" @click="checkCorrection">檢查</button>
-            <button class="btn btn--ghost zh" @click="revealCorrection">看答案</button>
+            <button class="btn btn--primary grow zh" :disabled="!typed.trim() || judging" @click="checkCorrection">
+              {{ judging ? 'AI 批改中…' : '檢查' }}
+            </button>
+            <button class="btn btn--ghost zh" :disabled="judging" @click="revealCorrection">看答案</button>
           </div>
         </template>
 
@@ -284,13 +351,28 @@ onUnmounted(() => session.stopClock())
         <Transition name="slide-up">
           <div v-if="settled" class="fb" :class="answers.at(-1)?.correct ? 'fb--ok' : 'fb--no'">
             <div class="fb__head zh">
-              {{ answers.at(-1)?.correct ? '答對了' : '答錯了' }}
+              <span>{{ answers.at(-1)?.correct ? '答對了' : '答錯了' }}</span>
+              <span v-if="verdict?.source === 'ai'" class="fb__by zh">AI 批改</span>
             </div>
+
+            <!-- when the model accepted a wording that differs from the reference,
+                 say so explicitly instead of just showing the reference -->
+            <p v-if="verdict?.source === 'ai' && verdict.correct" class="fb__alt zh">
+              你的寫法也對。參考答案是另一種說法：
+            </p>
+
             <p v-if="drill.type !== 'choice'" class="fb__answer">
               {{ drill.answer }}
               <AudioButton :text="drill.answer" size="sm" />
             </p>
-            <p class="fb__explain zh">{{ drill.explain || drill.zh || '' }}</p>
+
+            <p v-if="verdict?.corrected && !verdict.correct" class="fb__corrected zh">
+              建議改成：<strong>{{ verdict.corrected }}</strong>
+            </p>
+
+            <p v-if="verdict?.explain" class="fb__explain zh">{{ verdict.explain }}</p>
+            <p v-if="drill.explain || drill.zh" class="fb__explain zh">{{ drill.explain || drill.zh }}</p>
+
             <button class="btn btn--primary btn--block zh" @click="next">
               {{ drillIndex + 1 < drills.length ? '下一題' : '看結果' }}
             </button>
@@ -483,7 +565,27 @@ onUnmounted(() => session.stopClock())
 }
 .fb--ok { background: var(--jade-wash); border-color: var(--jade-edge); }
 .fb--no { background: var(--rose-wash); border-color: var(--rose-edge); }
-.fb__head { font-weight: 700; font-size: var(--step-0); }
+.fb__head {
+  font-weight: 700; font-size: var(--step-0);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2);
+}
+.fb__by {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--violet-wash);
+  color: var(--violet);
+}
+.fb__alt { font-size: var(--step--1); color: var(--ink-2); }
+.fb__corrected {
+  font-size: var(--step--1);
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: var(--sp-2) var(--sp-3);
+}
+.fb__corrected strong { font-family: var(--font-word); font-weight: 600; }
 .fb--ok .fb__head { color: var(--jade); }
 .fb--no .fb__head { color: var(--rose); }
 .fb__answer {

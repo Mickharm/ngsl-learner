@@ -359,6 +359,7 @@ ${wordList}
 - used_words 列出你實際用到的上列單字（原形）。
 - 出 6 題選擇題，每題 4 個選項：2 題 vocab（考文中單字的語境意思）、2 題 detail（考細節理解）、1 題 grammar、1 題 inference（推論或情境判斷）。
 - 題目本身用英文（q），另附繁體中文翻譯（q_zh）；解析（explain_zh）一律繁體中文，說明為什麼對、為什麼其他選項錯。
+- explain_zh 提到選項時一律用字母（選項 A / 選項 B / 選項 C / 選項 D），**不要用數字**，因為畫面上標的是 A B C D。
 - 選項不要有明顯的長度或格式線索。${grammarLine}`
 
   const text = await withRetry(() => callGemini({
@@ -375,6 +376,62 @@ ${wordList}
          Number.isInteger(q.answer) && q.answer >= 0 && q.answer < q.options.length
   )
   return article
+}
+
+/* ------------------------------------------------------------------ *
+ * Sentence judging
+ *
+ * Grammar drills used to compare the learner's sentence to one reference
+ * answer as normalised strings. English does not work that way: "I will wait"
+ * and "I'll wait" are the same sentence, word order is often free, and a fix
+ * for the target error can be correct while differing from the model answer.
+ * Marking those wrong teaches the learner to guess the phrasing rather than
+ * the grammar. So: strict match first (free, offline, instant), and only when
+ * it fails do we ask the model whether the answer is nonetheless right.
+ * ------------------------------------------------------------------ */
+
+const JUDGE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    correct: { type: 'BOOLEAN', description: 'true if the learner sentence is grammatically correct AND fixes the target error AND keeps the intended meaning' },
+    severity: { type: 'STRING', description: 'none | minor | major — minor means a typo or punctuation slip only' },
+    explain_zh: { type: 'STRING', description: 'Traditional Chinese, one or two sentences. If wrong, say exactly what is wrong. If right but phrased differently from the reference, say so.' },
+    corrected: { type: 'STRING', description: 'The learner sentence with only the necessary fixes; empty if already correct' }
+  },
+  required: ['correct', 'severity', 'explain_zh']
+}
+
+const JUDGE_SYSTEM = `你是英文文法批改老師，學生是台灣工程師，程度 CEFR A2-B1。
+
+判定原則：
+1. 只要句子文法正確、修正了目標錯誤、意思沒跑掉，就算對——即使跟參考答案用字不同。
+2. 縮寫等同展開（I'll = I will、doesn't = does not），不影響對錯。
+3. 大小寫、句尾標點、多餘空白：severity 記 minor，但 correct 仍為 true。
+4. 意思改變、目標錯誤沒修好、或產生新的文法錯誤：correct = false。
+5. explain_zh 一律繁體中文，直接講哪裡錯、為什麼，不要客套。
+6. 若學生答案正確但和參考答案不同，明講「這樣寫也對」並簡短說明差異。`
+
+/**
+ * Judge a learner's sentence against a reference answer.
+ * @returns {Promise<{correct:boolean, severity:string, explain_zh:string, corrected?:string}>}
+ */
+export async function judgeSentence ({
+  learner, reference, task, targetError = '', key, model = DEFAULT_MODEL, signal
+} = {}) {
+  const prompt = `題目類型：${task}
+${targetError ? `原句（含錯誤）：${targetError}\n` : ''}參考答案：${reference}
+學生作答：${learner}
+
+判斷學生的答案是否正確。`
+
+  const text = await withRetry(() => callGemini({
+    key, model, signal,
+    systemInstruction: JUDGE_SYSTEM,
+    prompt,
+    schema: JUDGE_SCHEMA,
+    temperature: 0
+  }))
+  return parseJson(text)
 }
 
 /* ------------------------------------------------------------------ *

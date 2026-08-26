@@ -11,7 +11,10 @@
     "gen:words": "node scripts/generate-words.mjs",
     "smoke": "npm run build && node scripts/smoke.mjs",
     "deploy": "node scripts/deploy-pages.mjs",
-    "test:models": "node scripts/test-model-resolution.mjs"
+    "test:models": "node scripts/test-model-resolution.mjs",
+    "test:answer": "node scripts/test-answer.mjs",
+    "test:format": "node scripts/test-format.mjs",
+    "test": "npm run test:models && npm run test:answer && npm run test:format"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

@@ -12,6 +12,9 @@ import { useAuth } from '@/stores/auth'
 import { useToast } from '@/stores/toast'
 import SessionHeader from '@/components/SessionHeader.vue'
 import AudioButton from '@/components/AudioButton.vue'
+import TappableText from '@/components/TappableText.vue'
+import WordPopover from '@/components/WordPopover.vue'
+import { normalizeOptionRefs } from '@/lib/format'
 
 /**
  * Reading phase. One article per day, built from exactly the words the day
@@ -47,6 +50,10 @@ const qIndex = ref(0)
 const picks = ref([])
 const settled = ref(false)
 
+const popWord = ref(null)
+const popRect = ref(null)
+const popLoading = ref(false)
+
 const cacheKey = computed(() => `${todayKey()}:${topic.value}`)
 const dayWords = computed(() => words.getMany(session.dayWordIds).filter(w => w.enriched))
 const questions = computed(() => article.value?.questions || [])
@@ -55,15 +62,9 @@ const correctCount = computed(() =>
   picks.value.reduce((n, p, i) => n + (p === questions.value[i]?.answer ? 1 : 0), 0)
 )
 
-/** Words from today that actually appear in the text, for the glossary strip. */
-const usedWords = computed(() => {
-  if (!article.value) return []
-  const body = (article.value.body || '').toLowerCase()
-  return dayWords.value.filter(w => {
-    const stem = w.headword.length > 4 ? w.headword.slice(0, Math.ceil(w.headword.length * 0.7)) : w.headword
-    return body.includes(stem.toLowerCase())
-  })
-})
+/** Ids of the words today touched — highlighted in the prose so the learner
+ *  can see which ones this article was built around. */
+const dayWordIds = computed(() => session.dayWordIds)
 
 const paragraphs = computed(() => (article.value?.body || '').split(/\n{2,}/).filter(Boolean))
 const paragraphsZh = computed(() => (article.value?.body_zh || '').split(/\n{2,}/).filter(Boolean))
@@ -120,6 +121,7 @@ async function generate (force = false) {
     })
 
     article.value = result
+    picks.value = []          // a new article means the old answers are meaningless
     await idbPut(STORE.ARTICLES, { key: cacheKey.value, payload: result })
 
     if (auth.userId) {
@@ -143,12 +145,33 @@ async function generate (force = false) {
   }
 }
 
+/** Tapping a word in the article opens its card, enriching it if needed. */
+async function openWord ({ id, rect }) {
+  popRect.value = rect
+  popWord.value = words.get(id)
+  if (popWord.value?.enriched || !settings.hasGeminiKey) return
+  popLoading.value = true
+  try {
+    await words.ensureEnriched([id])
+    popWord.value = words.get(id)
+  } catch { /* the card already says the data is missing */ }
+  finally { popLoading.value = false }
+}
+
+/**
+ * Resume rather than restart. Going back to re-read the article used to throw
+ * away every answer already given, which made checking a detail cost the whole
+ * quiz — so nobody checked.
+ */
 function startQuiz () {
-  qIndex.value = 0
-  picks.value = []
-  settled.value = false
+  const firstUnanswered = questions.value.findIndex((_, i) => picks.value[i] === undefined)
+  qIndex.value = firstUnanswered === -1 ? questions.value.length - 1 : firstUnanswered
+  settled.value = picks.value[qIndex.value] !== undefined
   state.value = 'quiz'
 }
+
+/** Answered so far, for the resume label. */
+const answeredCount = computed(() => questions.value.filter((_, i) => picks.value[i] !== undefined).length)
 
 function pick (i) {
   if (settled.value) return
@@ -167,7 +190,7 @@ function pick (i) {
 function nextQuestion () {
   if (qIndex.value + 1 < questions.value.length) {
     qIndex.value++
-    settled.value = false
+    settled.value = picks.value[qIndex.value] !== undefined
   } else {
     finishQuiz()
   }
@@ -258,26 +281,19 @@ onUnmounted(() => session.stopClock())
         </div>
       </header>
 
+      <p class="art__tip zh">點任何一個字看翻譯、音標和例句</p>
+
       <article class="art__body">
         <div v-for="(p, i) in paragraphs" :key="i" class="para">
-          <p class="para__en">{{ p }}</p>
+          <TappableText :text="p" :highlight-ids="dayWordIds" @word="openWord" />
           <p v-if="showTranslation && paragraphsZh[i]" class="para__zh zh">{{ paragraphsZh[i] }}</p>
         </div>
       </article>
 
-      <section v-if="usedWords.length" class="gloss">
-        <div class="eyebrow">今日單字出現在文中</div>
-        <div class="gloss__list">
-          <div v-for="w in usedWords" :key="w.id" class="gloss__item">
-            <span class="gloss__en">{{ w.headword }}</span>
-            <span class="gloss__zh zh">{{ w.meanings?.[0]?.zh }}</span>
-            <AudioButton :text="w.headword" size="sm" />
-          </div>
-        </div>
-      </section>
-
       <button class="btn btn--primary btn--block zh" @click="startQuiz">
-        開始作答（{{ questions.length }} 題）
+        {{ answeredCount
+          ? `繼續作答（已答 ${answeredCount}/${questions.length}）`
+          : `開始作答（${questions.length} 題）` }}
       </button>
       <button class="btn btn--quiet btn--sm art__skip zh" @click="skipPhase">跳過這個階段</button>
     </main>
@@ -314,7 +330,7 @@ onUnmounted(() => session.stopClock())
       <Transition name="slide-up">
         <div v-if="settled" class="fb" :class="picks[qIndex] === question.answer ? 'fb--ok' : 'fb--no'">
           <div class="fb__head zh">{{ picks[qIndex] === question.answer ? '答對了' : '答錯了' }}</div>
-          <p class="fb__explain zh">{{ question.explain_zh }}</p>
+          <p class="fb__explain zh">{{ normalizeOptionRefs(question.explain_zh) }}</p>
           <button class="btn btn--primary btn--block zh" @click="nextQuestion">
             {{ qIndex + 1 < questions.length ? '下一題' : '看結果' }}
           </button>
@@ -344,16 +360,25 @@ onUnmounted(() => session.stopClock())
             <span class="rq__q">{{ q.q }}</span>
           </div>
           <p class="rq__ans zh">
-            正解：<strong>{{ q.options[q.answer] }}</strong>
-            <template v-if="picks[i] !== q.answer"> · 你選了 {{ q.options[picks[i]] }}</template>
+            正解：<strong>{{ 'ABCD'[q.answer] }}. {{ q.options[q.answer] }}</strong>
+            <template v-if="picks[i] !== q.answer && picks[i] !== undefined">
+              · 你選了 {{ 'ABCD'[picks[i]] }}. {{ q.options[picks[i]] }}
+            </template>
+            <template v-else-if="picks[i] === undefined"> · 未作答</template>
           </p>
-          <p class="rq__ex zh">{{ q.explain_zh }}</p>
+          <p class="rq__ex zh">{{ normalizeOptionRefs(q.explain_zh) }}</p>
         </div>
       </div>
 
       <button class="btn btn--primary btn--block zh" @click="done">完成，看今日結算</button>
       <button class="btn btn--ghost btn--block zh" @click="state = 'reading'">再讀一次文章</button>
     </main>
+    <WordPopover
+      :word="popWord"
+      :rect="popRect"
+      :loading="popLoading"
+      @close="popWord = null"
+    />
   </div>
 </template>
 
@@ -420,17 +445,13 @@ onUnmounted(() => session.stopClock())
   border-left: 2px solid var(--rule);
 }
 
-/* glossary */
-.gloss {
+.art__tip {
+  font-size: var(--step--2);
+  color: var(--ink-3);
+  padding: var(--sp-2) var(--sp-3);
   background: var(--surface-2);
-  border-radius: var(--radius);
-  padding: var(--sp-3) var(--sp-4);
-  display: flex; flex-direction: column; gap: var(--sp-2);
+  border-radius: var(--radius-sm);
 }
-.gloss__list { display: flex; flex-direction: column; gap: var(--sp-1); }
-.gloss__item { display: flex; align-items: center; gap: var(--sp-3); padding: 3px 0; }
-.gloss__en { font-family: var(--font-word); font-size: var(--step-0); font-weight: 500; min-width: 100px; }
-.gloss__zh { flex: 1; font-size: var(--step--1); color: var(--ink-2); }
 
 /* quiz shared with grammar */
 .phase-tag { display: flex; align-items: center; gap: var(--sp-2); }

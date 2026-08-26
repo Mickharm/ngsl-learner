@@ -318,7 +318,11 @@ if (await page.locator('button:has-text("看答案")').first().isVisible().catch
   }
   await shot('08-learn-recall')
   for (let i = 0; i < 40; i++) {
-    const o = page.locator('.ropt:not([disabled])').first()
+    // Deliberately miss the first one: a wrong answer on a brand-new card is
+    // what exposed the badge/notebook mismatch (lapses stays 0 there).
+    const o = i === 0
+      ? page.locator('.ropt:not([disabled])').last()
+      : page.locator('.ropt:not([disabled])').first()
     if (!(await o.isVisible({ timeout: 2500 }).catch(() => false))) break
     await o.click().catch(() => {})
     await page.waitForTimeout(750)
@@ -361,9 +365,43 @@ if (await page.locator('button:has-text("開始練習")').first().isVisible().ca
 await page.goto(URL_BASE + '#/article', { waitUntil: 'networkidle' })
 await page.waitForTimeout(1800)
 await shot('15-article')
+
+// tapping a word in the prose must open its card
+const tappable = page.locator('.tt__w')
+const tappableCount = await tappable.count().catch(() => 0)
+if (tappableCount) {
+  await tappable.nth(Math.min(3, tappableCount - 1)).click().catch(() => {})
+  await page.waitForTimeout(900)
+  const popped = await page.locator('.pop').isVisible().catch(() => false)
+  checks.push(['tapping a word in the article opens its card', popped, `tappable=${tappableCount}`])
+  await shot('15b-article-word-popover')
+  await page.locator('.pop__x').click().catch(() => {})
+  await page.waitForTimeout(300)
+} else {
+  checks.push(['tapping a word in the article opens its card', false, 'no tappable words rendered'])
+}
+
 if (await page.locator('button:has-text("開始作答")').first().isVisible().catch(() => false)) {
   await tap('button:has-text("開始作答")')
   await shot('16-article-quiz')
+
+  // answering, leaving to re-read, and coming back must keep the answers
+  await page.locator('.opt').first().click().catch(() => {})
+  await page.waitForTimeout(700)
+  await page.locator('.fb button:has-text("下一題")').first().click().catch(() => {})
+  await page.waitForTimeout(400)
+  await page.locator('.opt').first().click().catch(() => {})
+  await page.waitForTimeout(700)
+
+  await page.locator('button:has-text("回去看文章")').first().click().catch(() => {})
+  await page.waitForTimeout(600)
+  const resumeLabel = await page.locator('button:has-text("繼續作答")').first().innerText().catch(() => '')
+  checks.push([
+    'article quiz resumes instead of restarting',
+    /繼續作答（已答\s*2\//.test(resumeLabel.replace(/\s+/g, '')) || /繼續作答/.test(resumeLabel),
+    `button="${resumeLabel.replace(/\s+/g, ' ')}"`
+  ])
+  await shot('16b-article-resume')
 }
 
 // remaining screens
@@ -371,6 +409,24 @@ for (const [route, name] of [['#/errors', '17-errors'], ['#/stats', '18-stats'],
   await page.goto(URL_BASE + route, { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
   await shot(name)
+
+  if (route === '#/errors') {
+    const badge = Number((await page.locator('.tab__badge').first().innerText().catch(() => '0')) || 0)
+    const tabs = await page.locator('.seg__btn .num').allInnerTexts().catch(() => [])
+    const listed = tabs.reduce((a, t) => a + (Number(t) || 0), 0)
+    const rows = await page.locator('.titem').count().catch(() => 0)
+
+    checks.push([
+      'mistake badge equals what the page lists',
+      badge === listed,
+      `badge=${badge} tabs=${tabs.join('+')} (=${listed})`
+    ])
+    checks.push([
+      'a wrong answer on a new word actually appears',
+      badge === 0 || rows > 0,
+      `badge=${badge} word rows=${rows}`
+    ])
+  }
 }
 
 // horizontal-overflow check on every screen
