@@ -249,13 +249,20 @@ await shot('02-placement-intro')
 await tap('button:has-text("開始測驗")')
 await shot('03-placement-test')
 
-// answer 48 probes
-for (let i = 0; i < 48; i++) {
-  const yes = page.locator('button:has-text("認識")').first()
-  const no = page.locator('button:has-text("不認識")').first()
-  if (!(await yes.isVisible().catch(() => false))) break
-  await (i % 3 === 2 ? no : yes).click()
-  await page.waitForTimeout(45)
+// answer 48 probes: claim, see the answer, then confirm
+let revealShot = false
+for (let i = 0; i < 60; i++) {
+  const claimBtn = page.locator(i % 3 === 2 ? '.probe__no' : '.probe__yes').first()
+  if (!(await claimBtn.isVisible({ timeout: 2000 }).catch(() => false))) break
+  await claimBtn.click().catch(() => {})
+  await page.waitForTimeout(140)
+  if (!revealShot) { await shot('03b-placement-answer-shown'); revealShot = true }
+  const confirm = page.locator('.probe__confirm .btn--primary').first()
+  if (await confirm.isVisible({ timeout: 2500 }).catch(() => false)) {
+    await confirm.click().catch(() => {})
+    await page.waitForTimeout(120)
+  }
+  if (await page.locator('.opt-card').first().isVisible({ timeout: 300 }).catch(() => false)) break
 }
 await shot('04-placement-result')
 
