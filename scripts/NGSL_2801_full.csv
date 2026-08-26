@@ -1,0 +1,2802 @@
+﻿rank,band,headword,family_size,word_family
+1,B1 (1-1000),be,18,am | m | is | isn | s | are | re | aren | ain | been | was | wasn | were | weren | being | bein | beings
+2,B1 (1-1000),and,2,ands
+3,B1 (1-1000),of,1,
+4,B1 (1-1000),to,1,
+5,B1 (1-1000),a,2,an
+6,B1 (1-1000),in,2,ins
+7,B1 (1-1000),have,10,haven | ve | has | hasn | had | hadn | d | having | hafta
+8,B1 (1-1000),it,2,its
+9,B1 (1-1000),you,5,y | ye | your | yours
+10,B1 (1-1000),he,4,him | im | his
+11,B1 (1-1000),for,1,
+12,B1 (1-1000),they,5,them | em | their | theirs
+13,B1 (1-1000),not,2,t
+14,B1 (1-1000),that,2,those
+15,B1 (1-1000),we,4,us | our | ours
+16,B1 (1-1000),on,1,
+17,B1 (1-1000),with,1,
+18,B1 (1-1000),this,2,these
+19,B1 (1-1000),i,3,me | my
+20,B1 (1-1000),do,9,does | don | doesn | did | didn | doing | done | doin
+21,B1 (1-1000),as,1,
+22,B1 (1-1000),at,1,
+23,B1 (1-1000),she,3,her | hers
+24,B1 (1-1000),but,2,buts
+25,B1 (1-1000),from,1,
+26,B1 (1-1000),by,1,
+27,B1 (1-1000),will,6,wills | willed | willing | won | ll
+28,B1 (1-1000),or,1,
+29,B1 (1-1000),say,5,says | said | saying | sayings
+30,B1 (1-1000),go,7,goes | went | going | gone | goin | gonna
+31,B1 (1-1000),so,1,
+32,B1 (1-1000),all,1,
+33,B1 (1-1000),if,2,ifs
+34,B1 (1-1000),one,2,ones
+35,B1 (1-1000),would,2,wouldn
+36,B1 (1-1000),about,1,
+37,B1 (1-1000),can,5,cans | canned | canning | cannot
+38,B1 (1-1000),which,1,
+39,B1 (1-1000),there,1,
+40,B1 (1-1000),know,5,knows | knew | knowing | known
+41,B1 (1-1000),more,1,
+42,B1 (1-1000),get,7,gets | got | getting | gotten | gettin | gotta
+43,B1 (1-1000),who,3,whom | whose
+44,B1 (1-1000),like,4,likes | liked | liking
+45,B1 (1-1000),when,1,
+46,B1 (1-1000),think,5,thinks | thought | thinking | thoughts
+47,B1 (1-1000),make,4,makes | made | making
+48,B1 (1-1000),time,4,times | timed | timing
+49,B1 (1-1000),see,5,sees | saw | seeing | seen
+50,B1 (1-1000),what,1,
+51,B1 (1-1000),up,4,ups | upped | upping
+52,B1 (1-1000),some,1,
+53,B1 (1-1000),other,2,others
+54,B1 (1-1000),out,5,outs | outed | outing | outings
+55,B1 (1-1000),good,2,goodest
+56,B1 (1-1000),people,4,peoples | peopled | peopling
+57,B1 (1-1000),year,2,years
+58,B1 (1-1000),take,5,takes | took | taking | taken
+59,B1 (1-1000),no,1,
+60,B1 (1-1000),well,4,wells | welled | welling
+61,B1 (1-1000),because,2,cos
+62,B1 (1-1000),very,1,
+63,B1 (1-1000),just,1,
+64,B1 (1-1000),come,5,comes | came | coming | cometh
+65,B1 (1-1000),could,3,couldn | coulda
+66,B1 (1-1000),work,5,works | worked | working | workings
+67,B1 (1-1000),use,4,uses | used | using
+68,B1 (1-1000),than,1,
+69,B1 (1-1000),now,1,
+70,B1 (1-1000),then,1,
+71,B1 (1-1000),also,1,
+72,B1 (1-1000),into,1,
+73,B1 (1-1000),only,1,
+74,B1 (1-1000),look,4,looks | looked | looking
+75,B1 (1-1000),want,5,wants | wanted | wanting | wanna
+76,B1 (1-1000),give,5,gives | gave | giving | given
+77,B1 (1-1000),first,2,firsts
+78,B1 (1-1000),new,3,newer | newest
+79,B1 (1-1000),way,2,ways
+80,B1 (1-1000),find,4,finds | finding | findings
+81,B1 (1-1000),over,2,overs
+82,B1 (1-1000),any,1,
+83,B1 (1-1000),after,1,
+84,B1 (1-1000),day,2,days
+85,B1 (1-1000),where,1,
+86,B1 (1-1000),thing,2,things
+87,B1 (1-1000),most,1,
+88,B1 (1-1000),should,3,shouldn | shoulda
+89,B1 (1-1000),need,4,needs | needed | needing
+90,B1 (1-1000),much,1,
+91,B1 (1-1000),right,5,rights | righted | righting | righter
+92,B1 (1-1000),how,2,hows
+93,B1 (1-1000),back,4,backs | backed | backing
+94,B1 (1-1000),mean,7,means | meaning | meant | meanings | meaner | meanest
+95,B1 (1-1000),even,3,evens | evened
+96,B1 (1-1000),may,1,
+97,B1 (1-1000),here,1,
+98,B1 (1-1000),many,1,
+99,B1 (1-1000),such,1,
+100,B1 (1-1000),last,4,lasts | lasted | lasting
+101,B1 (1-1000),child,2,children
+102,B1 (1-1000),tell,4,tells | told | telling
+103,B1 (1-1000),really,1,
+104,B1 (1-1000),call,4,calls | called | calling
+105,B1 (1-1000),before,1,
+106,B1 (1-1000),company,2,companies
+107,B1 (1-1000),through,1,
+108,B1 (1-1000),down,4,downs | downed | downing
+109,B1 (1-1000),show,5,shows | showed | showing | shown
+110,B1 (1-1000),life,1,
+111,B1 (1-1000),man,5,mans | manned | manning | men
+112,B1 (1-1000),change,4,changes | changed | changing
+113,B1 (1-1000),place,4,places | placed | placing
+114,B1 (1-1000),long,6,longs | longed | longing | longer | longest
+115,B1 (1-1000),between,1,
+116,B1 (1-1000),feel,5,feels | felt | feeling | feelings
+117,B1 (1-1000),too,1,
+118,B1 (1-1000),still,6,stills | stilled | stilling | stiller | stillest
+119,B1 (1-1000),problem,2,problems
+120,B1 (1-1000),write,6,writes | wrote | writing | written | writings
+121,B1 (1-1000),same,1,
+122,B1 (1-1000),lot,2,lots
+123,B1 (1-1000),great,4,greater | greatest | greats
+124,B1 (1-1000),try,4,tries | tried | trying
+125,B1 (1-1000),leave,5,leaves | leaved | leaving | leavings
+126,B1 (1-1000),number,5,numbers | numbered | numbering | numberings
+127,B1 (1-1000),both,1,
+128,B1 (1-1000),own,4,owns | owned | owning
+129,B1 (1-1000),part,4,parts | parted | parting
+130,B1 (1-1000),point,4,points | pointed | pointing
+131,B1 (1-1000),little,3,littler | littlest
+132,B1 (1-1000),help,5,helps | helped | helping | helpings
+133,B1 (1-1000),ask,4,asks | asked | asking
+134,B1 (1-1000),meet,5,meets | meeting | met | meetings
+135,B1 (1-1000),start,4,starts | started | starting
+136,B1 (1-1000),talk,4,talks | talked | talking
+137,B1 (1-1000),something,1,
+138,B1 (1-1000),put,4,puts | putted | putting
+139,B1 (1-1000),another,1,
+140,B1 (1-1000),become,4,becomes | became | becoming
+141,B1 (1-1000),interest,4,interests | interested | interesting
+142,B1 (1-1000),country,2,countries
+143,B1 (1-1000),old,4,older | oldest | olds
+144,B1 (1-1000),each,1,
+145,B1 (1-1000),school,5,schools | schooled | schooling | schoolings
+146,B1 (1-1000),late,3,later | latest
+147,B1 (1-1000),high,4,higher | highest | highs
+148,B1 (1-1000),different,1,
+149,B1 (1-1000),off,4,offs | offed | offing
+150,B1 (1-1000),next,1,
+151,B1 (1-1000),end,4,ends | ended | ending
+152,B1 (1-1000),live,4,lives | lived | living
+153,B1 (1-1000),why,1,
+154,B1 (1-1000),while,4,whiles | whiled | whiling
+155,B1 (1-1000),world,2,worlds
+156,B1 (1-1000),week,2,weeks
+157,B1 (1-1000),play,4,plays | played | playing
+158,B1 (1-1000),might,3,mightn | mighta
+159,B1 (1-1000),must,3,mustn | musta
+160,B1 (1-1000),home,4,homes | homed | homing
+161,B1 (1-1000),never,1,
+162,B1 (1-1000),include,4,includes | included | including
+163,B1 (1-1000),course,4,courses | coursed | coursing
+164,B1 (1-1000),house,5,houses | housed | housing | housings
+165,B1 (1-1000),report,4,reports | reported | reporting
+166,B1 (1-1000),group,4,groups | grouped | grouping
+167,B1 (1-1000),case,5,cases | cased | casing | casings
+168,B1 (1-1000),woman,2,women
+169,B1 (1-1000),around,1,
+170,B1 (1-1000),book,5,books | booked | booking | bookings
+171,B1 (1-1000),family,2,families
+172,B1 (1-1000),seem,4,seems | seemed | seeming
+173,B1 (1-1000),let,5,lets | letting | lemme | lettings
+174,B1 (1-1000),again,1,
+175,B1 (1-1000),kind,4,kinds | kinder | kindest
+176,B1 (1-1000),keep,4,keeps | keeping | kept
+177,B1 (1-1000),hear,5,hears | heard | hearing | hearings
+178,B1 (1-1000),system,2,systems
+179,B1 (1-1000),every,1,
+180,B1 (1-1000),question,5,questions | questioned | questioning | questionings
+181,B1 (1-1000),during,1,
+182,B1 (1-1000),always,1,
+183,B1 (1-1000),big,3,bigger | biggest
+184,B1 (1-1000),set,4,sets | setting | settings
+185,B1 (1-1000),small,3,smaller | smallest
+186,B1 (1-1000),study,4,studies | studied | studying
+187,B1 (1-1000),follow,5,follows | followed | following | followings
+188,B1 (1-1000),begin,6,begins | began | beginning | begun | beginnings
+189,B1 (1-1000),important,1,
+190,B1 (1-1000),since,1,
+191,B1 (1-1000),run,4,runs | ran | running
+192,B1 (1-1000),under,1,
+193,B1 (1-1000),turn,4,turns | turned | turning
+194,B1 (1-1000),few,3,fewer | fewest
+195,B1 (1-1000),bring,4,brings | brought | bringing
+196,B1 (1-1000),early,3,earlier | earliest
+197,B1 (1-1000),hand,4,hands | handed | handing
+198,B1 (1-1000),state,4,states | stated | stating
+199,B1 (1-1000),move,4,moves | moved | moving
+200,B1 (1-1000),money,2,moneys
+201,B1 (1-1000),fact,2,facts
+202,B1 (1-1000),however,1,
+203,B1 (1-1000),area,2,areas
+204,B1 (1-1000),provide,4,provides | provided | providing
+205,B1 (1-1000),name,4,names | named | naming
+206,B1 (1-1000),read,4,reads | reading | readings
+207,B1 (1-1000),friend,2,friends
+208,B1 (1-1000),month,2,months
+209,B1 (1-1000),large,3,larger | largest
+210,B1 (1-1000),business,2,businesses
+211,B1 (1-1000),without,1,
+212,B1 (1-1000),information,1,
+213,B1 (1-1000),open,5,opens | opened | opening | openings
+214,B1 (1-1000),order,4,orders | ordered | ordering
+215,B1 (1-1000),government,2,governments
+216,B1 (1-1000),word,5,words | worded | wording | wordings
+217,B1 (1-1000),issue,4,issues | issued | issuing
+218,B1 (1-1000),market,4,markets | marketed | marketing
+219,B1 (1-1000),pay,4,pays | paid | paying
+220,B1 (1-1000),build,5,builds | building | buildings | built
+221,B1 (1-1000),hold,5,holds | held | holding | holdings
+222,B1 (1-1000),service,4,services | serviced | servicing
+223,B1 (1-1000),against,1,
+224,B1 (1-1000),believe,4,believes | believed | believing
+225,B1 (1-1000),second,5,seconds | seconded | seconding | sec
+226,B1 (1-1000),though,1,
+227,B1 (1-1000),yes,2,yeses
+228,B1 (1-1000),love,4,loves | loved | loving
+229,B1 (1-1000),increase,4,increases | increased | increasing
+230,B1 (1-1000),job,3,jobs | jobbing
+231,B1 (1-1000),plan,4,plans | planned | planning
+232,B1 (1-1000),result,4,results | resulted | resulting
+233,B1 (1-1000),away,1,
+234,B1 (1-1000),example,2,examples
+235,B1 (1-1000),happen,5,happens | happened | happening | happenings
+236,B1 (1-1000),offer,5,offers | offered | offering | offerings
+237,B1 (1-1000),young,3,younger | youngest
+238,B1 (1-1000),close,6,closes | closed | closing | closer | closest
+239,B1 (1-1000),program,8,programs | programmed | programming | programme | programmes | programed | programing
+240,B1 (1-1000),lead,4,leads | led | leading
+241,B1 (1-1000),buy,4,buys | bought | buying
+242,B1 (1-1000),understand,5,understands | understood | understanding | understandings
+243,B1 (1-1000),thank,4,thanks | thanked | thanking
+244,B1 (1-1000),far,3,farther | farthest
+245,B1 (1-1000),today,1,
+246,B1 (1-1000),hour,2,hours
+247,B1 (1-1000),student,2,students
+248,B1 (1-1000),face,4,faces | faced | facing
+249,B1 (1-1000),hope,4,hopes | hoped | hoping
+250,B1 (1-1000),idea,2,ideas
+251,B1 (1-1000),cost,3,costs | costing
+252,B1 (1-1000),less,1,
+253,B1 (1-1000),room,4,rooms | roomed | rooming
+254,B1 (1-1000),until,2,til
+255,B1 (1-1000),reason,4,reasons | reasoned | reasoning
+256,B1 (1-1000),form,4,forms | formed | forming
+257,B1 (1-1000),spend,4,spends | spending | spent
+258,B1 (1-1000),head,5,heads | headed | heading | headings
+259,B1 (1-1000),car,2,cars
+260,B1 (1-1000),learn,5,learns | learned | learning | learnt
+261,B1 (1-1000),level,6,levels | leveled | leveling | levelled | levelling
+262,B1 (1-1000),person,2,persons
+263,B1 (1-1000),experience,4,experiences | experienced | experiencing
+264,B1 (1-1000),once,1,
+265,B1 (1-1000),member,2,members
+266,B1 (1-1000),enough,1,
+267,B1 (1-1000),bad,4,worse | worst | baddest
+268,B1 (1-1000),city,2,cities
+269,B1 (1-1000),night,2,nights
+270,B1 (1-1000),able,3,abler | ablest
+271,B1 (1-1000),support,4,supports | supported | supporting
+272,B1 (1-1000),whether,1,
+273,B1 (1-1000),line,4,lines | lined | lining
+274,B1 (1-1000),present,4,presents | presented | presenting
+275,B1 (1-1000),side,5,sides | sided | siding | sidings
+276,B1 (1-1000),quite,1,
+277,B1 (1-1000),although,1,
+278,B1 (1-1000),sure,3,surer | surest
+279,B1 (1-1000),term,4,terms | termed | terming
+280,B1 (1-1000),least,1,
+281,B1 (1-1000),age,5,ages | aged | aging | ageing
+282,B1 (1-1000),low,9,lows | lowed | lowing | lower | lowest | lowers | lowered | lowering
+283,B1 (1-1000),speak,5,speaks | spoke | speaking | spoken
+284,B1 (1-1000),within,1,
+285,B1 (1-1000),process,4,processes | processed | processing
+286,B1 (1-1000),public,2,publics
+287,B1 (1-1000),often,1,
+288,B1 (1-1000),train,5,trains | trained | training | trainings
+289,B1 (1-1000),possible,1,
+290,B1 (1-1000),actually,1,
+291,B1 (1-1000),rather,1,
+292,B1 (1-1000),view,4,views | viewed | viewing
+293,B1 (1-1000),together,1,
+294,B1 (1-1000),consider,4,considers | considered | considering
+295,B1 (1-1000),price,5,prices | priced | pricing | pricings
+296,B1 (1-1000),parent,4,parents | parented | parenting
+297,B1 (1-1000),hard,3,harder | hardest
+298,B1 (1-1000),party,4,parties | partied | partying
+299,B1 (1-1000),local,2,locals
+300,B1 (1-1000),control,4,controls | controlled | controlling
+301,B1 (1-1000),already,1,
+302,B1 (1-1000),concern,4,concerns | concerned | concerning
+303,B1 (1-1000),product,2,products
+304,B1 (1-1000),lose,4,loses | lost | losing
+305,B1 (1-1000),story,5,stories | storied | storey | storys
+306,B1 (1-1000),almost,1,
+307,B1 (1-1000),continue,4,continues | continued | continuing
+308,B1 (1-1000),stand,4,stands | stood | standing
+309,B1 (1-1000),whole,2,wholes
+310,B1 (1-1000),yet,1,
+311,B1 (1-1000),rate,5,rates | rated | rating | ratings
+312,B1 (1-1000),care,4,cares | cared | caring
+313,B1 (1-1000),expect,4,expects | expected | expecting
+314,B1 (1-1000),effect,4,effects | effected | effecting
+315,B1 (1-1000),sort,4,sorts | sorted | sorting
+316,B1 (1-1000),ever,1,
+317,B1 (1-1000),anything,1,
+318,B1 (1-1000),cause,4,causes | caused | causing
+319,B1 (1-1000),fall,5,falls | fell | falling | fallen
+320,B1 (1-1000),deal,4,deals | dealing | dealt
+321,B1 (1-1000),water,4,waters | watered | watering
+322,B1 (1-1000),send,4,sends | sending | sent
+323,B1 (1-1000),allow,4,allows | allowed | allowing
+324,B1 (1-1000),soon,3,sooner | soonest
+325,B1 (1-1000),watch,4,watches | watched | watching
+326,B1 (1-1000),base,6,bases | based | basing | baser | basest
+327,B1 (1-1000),probably,1,
+328,B1 (1-1000),suggest,4,suggests | suggested | suggesting
+329,B1 (1-1000),past,1,
+330,B1 (1-1000),power,4,powers | powered | powering
+331,B1 (1-1000),test,4,tests | tested | testing
+332,B1 (1-1000),visit,4,visits | visited | visiting
+333,B1 (1-1000),center,7,centers | centered | centering | centre | centres | centred
+334,B1 (1-1000),grow,5,grows | grew | growing | grown
+335,B1 (1-1000),nothing,1,
+336,B1 (1-1000),return,4,returns | returned | returning
+337,B1 (1-1000),mother,4,mothers | mothered | mothering
+338,B1 (1-1000),walk,4,walks | walked | walking
+339,B1 (1-1000),matter,4,matters | mattered | mattering
+340,B1 (1-1000),mind,4,minds | minded | minding
+341,B1 (1-1000),value,4,values | valued | valuing
+342,B1 (1-1000),office,2,offices
+343,B1 (1-1000),record,5,records | recorded | recording | recordings
+344,B1 (1-1000),stay,4,stays | stayed | staying
+345,B1 (1-1000),force,4,forces | forced | forcing
+346,B1 (1-1000),stop,4,stops | stopped | stopping
+347,B1 (1-1000),several,1,
+348,B1 (1-1000),light,6,lights | lighted | lit | lighting | lightest
+349,B1 (1-1000),develop,4,develops | developed | developing
+350,B1 (1-1000),remember,4,remembers | remembered | remembering
+351,B1 (1-1000),bit,3,bits | bitted
+352,B1 (1-1000),share,4,shares | shared | sharing
+353,B1 (1-1000),real,2,realer
+354,B1 (1-1000),answer,4,answers | answered | answering
+355,B1 (1-1000),sit,4,sits | sat | sitting
+356,B1 (1-1000),figure,4,figures | figured | figuring
+357,B1 (1-1000),letter,4,letters | lettering | letterings
+358,B1 (1-1000),decide,4,decides | decided | deciding
+359,B1 (1-1000),language,2,languages
+360,B1 (1-1000),subject,4,subjects | subjected | subjecting
+361,B1 (1-1000),class,4,classes | classed | classing
+362,B1 (1-1000),development,2,developments
+363,B1 (1-1000),town,2,towns
+364,B1 (1-1000),half,4,halves | halved | halving
+365,B1 (1-1000),minute,2,minutes
+366,B1 (1-1000),food,2,foods
+367,B1 (1-1000),break,5,breaks | broke | breaking | broken
+368,B1 (1-1000),clear,6,clears | cleared | clearing | clearer | clearest
+369,B1 (1-1000),future,2,futures
+370,B1 (1-1000),either,1,
+371,B1 (1-1000),ago,1,
+372,B1 (1-1000),per,1,
+373,B1 (1-1000),remain,4,remains | remained | remaining
+374,B1 (1-1000),top,5,tops | topped | topping | toppings
+375,B1 (1-1000),among,1,
+376,B1 (1-1000),win,4,wins | winning | winnings
+377,B1 (1-1000),color,9,colors | colored | coloring | colorings | colour | colours | coloured | colouring
+378,B1 (1-1000),involve,4,involves | involved | involving
+379,B1 (1-1000),reach,4,reaches | reached | reaching
+380,B1 (1-1000),social,2,socials
+381,B1 (1-1000),period,2,periods
+382,B1 (1-1000),across,1,
+383,B1 (1-1000),note,4,notes | noted | noting
+384,B1 (1-1000),history,2,histories
+385,B1 (1-1000),create,4,creates | created | creating
+386,B1 (1-1000),drive,5,drives | drove | driving | driven
+387,B1 (1-1000),along,1,
+388,B1 (1-1000),type,4,types | typed | typing
+389,B1 (1-1000),sound,4,sounds | sounded | sounding
+390,B1 (1-1000),eye,4,eyes | eyed | eyeing
+391,B1 (1-1000),music,1,
+392,B1 (1-1000),game,4,games | gamed | gaming
+393,B1 (1-1000),political,1,
+394,B1 (1-1000),free,6,frees | freed | freeing | freer | freest
+395,B1 (1-1000),receive,4,receives | received | receiving
+396,B1 (1-1000),moment,2,moments
+397,B1 (1-1000),sale,2,sales
+398,B1 (1-1000),policy,2,policies
+399,B1 (1-1000),further,4,furthers | furthered | furthering
+400,B1 (1-1000),body,4,bodies | bodied | bodying
+401,B1 (1-1000),require,4,requires | required | requiring
+402,B1 (1-1000),wait,4,waits | waited | waiting
+403,B1 (1-1000),general,2,generals
+404,B1 (1-1000),appear,4,appears | appeared | appearing
+405,B1 (1-1000),toward,2,towards
+406,B1 (1-1000),team,4,teams | teamed | teaming
+407,B1 (1-1000),easy,3,easier | easiest
+408,B1 (1-1000),individual,2,individuals
+409,B1 (1-1000),full,3,fuller | fullest
+410,B1 (1-1000),black,6,blacks | blacked | blacking | blacker | blackest
+411,B1 (1-1000),sense,4,senses | sensed | sensing
+412,B1 (1-1000),perhaps,1,
+413,B1 (1-1000),add,4,adds | added | adding
+414,B1 (1-1000),rule,5,rules | ruled | ruling | rulings
+415,B1 (1-1000),pass,4,passes | passed | passing
+416,B1 (1-1000),produce,4,produces | produced | producing
+417,B1 (1-1000),sell,4,sells | sold | selling
+418,B1 (1-1000),short,6,shorts | shorted | shorting | shorter | shortest
+419,B1 (1-1000),agree,4,agrees | agreed | agreeing
+420,B1 (1-1000),law,2,laws
+421,B1 (1-1000),everything,1,
+422,B1 (1-1000),research,4,researches | researched | researching
+423,B1 (1-1000),cover,5,covers | covered | covering | coverings
+424,B1 (1-1000),paper,4,papers | papered | papering
+425,B1 (1-1000),position,4,positions | positioned | positioning
+426,B1 (1-1000),near,6,nears | neared | nearing | nearer | nearest
+427,B1 (1-1000),human,2,humans
+428,B1 (1-1000),computer,2,computers
+429,B1 (1-1000),situation,2,situations
+430,B1 (1-1000),staff,4,staffs | staffed | staffing
+431,B1 (1-1000),activity,2,activities
+432,B1 (1-1000),film,4,films | filmed | filming
+433,B1 (1-1000),morning,2,mornings
+434,B1 (1-1000),war,4,wars | warred | warring
+435,B1 (1-1000),account,4,accounts | accounted | accounting
+436,B1 (1-1000),shop,4,shops | shopped | shopping
+437,B1 (1-1000),major,4,majors | majored | majoring
+438,B1 (1-1000),someone,1,
+439,B1 (1-1000),above,1,
+440,B1 (1-1000),design,4,designs | designed | designing
+441,B1 (1-1000),event,2,events
+442,B1 (1-1000),special,2,specials
+443,B1 (1-1000),sometimes,1,
+444,B1 (1-1000),condition,5,conditions | conditioned | conditioning | conditionings
+445,B1 (1-1000),carry,4,carries | carried | carrying
+446,B1 (1-1000),choose,5,chooses | chose | choosing | chosen
+447,B1 (1-1000),father,4,fathers | fathered | fathering
+448,B1 (1-1000),decision,2,decisions
+449,B1 (1-1000),table,3,tables | tabled
+450,B1 (1-1000),certain,1,
+451,B1 (1-1000),forward,4,forwards | forwarded | forwarding
+452,B1 (1-1000),main,1,
+453,B1 (1-1000),die,4,dies | died | dying
+454,B1 (1-1000),bear,5,bears | bearing | borne | bearings
+455,B1 (1-1000),cut,4,cuts | cutting | cuttings
+456,B1 (1-1000),describe,4,describes | described | describing
+457,B1 (1-1000),himself,1,
+458,B1 (1-1000),available,1,
+459,B1 (1-1000),especially,1,
+460,B1 (1-1000),strong,3,stronger | strongest
+461,B1 (1-1000),rise,4,rises | rising | risen
+462,B1 (1-1000),girl,2,girls
+463,B1 (1-1000),maybe,1,
+464,B1 (1-1000),community,2,communities
+465,B1 (1-1000),else,1,
+466,B1 (1-1000),particular,2,particulars
+467,B1 (1-1000),role,2,roles
+468,B1 (1-1000),join,4,joins | joined | joining
+469,B1 (1-1000),difficult,1,
+470,B1 (1-1000),please,4,pleases | pleased | pleasing
+471,B1 (1-1000),detail,4,details | detailed | detailing
+472,B1 (1-1000),difference,4,differences | differenced | differencing
+473,B1 (1-1000),action,2,actions
+474,B1 (1-1000),health,1,
+475,B1 (1-1000),eat,5,eats | ate | eating | eaten
+476,B1 (1-1000),step,4,steps | stepped | stepping
+477,B1 (1-1000),true,6,trues | trued | truing | truer | truest
+478,B1 (1-1000),phone,4,phones | phoned | phoning
+479,B1 (1-1000),themselves,1,
+480,B1 (1-1000),draw,6,draws | drew | drawing | drawn | drawings
+481,B1 (1-1000),white,4,whiter | whitest | whites
+482,B1 (1-1000),date,4,dates | dated | dating
+483,B1 (1-1000),practice,8,practices | practiced | practicing | practise | practised | practises | practising
+484,B1 (1-1000),model,6,models | modeled | modeling | modelled | modelling
+485,B1 (1-1000),raise,5,raises | raised | raising | raisings
+486,B1 (1-1000),customer,2,customers
+487,B1 (1-1000),front,4,fronts | fronted | fronting
+488,B1 (1-1000),explain,4,explains | explained | explaining
+489,B1 (1-1000),door,2,doors
+490,B1 (1-1000),outside,2,outsides
+491,B1 (1-1000),behind,1,
+492,B1 (1-1000),economic,2,economics
+493,B1 (1-1000),site,3,sites | sited
+494,B1 (1-1000),approach,4,approaches | approached | approaching
+495,B1 (1-1000),teacher,2,teachers
+496,B1 (1-1000),land,5,lands | landed | landing | landings
+497,B1 (1-1000),charge,4,charges | charged | charging
+498,B1 (1-1000),finally,1,
+499,B1 (1-1000),sign,4,signs | signed | signing
+500,B1 (1-1000),claim,4,claims | claimed | claiming
+501,B1 (1-1000),relationship,2,relationships
+502,B1 (1-1000),travel,6,travels | traveled | traveling | travelled | travelling
+503,B1 (1-1000),enjoy,4,enjoys | enjoyed | enjoying
+504,B1 (1-1000),death,2,deaths
+505,B1 (1-1000),nice,3,nicer | nicest
+506,B1 (1-1000),amount,3,amounts | amounted
+507,B1 (1-1000),improve,4,improves | improved | improving
+508,B1 (1-1000),picture,4,pictures | pictured | picturing
+509,B1 (1-1000),boy,2,boys
+510,B1 (1-1000),regard,4,regards | regarded | regarding
+511,B1 (1-1000),organization,4,organizations | organisation | organisations
+512,B1 (1-1000),happy,3,happier | happiest
+513,B1 (1-1000),couple,4,couples | coupled | coupling
+514,B1 (1-1000),act,4,acts | acted | acting
+515,B1 (1-1000),range,4,ranges | ranged | ranging
+516,B1 (1-1000),quality,2,qualities
+517,B1 (1-1000),project,4,projects | projected | projecting
+518,B1 (1-1000),round,6,rounds | rounded | rounding | rounder | roundest
+519,B1 (1-1000),opportunity,2,opportunities
+520,B1 (1-1000),road,2,roads
+521,B1 (1-1000),accord,4,accords | accorded | according
+522,B1 (1-1000),list,5,lists | listed | listing | listings
+523,B1 (1-1000),wish,4,wishes | wished | wishing
+524,B1 (1-1000),therefore,1,
+525,B1 (1-1000),wear,5,wears | wore | wearing | worn
+526,B1 (1-1000),fund,4,funds | funded | funding
+527,B1 (1-1000),rest,4,rests | rested | resting
+528,B1 (1-1000),kid,4,kids | kidded | kidding
+529,B1 (1-1000),industry,2,industries
+530,B1 (1-1000),education,2,educations
+531,B1 (1-1000),measure,4,measures | measured | measuring
+532,B1 (1-1000),kill,5,kills | killed | killing | killings
+533,B1 (1-1000),serve,5,serves | served | serving | servings
+534,B1 (1-1000),likely,3,likelier | likeliest
+535,B1 (1-1000),certainly,1,
+536,B1 (1-1000),national,2,nationals
+537,B1 (1-1000),itself,1,
+538,B1 (1-1000),teach,5,teaches | taught | teaching | teachings
+539,B1 (1-1000),field,4,fields | fielded | fielding
+540,B1 (1-1000),security,2,securities
+541,B1 (1-1000),air,4,airs | aired | airing
+542,B1 (1-1000),benefit,6,benefits | benefited | benefiting | benefitted | benefitting
+543,B1 (1-1000),trade,4,trades | traded | trading
+544,B1 (1-1000),risk,4,risks | risked | risking
+545,B1 (1-1000),news,1,
+546,B1 (1-1000),standard,2,standards
+547,B1 (1-1000),vote,4,votes | voted | voting
+548,B1 (1-1000),percent,2,percents
+549,B1 (1-1000),focus,8,focuses | focused | focusing | focussed | focuss | focusses | focussing
+550,B1 (1-1000),stage,4,stages | staged | staging
+551,B1 (1-1000),space,4,spaces | spaced | spacing
+552,B1 (1-1000),instead,1,
+553,B1 (1-1000),realize,8,realizes | realized | realizing | realise | realises | realised | realising
+554,B1 (1-1000),usually,1,
+555,B1 (1-1000),data,2,datum
+556,B1 (1-1000),single,4,singles | singled | singling
+557,B1 (1-1000),address,4,addresses | addressed | addressing
+558,B1 (1-1000),performance,2,performances
+559,B1 (1-1000),chance,4,chances | chanced | chancing
+560,B1 (1-1000),accept,4,accepts | accepted | accepting
+561,B1 (1-1000),society,2,societies
+562,B1 (1-1000),technology,2,technologies
+563,B1 (1-1000),mention,4,mentions | mentioned | mentioning
+564,B1 (1-1000),choice,4,choices | choicer | choicest
+565,B1 (1-1000),save,5,saves | saved | saving | savings
+566,B1 (1-1000),common,2,commonest
+567,B1 (1-1000),culture,4,cultures | cultured | culturing
+568,B1 (1-1000),total,6,totals | totaled | totaling | totalled | totalling
+569,B1 (1-1000),demand,4,demands | demanded | demanding
+570,B1 (1-1000),material,2,materials
+571,B1 (1-1000),limit,4,limits | limited | limiting
+572,B1 (1-1000),listen,4,listens | listened | listening
+573,B1 (1-1000),due,1,
+574,B1 (1-1000),wrong,4,wrongs | wronged | wronging
+575,B1 (1-1000),foot,5,foots | footed | footing | feet
+576,B1 (1-1000),effort,2,efforts
+577,B1 (1-1000),attention,2,attentions
+578,B1 (1-1000),upon,1,
+579,B1 (1-1000),check,4,checks | checked | checking
+580,B1 (1-1000),complete,4,completes | completed | completing
+581,B1 (1-1000),lie,5,lies | lied | lying | lain
+582,B1 (1-1000),pick,4,picks | picked | picking
+583,B1 (1-1000),reduce,4,reduces | reduced | reducing
+584,B1 (1-1000),personal,2,personals
+585,B1 (1-1000),ground,4,grounds | grounded | grounding
+586,B1 (1-1000),animal,2,animals
+587,B1 (1-1000),arrive,4,arrives | arrived | arriving
+588,B1 (1-1000),patient,2,patients
+589,B1 (1-1000),current,2,currents
+590,B1 (1-1000),century,2,centuries
+591,B1 (1-1000),evidence,4,evidences | evidenced | evidencing
+592,B1 (1-1000),exist,4,exists | existed | existing
+593,B1 (1-1000),similar,1,
+594,B1 (1-1000),fight,4,fights | fought | fighting
+595,B1 (1-1000),leader,2,leaders
+596,B1 (1-1000),fine,6,fines | fined | fining | finer | finest
+597,B1 (1-1000),street,2,streets
+598,B1 (1-1000),former,2,formers
+599,B1 (1-1000),contact,4,contacts | contacted | contacting
+600,B1 (1-1000),particularly,1,
+601,B1 (1-1000),wife,2,wives
+602,B1 (1-1000),sport,4,sports | sported | sporting
+603,B1 (1-1000),prepare,4,prepares | prepared | preparing
+604,B1 (1-1000),discuss,4,discusses | discussed | discussing
+605,B1 (1-1000),response,2,responses
+606,B1 (1-1000),voice,4,voices | voiced | voicing
+607,B1 (1-1000),piece,4,pieces | pieced | piecing
+608,B1 (1-1000),finish,4,finishes | finished | finishing
+609,B1 (1-1000),suppose,4,supposes | supposed | supposing
+610,B1 (1-1000),apply,4,applies | applied | applying
+611,B1 (1-1000),president,2,presidents
+612,B1 (1-1000),fire,5,fires | fired | firing | firings
+613,B1 (1-1000),compare,4,compares | compared | comparing
+614,B1 (1-1000),court,4,courts | courted | courting
+615,B1 (1-1000),police,4,polices | policed | policing
+616,B1 (1-1000),store,4,stores | stored | storing
+617,B1 (1-1000),poor,3,poorer | poorest
+618,B1 (1-1000),knowledge,1,
+619,B1 (1-1000),laugh,4,laughs | laughed | laughing
+620,B1 (1-1000),arm,4,arms | armed | arming
+621,B1 (1-1000),heart,3,hearts | hearted
+622,B1 (1-1000),source,4,sources | sourced | sourcing
+623,B1 (1-1000),employee,2,employees
+624,B1 (1-1000),manage,4,manages | managed | managing
+625,B1 (1-1000),simply,1,
+626,B1 (1-1000),bank,4,banks | banked | banking
+627,B1 (1-1000),firm,6,firms | firmed | firming | firmer | firmest
+628,B1 (1-1000),cell,3,cells | celled
+629,B1 (1-1000),article,4,articles | articled | articling
+630,B1 (1-1000),fast,6,fasts | fasted | fasting | faster | fastest
+631,B1 (1-1000),attack,4,attacks | attacked | attacking
+632,B1 (1-1000),foreign,1,
+633,B1 (1-1000),surprise,4,surprises | surprised | surprising
+634,B1 (1-1000),feature,4,features | featured | featuring
+635,B1 (1-1000),factor,5,factors | factored | factoring | factorings
+636,B1 (1-1000),pretty,5,pretties | prettying | prettier | prettiest
+637,B1 (1-1000),recently,1,
+638,B1 (1-1000),affect,4,affects | affected | affecting
+639,B1 (1-1000),drop,4,drops | dropped | dropping
+640,B1 (1-1000),recent,1,
+641,B1 (1-1000),relate,4,relates | related | relating
+642,B1 (1-1000),official,2,officials
+643,B1 (1-1000),financial,2,financials
+644,B1 (1-1000),miss,4,misses | missed | missing
+645,B1 (1-1000),art,2,arts
+646,B1 (1-1000),campaign,4,campaigns | campaigned | campaigning
+647,B1 (1-1000),private,1,
+648,B1 (1-1000),pause,4,pauses | paused | pausing
+649,B1 (1-1000),everyone,1,
+650,B1 (1-1000),forget,5,forgets | forgot | forgetting | forgotten
+651,B1 (1-1000),page,4,pages | paged | paging
+652,B1 (1-1000),worry,4,worries | worried | worrying
+653,B1 (1-1000),summer,3,summers | summered
+654,B1 (1-1000),drink,4,drinks | drank | drinking
+655,B1 (1-1000),opinion,3,opinions | opinioned
+656,B1 (1-1000),park,4,parks | parked | parking
+657,B1 (1-1000),represent,4,represents | represented | representing
+658,B1 (1-1000),key,4,keys | keyed | keying
+659,B1 (1-1000),inside,2,insides
+660,B1 (1-1000),manager,2,managers
+661,B1 (1-1000),international,2,internationals
+662,B1 (1-1000),contain,4,contains | contained | containing
+663,B1 (1-1000),notice,4,notices | noticed | noticing
+664,B1 (1-1000),wonder,5,wonders | wondered | wondering | wonderings
+665,B1 (1-1000),nature,3,natures | natured
+666,B1 (1-1000),structure,4,structures | structured | structuring
+667,B1 (1-1000),section,4,sections | sectioned | sectioning
+668,B1 (1-1000),myself,1,
+669,B1 (1-1000),exactly,1,
+670,B1 (1-1000),plant,5,plants | planted | planting | plantings
+671,B1 (1-1000),paint,5,paints | painted | painting | paintings
+672,B1 (1-1000),worker,2,workers
+673,B1 (1-1000),press,5,presses | pressed | pressing | pressings
+674,B1 (1-1000),whatever,1,
+675,B1 (1-1000),necessary,2,necessaries
+676,B1 (1-1000),region,2,regions
+677,B1 (1-1000),growth,2,growths
+678,B1 (1-1000),evening,2,evenings
+679,B1 (1-1000),influence,4,influences | influenced | influencing
+680,B1 (1-1000),respect,4,respects | respected | respecting
+681,B1 (1-1000),various,1,
+682,B1 (1-1000),catch,4,catches | caught | catching
+683,B1 (1-1000),thus,1,
+684,B1 (1-1000),skill,3,skills | skilled
+685,B1 (1-1000),attempt,4,attempts | attempted | attempting
+686,B1 (1-1000),son,2,sons
+687,B1 (1-1000),simple,3,simpler | simplest
+688,B1 (1-1000),medium,2,mediums
+689,B1 (1-1000),average,4,averages | averaged | averaging
+690,B1 (1-1000),stock,4,stocks | stocked | stocking
+691,B1 (1-1000),management,2,managements
+692,B1 (1-1000),character,2,characters
+693,B1 (1-1000),bed,5,beds | bedded | bedding | beddings
+694,B1 (1-1000),hit,3,hits | hitting
+695,B1 (1-1000),establish,4,establishes | established | establishing
+696,B1 (1-1000),indeed,1,
+697,B1 (1-1000),final,2,finals
+698,B1 (1-1000),economy,2,economies
+699,B1 (1-1000),fit,7,fits | fitted | fitting | fitter | fittest | fittings
+700,B1 (1-1000),guy,4,guys | guyed | guying
+701,B1 (1-1000),function,4,functions | functioned | functioning
+702,B1 (1-1000),yesterday,2,yesterdays
+703,B1 (1-1000),image,4,images | imaged | imaging
+704,B1 (1-1000),size,4,sizes | sized | sizing
+705,B1 (1-1000),behavior,4,behaviors | behaviour | behaviours
+706,B1 (1-1000),addition,2,additions
+707,B1 (1-1000),determine,4,determines | determined | determining
+708,B1 (1-1000),station,4,stations | stationed | stationing
+709,B1 (1-1000),population,2,populations
+710,B1 (1-1000),fail,5,fails | failed | failing | failings
+711,B1 (1-1000),environment,2,environments
+712,B1 (1-1000),production,2,productions
+713,B1 (1-1000),contract,4,contracts | contracted | contracting
+714,B1 (1-1000),player,2,players
+715,B1 (1-1000),comment,4,comments | commented | commenting
+716,B1 (1-1000),enter,4,enters | entered | entering
+717,B1 (1-1000),occur,4,occurs | occurred | occurring
+718,B1 (1-1000),alone,1,
+719,B1 (1-1000),significant,1,
+720,B1 (1-1000),drug,4,drugs | drugged | drugging
+721,B1 (1-1000),wall,4,walls | walled | walling
+722,B1 (1-1000),series,1,
+723,B1 (1-1000),direct,4,directs | directed | directing
+724,B1 (1-1000),success,2,successes
+725,B1 (1-1000),tomorrow,2,tomorrows
+726,B1 (1-1000),director,2,directors
+727,B1 (1-1000),clearly,1,
+728,B1 (1-1000),lack,4,lacks | lacked | lacking
+729,B1 (1-1000),review,4,reviews | reviewed | reviewing
+730,B1 (1-1000),depend,4,depends | depended | depending
+731,B1 (1-1000),race,4,races | raced | racing
+732,B1 (1-1000),recognize,8,recognizes | recognized | recognizing | recognise | recognises | recognised | recognising
+733,B1 (1-1000),window,4,windows | windowed | windowing
+734,B1 (1-1000),purpose,4,purposes | purposed | purposing
+735,B1 (1-1000),department,2,departments
+736,B1 (1-1000),gain,4,gains | gained | gaining
+737,B1 (1-1000),tree,2,trees
+738,B1 (1-1000),college,2,colleges
+739,B1 (1-1000),argue,4,argues | argued | arguing
+740,B1 (1-1000),board,4,boards | boarded | boarding
+741,B1 (1-1000),holiday,4,holidays | holidayed | holidaying
+742,B1 (1-1000),mark,5,marks | marked | marking | markings
+743,B1 (1-1000),church,4,churches | churched | churching
+744,B1 (1-1000),machine,4,machines | machined | machining
+745,B1 (1-1000),achieve,4,achieves | achieved | achieving
+746,B1 (1-1000),item,2,items
+747,B1 (1-1000),prove,5,proves | proved | proving | proven
+748,B1 (1-1000),cent,2,cents
+749,B1 (1-1000),season,5,seasons | seasoned | seasoning | seasonings
+750,B1 (1-1000),floor,5,floors | floored | flooring | floorings
+751,B1 (1-1000),stuff,4,stuffs | stuffed | stuffing
+752,B1 (1-1000),wide,3,wider | widest
+753,B1 (1-1000),anyone,1,
+754,B1 (1-1000),method,2,methods
+755,B1 (1-1000),analysis,2,analyses
+756,B1 (1-1000),election,2,elections
+757,B1 (1-1000),military,2,militaries
+758,B1 (1-1000),hotel,2,hotels
+759,B1 (1-1000),club,4,clubs | clubbed | clubbing
+760,B1 (1-1000),below,1,
+761,B1 (1-1000),movie,2,movies
+762,B1 (1-1000),doctor,4,doctors | doctored | doctoring
+763,B1 (1-1000),discussion,2,discussions
+764,B1 (1-1000),sorry,3,sorrier | sorriest
+765,B1 (1-1000),challenge,4,challenges | challenged | challenging
+766,B1 (1-1000),nation,2,nations
+767,B1 (1-1000),nearly,1,
+768,B1 (1-1000),statement,2,statements
+769,B1 (1-1000),link,4,links | linked | linking
+770,B1 (1-1000),despite,1,
+771,B1 (1-1000),introduce,4,introduces | introduced | introducing
+772,B1 (1-1000),advantage,3,advantages | advantaged
+773,B1 (1-1000),ready,6,readies | readied | readying | readier | readiest
+774,B1 (1-1000),marry,4,marries | married | marrying
+775,B1 (1-1000),strike,4,strikes | struck | striking
+776,B1 (1-1000),mile,2,miles
+777,B1 (1-1000),seek,4,seeks | sought | seeking
+778,B1 (1-1000),ability,2,abilities
+779,B1 (1-1000),unit,2,units
+780,B1 (1-1000),card,4,cards | carded | carding
+781,B1 (1-1000),hospital,2,hospitals
+782,B1 (1-1000),quickly,1,
+783,B1 (1-1000),interview,4,interviews | interviewed | interviewing
+784,B1 (1-1000),agreement,2,agreements
+785,B1 (1-1000),release,4,releases | released | releasing
+786,B1 (1-1000),tax,4,taxes | taxed | taxing
+787,B1 (1-1000),solution,2,solutions
+788,B1 (1-1000),capital,2,capitals
+789,B1 (1-1000),popular,1,
+790,B1 (1-1000),specific,2,specifics
+791,B1 (1-1000),beautiful,1,
+792,B1 (1-1000),fear,4,fears | feared | fearing
+793,B1 (1-1000),aim,4,aims | aimed | aiming
+794,B1 (1-1000),television,2,televisions
+795,B1 (1-1000),serious,1,
+796,B1 (1-1000),target,4,targets | targeted | targeting
+797,B1 (1-1000),degree,2,degrees
+798,B1 (1-1000),pull,4,pulls | pulled | pulling
+799,B1 (1-1000),red,4,reds | redder | reddest
+800,B1 (1-1000),husband,4,husbands | husbanded | husbanding
+801,B1 (1-1000),access,4,accesses | accessed | accessing
+802,B1 (1-1000),movement,2,movements
+803,B1 (1-1000),treat,4,treats | treated | treating
+804,B1 (1-1000),identify,4,identifies | identified | identifying
+805,B1 (1-1000),loss,2,losses
+806,B1 (1-1000),shall,1,
+807,B1 (1-1000),modern,2,moderns
+808,B1 (1-1000),pressure,4,pressures | pressured | pressuring
+809,B1 (1-1000),bus,4,buses | bused | busing
+810,B1 (1-1000),treatment,2,treatments
+811,B1 (1-1000),yourself,2,yourselves
+812,B1 (1-1000),supply,4,supplies | supplied | supplying
+813,B1 (1-1000),village,2,villages
+814,B1 (1-1000),worth,1,
+815,B1 (1-1000),natural,2,naturals
+816,B1 (1-1000),express,4,expresses | expressed | expressing
+817,B1 (1-1000),indicate,4,indicates | indicated | indicating
+818,B1 (1-1000),attend,4,attends | attended | attending
+819,B1 (1-1000),brother,2,brothers
+820,B1 (1-1000),investment,2,investments
+821,B1 (1-1000),score,5,scores | scored | scoring | scorings
+822,B1 (1-1000),organize,8,organizes | organized | organizing | organise | organises | organised | organising
+823,B1 (1-1000),trip,4,trips | tripped | tripping
+824,B1 (1-1000),beyond,1,
+825,B1 (1-1000),sleep,4,sleeps | slept | sleeping
+826,B1 (1-1000),fish,4,fishes | fished | fishing
+827,B1 (1-1000),promise,4,promises | promised | promising
+828,B1 (1-1000),potential,2,potentials
+829,B1 (1-1000),energy,2,energies
+830,B1 (1-1000),trouble,4,troubles | troubled | troubling
+831,B1 (1-1000),relation,2,relations
+832,B1 (1-1000),touch,4,touches | touched | touching
+833,B1 (1-1000),file,5,files | filed | filing | filings
+834,B1 (1-1000),middle,4,middles | middled | middling
+835,B1 (1-1000),bar,4,bars | barred | barring
+836,B1 (1-1000),suffer,6,suffers | suffered | suffering | sufferred | sufferring
+837,B1 (1-1000),strategy,2,strategies
+838,B1 (1-1000),deep,4,deeper | deepest | deeps
+839,B1 (1-1000),except,4,excepts | excepted | excepting
+840,B1 (1-1000),clean,5,cleans | cleaned | cleaning | cleanings
+841,B1 (1-1000),tend,4,tends | tended | tending
+842,B1 (1-1000),advance,4,advances | advanced | advancing
+843,B1 (1-1000),fill,5,fills | filled | filling | fillings
+844,B1 (1-1000),star,4,stars | starred | starring
+845,B1 (1-1000),network,4,networks | networked | networking
+846,B1 (1-1000),generally,1,
+847,B1 (1-1000),operation,2,operations
+848,B1 (1-1000),match,4,matches | matched | matching
+849,B1 (1-1000),avoid,4,avoids | avoided | avoiding
+850,B1 (1-1000),seat,4,seats | seated | seating
+851,B1 (1-1000),throw,5,throws | threw | throwing | thrown
+852,B1 (1-1000),task,4,tasks | tasked | tasking
+853,B1 (1-1000),normal,2,normals
+854,B1 (1-1000),goal,2,goals
+855,B1 (1-1000),associate,4,associates | associated | associating
+856,B1 (1-1000),blue,6,blues | blued | bluing | bluer | bluest
+857,B1 (1-1000),positive,2,positives
+858,B1 (1-1000),option,2,options
+859,B1 (1-1000),box,4,boxes | boxed | boxing
+860,B1 (1-1000),huge,3,huger | hugest
+861,B1 (1-1000),message,4,messages | messaged | messaging
+862,B1 (1-1000),instance,4,instances | instanced | instancing
+863,B1 (1-1000),style,4,styles | styled | styling
+864,B1 (1-1000),refer,6,refers | referred | referring | refered | refering
+865,B1 (1-1000),cold,4,colder | coldest | colds
+866,B1 (1-1000),push,4,pushes | pushed | pushing
+867,B1 (1-1000),quarter,4,quarters | quartered | quartering
+868,B1 (1-1000),assume,4,assumes | assumed | assuming
+869,B1 (1-1000),baby,4,babies | babied | babying
+870,B1 (1-1000),successful,1,
+871,B1 (1-1000),sing,5,sings | sang | singing | sung
+872,B1 (1-1000),doubt,4,doubts | doubted | doubting
+873,B1 (1-1000),competition,2,competitions
+874,B1 (1-1000),theory,2,theories
+875,B1 (1-1000),propose,4,proposes | proposed | proposing
+876,B1 (1-1000),reference,4,references | referenced | referencing
+877,B1 (1-1000),argument,2,arguments
+878,B1 (1-1000),adult,2,adults
+879,B1 (1-1000),fly,5,flies | flew | flying | flown
+880,B1 (1-1000),document,4,documents | documented | documenting
+881,B1 (1-1000),pattern,4,patterns | patterned | patterning
+882,B1 (1-1000),application,2,applications
+883,B1 (1-1000),hot,4,hots | hotter | hottest
+884,B1 (1-1000),obviously,1,
+885,B1 (1-1000),unclear,1,
+886,B1 (1-1000),bill,4,bills | billed | billing
+887,B1 (1-1000),search,4,searches | searched | searching
+888,B1 (1-1000),separate,4,separates | separated | separating
+889,B1 (1-1000),central,2,centrals
+890,B1 (1-1000),career,4,careers | careered | careering
+891,B1 (1-1000),anyway,2,anyways
+892,B1 (1-1000),speech,2,speeches
+893,B1 (1-1000),dog,4,dogs | dogged | dogging
+894,B1 (1-1000),officer,4,officers | officered | officering
+895,B1 (1-1000),throughout,1,
+896,B1 (1-1000),oil,4,oils | oiled | oiling
+897,B1 (1-1000),dress,4,dresses | dressed | dressing
+898,B1 (1-1000),profit,4,profits | profited | profiting
+899,B1 (1-1000),guess,4,guesses | guessed | guessing
+900,B1 (1-1000),fun,1,
+901,B1 (1-1000),protect,4,protects | protected | protecting
+902,B1 (1-1000),resource,4,resources | resourced | resourcing
+903,B1 (1-1000),science,2,sciences
+904,B1 (1-1000),disease,3,diseases | diseased
+905,B1 (1-1000),balance,4,balances | balanced | balancing
+906,B1 (1-1000),damage,4,damages | damaged | damaging
+907,B1 (1-1000),basis,1,
+908,B1 (1-1000),author,4,authors | authored | authoring
+909,B1 (1-1000),basic,2,basics
+910,B1 (1-1000),encourage,4,encourages | encouraged | encouraging
+911,B1 (1-1000),hair,3,hairs | haired
+912,B1 (1-1000),male,2,males
+913,B1 (1-1000),operate,4,operates | operated | operating
+914,B1 (1-1000),reflect,4,reflects | reflected | reflecting
+915,B1 (1-1000),exercise,4,exercises | exercised | exercising
+916,B1 (1-1000),useful,1,
+917,B1 (1-1000),restaurant,2,restaurants
+918,B1 (1-1000),income,2,incomes
+919,B1 (1-1000),property,2,properties
+920,B1 (1-1000),previous,1,
+921,B1 (1-1000),dark,3,darker | darkest
+922,B1 (1-1000),imagine,5,imagines | imagined | imagining | imaginings
+923,B1 (1-1000),okay,5,okays | okayed | okaying | ok
+924,B1 (1-1000),earn,5,earns | earned | earning | earnings
+925,B1 (1-1000),daughter,2,daughters
+926,B1 (1-1000),post,5,posts | posted | posting | postings
+927,B1 (1-1000),newspaper,2,newspapers
+928,B1 (1-1000),define,4,defines | defined | defining
+929,B1 (1-1000),conclusion,2,conclusions
+930,B1 (1-1000),clock,4,clocks | clocked | clocking
+931,B1 (1-1000),everybody,1,
+932,B1 (1-1000),weekend,3,weekends | weekending
+933,B1 (1-1000),perform,4,performs | performed | performing
+934,B1 (1-1000),professional,2,professionals
+935,B1 (1-1000),mine,4,mines | mined | mining
+936,B1 (1-1000),debate,4,debates | debated | debating
+937,B1 (1-1000),memory,2,memories
+938,B1 (1-1000),green,6,greens | greened | greening | greener | greenest
+939,B1 (1-1000),song,2,songs
+940,B1 (1-1000),object,4,objects | objected | objecting
+941,B1 (1-1000),maintain,4,maintains | maintained | maintaining
+942,B1 (1-1000),credit,4,credits | credited | crediting
+943,B1 (1-1000),ring,6,rings | ringed | rang | ringing | rung
+944,B1 (1-1000),discover,4,discovers | discovered | discovering
+945,B1 (1-1000),dead,3,deader | deadest
+946,B1 (1-1000),afternoon,2,afternoons
+947,B1 (1-1000),prefer,6,prefers | preferred | preferring | prefered | prefering
+948,B1 (1-1000),extend,4,extends | extended | extending
+949,B1 (1-1000),possibility,2,possibilities
+950,B1 (1-1000),direction,2,directions
+951,B1 (1-1000),facility,2,facilities
+952,B1 (1-1000),variety,2,varieties
+953,B1 (1-1000),daily,2,dailies
+954,B1 (1-1000),clothes,1,
+955,B1 (1-1000),screen,5,screens | screened | screening | screenings
+956,B1 (1-1000),track,4,tracks | tracked | tracking
+957,B1 (1-1000),dance,4,dances | danced | dancing
+958,B1 (1-1000),completely,1,
+959,B1 (1-1000),female,2,females
+960,B1 (1-1000),responsibility,2,responsibilities
+961,B1 (1-1000),original,2,originals
+962,B1 (1-1000),sister,2,sisters
+963,B1 (1-1000),rock,4,rocks | rocked | rocking
+964,B1 (1-1000),dream,5,dreams | dreamed | dreaming | dreamt
+965,B1 (1-1000),nor,1,
+966,B1 (1-1000),university,2,universities
+967,B1 (1-1000),easily,1,
+968,B1 (1-1000),agency,2,agencies
+969,B1 (1-1000),dollar,2,dollars
+970,B1 (1-1000),garden,4,gardens | gardened | gardening
+971,B1 (1-1000),fix,5,fixes | fixed | fixing | fixings
+972,B1 (1-1000),ahead,1,
+973,B1 (1-1000),cross,5,crosses | crossed | crossing | crossings
+974,B1 (1-1000),yeah,1,
+975,B1 (1-1000),weight,5,weights | weighted | weighting | weightings
+976,B1 (1-1000),legal,1,
+977,B1 (1-1000),proposal,2,proposals
+978,B1 (1-1000),version,3,versions | versioned
+979,B1 (1-1000),conversation,2,conversations
+980,B1 (1-1000),somebody,1,
+981,B1 (1-1000),pound,5,pounds | pounded | pounding | poundings
+982,B1 (1-1000),magazine,2,magazines
+983,B1 (1-1000),shape,4,shapes | shaped | shaping
+984,B1 (1-1000),sea,2,seas
+985,B1 (1-1000),immediately,1,
+986,B1 (1-1000),welcome,4,welcomes | welcomed | welcoming
+987,B1 (1-1000),smile,4,smiles | smiled | smiling
+988,B1 (1-1000),communication,2,communications
+989,B1 (1-1000),agent,2,agents
+990,B1 (1-1000),traditional,1,
+991,B1 (1-1000),replace,4,replaces | replaced | replacing
+992,B1 (1-1000),judge,4,judges | judged | judging
+993,B1 (1-1000),herself,1,
+994,B1 (1-1000),suddenly,1,
+995,B1 (1-1000),generation,2,generations
+996,B1 (1-1000),estimate,4,estimates | estimated | estimating
+997,B1 (1-1000),favorite,4,favorites | favourite | favourites
+998,B1 (1-1000),difficulty,2,difficulties
+999,B1 (1-1000),purchase,4,purchases | purchased | purchasing
+1000,B1 (1-1000),the,1,
+1001,B2 (1001-2000),announce,4,announces | announced | announcing
+1002,B2 (1001-2000),unless,1,
+1003,B2 (1001-2000),independent,2,independents
+1004,B2 (1001-2000),recommend,4,recommends | recommended | recommending
+1005,B2 (1001-2000),survey,4,surveys | surveyed | surveying
+1006,B2 (1001-2000),majority,2,majorities
+1007,B2 (1001-2000),stick,4,sticks | stuck | sticking
+1008,B2 (1001-2000),request,4,requests | requested | requesting
+1009,B2 (1001-2000),rich,3,richer | richest
+1010,B2 (1001-2000),wind,4,winds | winded | winding
+1011,B2 (1001-2000),none,1,
+1012,B2 (1001-2000),exchange,4,exchanges | exchanged | exchanging
+1013,B2 (1001-2000),budget,4,budgets | budgeted | budgeting
+1014,B2 (1001-2000),famous,1,
+1015,B2 (1001-2000),blood,4,bloods | blooded | blooding
+1016,B2 (1001-2000),appropriate,4,appropriates | appropriated | appropriating
+1017,B2 (1001-2000),block,4,blocks | blocked | blocking
+1018,B2 (1001-2000),warm,6,warms | warmed | warming | warmer | warmest
+1019,B2 (1001-2000),count,4,counts | counted | counting
+1020,B2 (1001-2000),scene,2,scenes
+1021,B2 (1001-2000),writer,2,writers
+1022,B2 (1001-2000),content,4,contents | contented | contenting
+1023,B2 (1001-2000),prevent,4,prevents | prevented | preventing
+1024,B2 (1001-2000),safe,3,safer | safest
+1025,B2 (1001-2000),invite,4,invites | invited | inviting
+1026,B2 (1001-2000),mix,4,mixes | mixed | mixing
+1027,B2 (1001-2000),element,2,elements
+1028,B2 (1001-2000),effective,1,
+1029,B2 (1001-2000),correct,4,corrects | corrected | correcting
+1030,B2 (1001-2000),medical,2,medicals
+1031,B2 (1001-2000),admit,4,admits | admitting | admitted
+1032,B2 (1001-2000),beat,5,beats | beating | beaten | beatings
+1033,B2 (1001-2000),telephone,4,telephones | telephoned | telephoning
+1034,B2 (1001-2000),copy,4,copies | copied | copying
+1035,B2 (1001-2000),committee,2,committees
+1036,B2 (1001-2000),aware,1,
+1037,B2 (1001-2000),advice,2,advices
+1038,B2 (1001-2000),handle,4,handles | handled | handling
+1039,B2 (1001-2000),glass,4,glasses | glassed | glassing
+1040,B2 (1001-2000),trial,6,trials | trialed | trialing | trialled | trialling
+1041,B2 (1001-2000),stress,3,stresses | stressed
+1042,B2 (1001-2000),radio,3,radios | radioed
+1043,B2 (1001-2000),administration,2,administrations
+1044,B2 (1001-2000),complex,2,complexes
+1045,B2 (1001-2000),text,2,texts
+1046,B2 (1001-2000),context,2,contexts
+1047,B2 (1001-2000),ride,5,rides | rode | riding | ridden
+1048,B2 (1001-2000),directly,1,
+1049,B2 (1001-2000),heavy,4,heavies | heavier | heaviest
+1050,B2 (1001-2000),remove,4,removes | removed | removing
+1051,B2 (1001-2000),conduct,4,conducts | conducted | conducting
+1052,B2 (1001-2000),equipment,2,equipments
+1053,B2 (1001-2000),otherwise,1,
+1054,B2 (1001-2000),title,4,titles | titled | titling
+1055,B2 (1001-2000),extra,2,extras
+1056,B2 (1001-2000),executive,2,executives
+1057,B2 (1001-2000),chair,4,chairs | chaired | chairing
+1058,B2 (1001-2000),expensive,1,
+1059,B2 (1001-2000),sample,5,samples | sampled | sampling | samplings
+1060,B2 (1001-2000),sex,2,sexes
+1061,B2 (1001-2000),deliver,4,delivers | delivered | delivering
+1062,B2 (1001-2000),video,3,videos | videoed
+1063,B2 (1001-2000),connection,4,connections | connexion | connexions
+1064,B2 (1001-2000),primary,2,primaries
+1065,B2 (1001-2000),weather,4,weathers | weathered | weathering
+1066,B2 (1001-2000),collect,4,collects | collected | collecting
+1067,B2 (1001-2000),inform,4,informs | informed | informing
+1068,B2 (1001-2000),principle,3,principles | principled
+1069,B2 (1001-2000),straight,3,straighter | straightest
+1070,B2 (1001-2000),appeal,4,appeals | appealed | appealing
+1071,B2 (1001-2000),highly,1,
+1072,B2 (1001-2000),trust,4,trusts | trusted | trusting
+1073,B2 (1001-2000),wonderful,1,
+1074,B2 (1001-2000),flat,4,flats | flatted | flatting
+1075,B2 (1001-2000),absolutely,1,
+1076,B2 (1001-2000),flow,4,flows | flowed | flowing
+1077,B2 (1001-2000),fair,6,fairs | faired | fairing | fairer | fairest
+1078,B2 (1001-2000),additional,1,
+1079,B2 (1001-2000),responsible,1,
+1080,B2 (1001-2000),farm,4,farms | farmed | farming
+1081,B2 (1001-2000),collection,2,collections
+1082,B2 (1001-2000),hang,6,hangs | hung | hanging | hanged | hangings
+1083,B2 (1001-2000),negative,2,negatives
+1084,B2 (1001-2000),band,3,bands | banded
+1085,B2 (1001-2000),relative,2,relatives
+1086,B2 (1001-2000),tour,4,tours | toured | touring
+1087,B2 (1001-2000),alternative,2,alternatives
+1088,B2 (1001-2000),software,1,
+1089,B2 (1001-2000),pair,5,pairs | paired | pairing | pairings
+1090,B2 (1001-2000),ship,4,ships | shipped | shipping
+1091,B2 (1001-2000),attitude,2,attitudes
+1092,B2 (1001-2000),cheap,3,cheaper | cheapest
+1093,B2 (1001-2000),double,4,doubles | doubled | doubling
+1094,B2 (1001-2000),leg,5,legs | legged | legging | leggings
+1095,B2 (1001-2000),observe,4,observes | observed | observing
+1096,B2 (1001-2000),sentence,4,sentences | sentenced | sentencing
+1097,B2 (1001-2000),print,5,prints | printed | printing | printings
+1098,B2 (1001-2000),progress,4,progresses | progressed | progressing
+1099,B2 (1001-2000),truth,2,truths
+1100,B2 (1001-2000),nobody,2,nobodies
+1101,B2 (1001-2000),examine,4,examines | examined | examining
+1102,B2 (1001-2000),lay,4,lays | laid | laying
+1103,B2 (1001-2000),speed,5,speeds | sped | speeded | speeding
+1104,B2 (1001-2000),politics,1,
+1105,B2 (1001-2000),reply,4,replies | replied | replying
+1106,B2 (1001-2000),display,4,displays | displayed | displaying
+1107,B2 (1001-2000),transfer,5,transfers | transferred | transferring | transfering
+1108,B2 (1001-2000),perfect,4,perfects | perfected | perfecting
+1109,B2 (1001-2000),slightly,1,
+1110,B2 (1001-2000),overall,1,
+1111,B2 (1001-2000),intend,4,intends | intended | intending
+1112,B2 (1001-2000),user,2,users
+1113,B2 (1001-2000),respond,4,responds | responded | responding
+1114,B2 (1001-2000),dinner,2,dinners
+1115,B2 (1001-2000),slow,6,slows | slowed | slowing | slower | slowest
+1116,B2 (1001-2000),regular,2,regulars
+1117,B2 (1001-2000),physical,2,physicals
+1118,B2 (1001-2000),apart,1,
+1119,B2 (1001-2000),suit,4,suits | suited | suiting
+1120,B2 (1001-2000),federal,2,federals
+1121,B2 (1001-2000),reveal,6,reveals | revealed | revealing | revealled | revealling
+1122,B2 (1001-2000),percentage,2,percentages
+1123,B2 (1001-2000),peace,2,peaces
+1124,B2 (1001-2000),status,1,
+1125,B2 (1001-2000),crime,2,crimes
+1126,B2 (1001-2000),decline,4,declines | declined | declining
+1127,B2 (1001-2000),decade,2,decades
+1128,B2 (1001-2000),launch,4,launches | launched | launching
+1129,B2 (1001-2000),warn,5,warns | warned | warning | warnings
+1130,B2 (1001-2000),consumer,2,consumers
+1131,B2 (1001-2000),favor,8,favors | favored | favoring | favour | favours | favoured | favouring
+1132,B2 (1001-2000),dry,6,dries | dried | drying | drier | driest
+1133,B2 (1001-2000),partner,4,partners | partnered | partnering
+1134,B2 (1001-2000),institution,2,institutions
+1135,B2 (1001-2000),spot,4,spots | spotted | spotting
+1136,B2 (1001-2000),horse,4,horses | horsed | horsing
+1137,B2 (1001-2000),eventually,1,
+1138,B2 (1001-2000),heat,4,heats | heated | heating
+1139,B2 (1001-2000),excite,4,excites | excited | exciting
+1140,B2 (1001-2000),reader,2,readers
+1141,B2 (1001-2000),importance,1,
+1142,B2 (1001-2000),distance,4,distances | distanced | distancing
+1143,B2 (1001-2000),guide,4,guides | guided | guiding
+1144,B2 (1001-2000),grant,4,grants | granted | granting
+1145,B2 (1001-2000),taxi,4,taxis | taxiing | taxies
+1146,B2 (1001-2000),feed,5,feeds | fed | feeding | feedings
+1147,B2 (1001-2000),pain,4,pains | pained | paining
+1148,B2 (1001-2000),sector,2,sectors
+1149,B2 (1001-2000),mistake,4,mistakes | mistook | mistaking
+1150,B2 (1001-2000),ensure,4,ensures | ensured | ensuring
+1151,B2 (1001-2000),satisfy,4,satisfies | satisfied | satisfying
+1152,B2 (1001-2000),chief,2,chiefs
+1153,B2 (1001-2000),cool,5,cools | cooled | cooling | coolest
+1154,B2 (1001-2000),expert,2,experts
+1155,B2 (1001-2000),wave,4,waves | waved | waving
+1156,B2 (1001-2000),south,1,
+1157,B2 (1001-2000),labor,8,labors | labored | laboring | labour | labours | laboured | labouring
+1158,B2 (1001-2000),surface,4,surfaces | surfaced | surfacing
+1159,B2 (1001-2000),library,2,libraries
+1160,B2 (1001-2000),excellent,1,
+1161,B2 (1001-2000),edge,4,edges | edged | edging
+1162,B2 (1001-2000),camp,4,camps | camped | camping
+1163,B2 (1001-2000),audience,2,audiences
+1164,B2 (1001-2000),lift,4,lifts | lifted | lifting
+1165,B2 (1001-2000),procedure,2,procedures
+1166,B2 (1001-2000),email,4,emails | emailed | emailing
+1167,B2 (1001-2000),global,1,
+1168,B2 (1001-2000),struggle,4,struggles | struggled | struggling
+1169,B2 (1001-2000),advertise,8,advertises | advertised | advertising | advertize | advertizes | advertized | advertizing
+1170,B2 (1001-2000),select,4,selects | selected | selecting
+1171,B2 (1001-2000),surround,5,surrounds | surrounded | surrounding | surroundings
+1172,B2 (1001-2000),extent,2,extents
+1173,B2 (1001-2000),river,2,rivers
+1174,B2 (1001-2000),annual,2,annuals
+1175,B2 (1001-2000),fully,1,
+1176,B2 (1001-2000),contrast,4,contrasts | contrasted | contrasting
+1177,B2 (1001-2000),roll,4,rolls | rolled | rolling
+1178,B2 (1001-2000),reality,2,realities
+1179,B2 (1001-2000),photograph,4,photographs | photographed | photographing
+1180,B2 (1001-2000),artist,2,artists
+1181,B2 (1001-2000),conflict,4,conflicts | conflicted | conflicting
+1182,B2 (1001-2000),entire,1,
+1183,B2 (1001-2000),presence,2,presences
+1184,B2 (1001-2000),crowd,4,crowds | crowded | crowding
+1185,B2 (1001-2000),corner,4,corners | cornered | cornering
+1186,B2 (1001-2000),gas,5,gases | gassed | gassing | gasses
+1187,B2 (1001-2000),shift,4,shifts | shifted | shifting
+1188,B2 (1001-2000),net,4,nets | netted | netting
+1189,B2 (1001-2000),category,2,categories
+1190,B2 (1001-2000),secretary,2,secretaries
+1191,B2 (1001-2000),defense,4,defenses | defence | defences
+1192,B2 (1001-2000),quick,3,quicker | quickest
+1193,B2 (1001-2000),cook,4,cooks | cooked | cooking
+1194,B2 (1001-2000),spread,3,spreads | spreading
+1195,B2 (1001-2000),nuclear,1,
+1196,B2 (1001-2000),scale,4,scales | scaled | scaling
+1197,B2 (1001-2000),driver,2,drivers
+1198,B2 (1001-2000),ball,4,balls | balled | balling
+1199,B2 (1001-2000),cry,4,cries | cried | crying
+1200,B2 (1001-2000),introduction,2,introductions
+1201,B2 (1001-2000),requirement,2,requirements
+1202,B2 (1001-2000),north,1,
+1203,B2 (1001-2000),confirm,4,confirms | confirmed | confirming
+1204,B2 (1001-2000),senior,2,seniors
+1205,B2 (1001-2000),photo,2,photos
+1206,B2 (1001-2000),refuse,4,refuses | refused | refusing
+1207,B2 (1001-2000),transport,4,transports | transported | transporting
+1208,B2 (1001-2000),emerge,4,emerges | emerged | emerging
+1209,B2 (1001-2000),map,5,maps | mapped | mapping | mappings
+1210,B2 (1001-2000),concept,2,concepts
+1211,B2 (1001-2000),island,4,islands | islanded | islanding
+1212,B2 (1001-2000),reform,4,reforms | reformed | reforming
+1213,B2 (1001-2000),neither,1,
+1214,B2 (1001-2000),football,2,footballs
+1215,B2 (1001-2000),survive,4,survives | survived | surviving
+1216,B2 (1001-2000),flight,2,flights
+1217,B2 (1001-2000),left,2,lefts
+1218,B2 (1001-2000),solve,4,solves | solved | solving
+1219,B2 (1001-2000),neighbor,8,neighbors | neighbored | neighboring | neighbour | neighbours | neighboured | neighbouring
+1220,B2 (1001-2000),background,2,backgrounds
+1221,B2 (1001-2000),technique,2,techniques
+1222,B2 (1001-2000),traffic,6,traffics | trafficked | trafficking | traffick | trafficks
+1223,B2 (1001-2000),improvement,2,improvements
+1224,B2 (1001-2000),tool,4,tools | tooled | tooling
+1225,B2 (1001-2000),consequence,2,consequences
+1226,B2 (1001-2000),circumstance,2,circumstances
+1227,B2 (1001-2000),smoke,4,smokes | smoked | smoking
+1228,B2 (1001-2000),reaction,2,reactions
+1229,B2 (1001-2000),rain,4,rains | rained | raining
+1230,B2 (1001-2000),busy,6,busies | busied | busying | busier | busiest
+1231,B2 (1001-2000),lesson,2,lessons
+1232,B2 (1001-2000),brain,4,brains | brained | braining
+1233,B2 (1001-2000),mass,4,masses | massed | massing
+1234,B2 (1001-2000),funny,3,funnier | funniest
+1235,B2 (1001-2000),contribute,4,contributes | contributed | contributing
+1236,B2 (1001-2000),failure,2,failures
+1237,B2 (1001-2000),schedule,4,schedules | scheduled | scheduling
+1238,B2 (1001-2000),speaker,2,speakers
+1239,B2 (1001-2000),bottom,4,bottoms | bottomed | bottoming
+1240,B2 (1001-2000),adopt,4,adopts | adopted | adopting
+1241,B2 (1001-2000),combine,4,combines | combined | combining
+1242,B2 (1001-2000),mountain,2,mountains
+1243,B2 (1001-2000),waste,4,wastes | wasted | wasting
+1244,B2 (1001-2000),hide,5,hides | hid | hiding | hidden
+1245,B2 (1001-2000),marriage,2,marriages
+1246,B2 (1001-2000),ticket,4,tickets | ticketed | ticketing
+1247,B2 (1001-2000),meal,2,meals
+1248,B2 (1001-2000),colleague,2,colleagues
+1249,B2 (1001-2000),bag,4,bags | bagged | bagging
+1250,B2 (1001-2000),repeat,4,repeats | repeated | repeating
+1251,B2 (1001-2000),equal,6,equals | equaled | equaling | equalled | equalling
+1252,B2 (1001-2000),expression,2,expressions
+1253,B2 (1001-2000),plus,2,pluses
+1254,B2 (1001-2000),extremely,1,
+1255,B2 (1001-2000),owner,2,owners
+1256,B2 (1001-2000),plane,3,planes | planed
+1257,B2 (1001-2000),commercial,2,commercials
+1258,B2 (1001-2000),lady,2,ladies
+1259,B2 (1001-2000),duty,2,duties
+1260,B2 (1001-2000),strength,2,strengths
+1261,B2 (1001-2000),connect,4,connects | connected | connecting
+1262,B2 (1001-2000),cultural,1,
+1263,B2 (1001-2000),arrange,4,arranges | arranged | arranging
+1264,B2 (1001-2000),scheme,4,schemes | schemed | scheming
+1265,B2 (1001-2000),payment,2,payments
+1266,B2 (1001-2000),unfortunately,1,
+1267,B2 (1001-2000),brief,7,briefs | briefed | briefing | briefer | briefest | briefings
+1268,B2 (1001-2000),bird,4,birds | birded | birding
+1269,B2 (1001-2000),demonstrate,4,demonstrates | demonstrated | demonstrating
+1270,B2 (1001-2000),contribution,2,contributions
+1271,B2 (1001-2000),appreciate,4,appreciates | appreciated | appreciating
+1272,B2 (1001-2000),chapter,2,chapters
+1273,B2 (1001-2000),secret,2,secrets
+1274,B2 (1001-2000),apparently,1,
+1275,B2 (1001-2000),novel,2,novels
+1276,B2 (1001-2000),union,2,unions
+1277,B2 (1001-2000),burn,5,burns | burned | burning | burnt
+1278,B2 (1001-2000),trend,4,trends | trended | trending
+1279,B2 (1001-2000),initial,6,initials | initialed | initialing | initialled | initialling
+1280,B2 (1001-2000),pleasure,4,pleasures | pleasured | pleasuring
+1281,B2 (1001-2000),suggestion,2,suggestions
+1282,B2 (1001-2000),critical,1,
+1283,B2 (1001-2000),gather,5,gathers | gathered | gathering | gatherings
+1284,B2 (1001-2000),mostly,1,
+1285,B2 (1001-2000),earth,3,earths | earthed
+1286,B2 (1001-2000),pop,4,pops | popped | popping
+1287,B2 (1001-2000),essential,2,essentials
+1288,B2 (1001-2000),desire,4,desires | desired | desiring
+1289,B2 (1001-2000),promote,4,promotes | promoted | promoting
+1290,B2 (1001-2000),currently,1,
+1291,B2 (1001-2000),employ,4,employs | employed | employing
+1292,B2 (1001-2000),path,2,paths
+1293,B2 (1001-2000),topic,2,topics
+1294,B2 (1001-2000),beach,4,beaches | beached | beaching
+1295,B2 (1001-2000),attract,4,attracts | attracted | attracting
+1296,B2 (1001-2000),engage,4,engages | engaged | engaging
+1297,B2 (1001-2000),powerful,1,
+1298,B2 (1001-2000),flower,4,flowers | flowered | flowering
+1299,B2 (1001-2000),crisis,2,crises
+1300,B2 (1001-2000),settle,4,settles | settled | settling
+1301,B2 (1001-2000),boat,4,boats | boated | boating
+1302,B2 (1001-2000),aid,4,aids | aided | aiding
+1303,B2 (1001-2000),fan,4,fans | fanned | fanning
+1304,B2 (1001-2000),kitchen,2,kitchens
+1305,B2 (1001-2000),twice,1,
+1306,B2 (1001-2000),fresh,3,fresher | freshest
+1307,B2 (1001-2000),delay,4,delays | delayed | delaying
+1308,B2 (1001-2000),safety,2,safeties
+1309,B2 (1001-2000),engineer,4,engineers | engineered | engineering
+1310,B2 (1001-2000),quiet,6,quiets | quieted | quieting | quieter | quietest
+1311,B2 (1001-2000),insurance,2,insurances
+1312,B2 (1001-2000),nurse,4,nurses | nursed | nursing
+1313,B2 (1001-2000),divide,4,divides | divided | dividing
+1314,B2 (1001-2000),length,2,lengths
+1315,B2 (1001-2000),investigation,2,investigations
+1316,B2 (1001-2000),package,4,packages | packaged | packaging
+1317,B2 (1001-2000),somewhere,1,
+1318,B2 (1001-2000),expand,4,expands | expanded | expanding
+1319,B2 (1001-2000),commit,4,commits | committing | committed
+1320,B2 (1001-2000),obvious,1,
+1321,B2 (1001-2000),jump,4,jumps | jumped | jumping
+1322,B2 (1001-2000),weapon,2,weapons
+1323,B2 (1001-2000),relatively,1,
+1324,B2 (1001-2000),host,4,hosts | hosted | hosting
+1325,B2 (1001-2000),winter,4,winters | wintered | wintering
+1326,B2 (1001-2000),district,2,districts
+1327,B2 (1001-2000),broad,3,broader | broadest
+1328,B2 (1001-2000),tire,4,tires | tired | tiring
+1329,B2 (1001-2000),spring,5,springs | sprang | sprung | springing
+1330,B2 (1001-2000),spirit,4,spirits | spirited | spiriting
+1331,B2 (1001-2000),lunch,4,lunches | lunched | lunching
+1332,B2 (1001-2000),actual,1,
+1333,B2 (1001-2000),pool,4,pools | pooled | pooling
+1334,B2 (1001-2000),battle,4,battles | battled | battling
+1335,B2 (1001-2000),tradition,2,traditions
+1336,B2 (1001-2000),cash,4,cashes | cashed | cashing
+1337,B2 (1001-2000),hardly,1,
+1338,B2 (1001-2000),award,4,awards | awarded | awarding
+1339,B2 (1001-2000),coach,4,coaches | coached | coaching
+1340,B2 (1001-2000),experiment,4,experiments | experimented | experimenting
+1341,B2 (1001-2000),consideration,2,considerations
+1342,B2 (1001-2000),strange,2,strangest
+1343,B2 (1001-2000),code,4,codes | coded | coding
+1344,B2 (1001-2000),possibly,1,
+1345,B2 (1001-2000),threat,2,threats
+1346,B2 (1001-2000),accident,2,accidents
+1347,B2 (1001-2000),impossible,1,
+1348,B2 (1001-2000),revenue,2,revenues
+1349,B2 (1001-2000),enable,4,enables | enabled | enabling
+1350,B2 (1001-2000),afraid,1,
+1351,B2 (1001-2000),active,2,actives
+1352,B2 (1001-2000),conclude,4,concludes | concluded | concluding
+1353,B2 (1001-2000),religious,1,
+1354,B2 (1001-2000),cancer,2,cancers
+1355,B2 (1001-2000),convince,4,convinces | convinced | convincing
+1356,B2 (1001-2000),vary,4,varies | varied | varying
+1357,B2 (1001-2000),environmental,1,
+1358,B2 (1001-2000),sun,4,suns | sunned | sunning
+1359,B2 (1001-2000),healthy,3,healthier | healthiest
+1360,B2 (1001-2000),blow,5,blows | blew | blowing | blown
+1361,B2 (1001-2000),volume,2,volumes
+1362,B2 (1001-2000),location,2,locations
+1363,B2 (1001-2000),invest,4,invests | invested | investing
+1364,B2 (1001-2000),proceed,5,proceeds | proceeded | proceeding | proceedings
+1365,B2 (1001-2000),wash,4,washes | washed | washing
+1366,B2 (1001-2000),actor,2,actors
+1367,B2 (1001-2000),glad,3,gladder | gladdest
+1368,B2 (1001-2000),tape,4,tapes | taped | taping
+1369,B2 (1001-2000),whereas,1,
+1370,B2 (1001-2000),opposite,2,opposites
+1371,B2 (1001-2000),stone,4,stones | stoned | stoning
+1372,B2 (1001-2000),sum,4,sums | summed | summing
+1373,B2 (1001-2000),murder,4,murders | murdered | murdering
+1374,B2 (1001-2000),monitor,4,monitors | monitored | monitoring
+1375,B2 (1001-2000),soldier,4,soldiers | soldiered | soldiering
+1376,B2 (1001-2000),finance,5,finances | financed | financing | financings
+1377,B2 (1001-2000),hate,4,hates | hated | hating
+1378,B2 (1001-2000),egg,4,eggs | egged | egging
+1379,B2 (1001-2000),concert,3,concerts | concerted
+1380,B2 (1001-2000),shock,4,shocks | shocked | shocking
+1381,B2 (1001-2000),comfortable,1,
+1382,B2 (1001-2000),usual,1,
+1383,B2 (1001-2000),carefully,1,
+1384,B2 (1001-2000),pack,4,packs | packed | packing
+1385,B2 (1001-2000),recall,3,recalls | recalled
+1386,B2 (1001-2000),wine,3,wines | wining
+1387,B2 (1001-2000),camera,2,cameras
+1388,B2 (1001-2000),swim,5,swims | swam | swimming | swum
+1389,B2 (1001-2000),manufacture,4,manufactures | manufactured | manufacturing
+1390,B2 (1001-2000),theater,4,theaters | theatre | theatres
+1391,B2 (1001-2000),cycle,4,cycles | cycled | cycling
+1392,B2 (1001-2000),coffee,2,coffees
+1393,B2 (1001-2000),totally,1,
+1394,B2 (1001-2000),museum,2,museums
+1395,B2 (1001-2000),visitor,2,visitors
+1396,B2 (1001-2000),freedom,2,freedoms
+1397,B2 (1001-2000),construction,2,constructions
+1398,B2 (1001-2000),dear,4,dears | dearer | dearest
+1399,B2 (1001-2000),objective,2,objectives
+1400,B2 (1001-2000),moreover,1,
+1401,B2 (1001-2000),onto,1,
+1402,B2 (1001-2000),historical,1,
+1403,B2 (1001-2000),oppose,4,opposes | opposed | opposing
+1404,B2 (1001-2000),branch,4,branches | branched | branching
+1405,B2 (1001-2000),vehicle,2,vehicles
+1406,B2 (1001-2000),scientist,2,scientists
+1407,B2 (1001-2000),route,2,routes
+1408,B2 (1001-2000),bind,3,binds | binding
+1409,B2 (1001-2000),belong,5,belongs | belonged | belonging | belongings
+1410,B2 (1001-2000),taste,5,tastes | tasted | tasting | tastings
+1411,B2 (1001-2000),tonight,1,
+1412,B2 (1001-2000),fashion,4,fashions | fashioned | fashioning
+1413,B2 (1001-2000),danger,2,dangers
+1414,B2 (1001-2000),bomb,5,bombs | bombed | bombing | bombings
+1415,B2 (1001-2000),army,2,armies
+1416,B2 (1001-2000),dangerous,1,
+1417,B2 (1001-2000),decrease,4,decreases | decreased | decreasing
+1418,B2 (1001-2000),hurt,3,hurts | hurting
+1419,B2 (1001-2000),council,2,councils
+1420,B2 (1001-2000),editor,2,editors
+1421,B2 (1001-2000),normally,1,
+1422,B2 (1001-2000),sight,5,sights | sighted | sighting | sightings
+1423,B2 (1001-2000),generate,4,generates | generated | generating
+1424,B2 (1001-2000),gift,4,gifts | gifted | gifting
+1425,B2 (1001-2000),delivery,2,deliveries
+1426,B2 (1001-2000),deny,4,denies | denied | denying
+1427,B2 (1001-2000),guest,2,guests
+1428,B2 (1001-2000),anybody,1,
+1429,B2 (1001-2000),bedroom,2,bedrooms
+1430,B2 (1001-2000),quote,4,quotes | quoted | quoting
+1431,B2 (1001-2000),climb,4,climbs | climbed | climbing
+1432,B2 (1001-2000),basically,1,
+1433,B2 (1001-2000),violence,1,
+1434,B2 (1001-2000),minister,4,ministers | ministered | ministering
+1435,B2 (1001-2000),mainly,1,
+1436,B2 (1001-2000),mouth,4,mouths | mouthed | mouthing
+1437,B2 (1001-2000),noise,2,noises
+1438,B2 (1001-2000),manner,3,manners | mannered
+1439,B2 (1001-2000),gun,4,guns | gunned | gunning
+1440,B2 (1001-2000),square,6,squares | squared | squaring | squarer | squarest
+1441,B2 (1001-2000),occasion,4,occasions | occasioned | occasioning
+1442,B2 (1001-2000),familiar,2,familiars
+1443,B2 (1001-2000),ignore,4,ignores | ignored | ignoring
+1444,B2 (1001-2000),destroy,4,destroys | destroyed | destroying
+1445,B2 (1001-2000),affair,2,affairs
+1446,B2 (1001-2000),civil,1,
+1447,B2 (1001-2000),locate,4,locates | located | locating
+1448,B2 (1001-2000),citizen,2,citizens
+1449,B2 (1001-2000),temperature,2,temperatures
+1450,B2 (1001-2000),gold,1,
+1451,B2 (1001-2000),domestic,2,domestics
+1452,B2 (1001-2000),load,4,loads | loaded | loading
+1453,B2 (1001-2000),belief,2,beliefs
+1454,B2 (1001-2000),troop,2,troops
+1455,B2 (1001-2000),technical,1,
+1456,B2 (1001-2000),remind,4,reminds | reminded | reminding
+1457,B2 (1001-2000),arrangement,2,arrangements
+1458,B2 (1001-2000),skin,4,skins | skinned | skinning
+1459,B2 (1001-2000),prison,2,prisons
+1460,B2 (1001-2000),switch,4,switches | switched | switching
+1461,B2 (1001-2000),acquire,4,acquires | acquired | acquiring
+1462,B2 (1001-2000),corporate,1,
+1463,B2 (1001-2000),fairly,1,
+1464,B2 (1001-2000),wood,3,woods | wooded
+1465,B2 (1001-2000),participate,4,participates | participated | participating
+1466,B2 (1001-2000),tough,3,tougher | toughest
+1467,B2 (1001-2000),tear,4,tears | tore | tearing
+1468,B2 (1001-2000),representative,2,representatives
+1469,B2 (1001-2000),capacity,2,capacities
+1470,B2 (1001-2000),border,4,borders | bordered | bordering
+1471,B2 (1001-2000),shake,5,shakes | shook | shaking | shaken
+1472,B2 (1001-2000),assessment,2,assessments
+1473,B2 (1001-2000),shoe,4,shoes | shoed | shod
+1474,B2 (1001-2000),ought,4,oughtn | oughta | outta
+1475,B2 (1001-2000),ad,2,ads
+1476,B2 (1001-2000),fee,2,fees
+1477,B2 (1001-2000),hall,2,halls
+1478,B2 (1001-2000),regulation,2,regulations
+1479,B2 (1001-2000),escape,4,escapes | escaped | escaping
+1480,B2 (1001-2000),studio,2,studios
+1481,B2 (1001-2000),proper,1,
+1482,B2 (1001-2000),relax,4,relaxes | relaxed | relaxing
+1483,B2 (1001-2000),tourist,2,tourists
+1484,B2 (1001-2000),component,2,components
+1485,B2 (1001-2000),afford,4,affords | afforded | affording
+1486,B2 (1001-2000),lawyer,2,lawyers
+1487,B2 (1001-2000),suspect,4,suspects | suspected | suspecting
+1488,B2 (1001-2000),cup,4,cups | cupped | cupping
+1489,B2 (1001-2000),description,2,descriptions
+1490,B2 (1001-2000),confidence,2,confidences
+1491,B2 (1001-2000),industrial,2,industrials
+1492,B2 (1001-2000),complain,4,complains | complained | complaining
+1493,B2 (1001-2000),perspective,2,perspectives
+1494,B2 (1001-2000),error,2,errors
+1495,B2 (1001-2000),arrest,4,arrests | arrested | arresting
+1496,B2 (1001-2000),assess,4,assesses | assessed | assessing
+1497,B2 (1001-2000),register,4,registers | registered | registering
+1498,B2 (1001-2000),asset,2,assets
+1499,B2 (1001-2000),signal,6,signals | signaled | signaling | signalled | signalling
+1500,B2 (1001-2000),finger,4,fingers | fingered | fingering
+1501,B2 (1001-2000),relevant,1,
+1502,B2 (1001-2000),explore,4,explores | explored | exploring
+1503,B2 (1001-2000),leadership,2,leaderships
+1504,B2 (1001-2000),commitment,2,commitments
+1505,B2 (1001-2000),wake,6,wakes | woke | waking | woken | waked
+1506,B2 (1001-2000),necessarily,1,
+1507,B2 (1001-2000),bright,3,brighter | brightest
+1508,B2 (1001-2000),frame,4,frames | framed | framing
+1509,B2 (1001-2000),slowly,1,
+1510,B2 (1001-2000),bond,4,bonds | bonded | bonding
+1511,B2 (1001-2000),hire,4,hires | hired | hiring
+1512,B2 (1001-2000),hole,4,holes | holed | holing
+1513,B2 (1001-2000),tie,4,ties | tied | tying
+1514,B2 (1001-2000),internal,2,internals
+1515,B2 (1001-2000),chain,4,chains | chained | chaining
+1516,B2 (1001-2000),literature,2,literatures
+1517,B2 (1001-2000),victim,2,victims
+1518,B2 (1001-2000),threaten,4,threatens | threatened | threatening
+1519,B2 (1001-2000),division,2,divisions
+1520,B2 (1001-2000),secure,4,secures | secured | securing
+1521,B2 (1001-2000),amaze,4,amazes | amazed | amazing
+1522,B2 (1001-2000),device,2,devices
+1523,B2 (1001-2000),birth,4,births | birthed | birthing
+1524,B2 (1001-2000),forest,4,forests | forested | foresting
+1525,B2 (1001-2000),label,6,labels | labeled | labeling | labelled | labelling
+1526,B2 (1001-2000),root,4,roots | rooted | rooting
+1527,B2 (1001-2000),factory,2,factories
+1528,B2 (1001-2000),expense,4,expenses | expensed | expensing
+1529,B2 (1001-2000),channel,6,channels | channeled | channelled | channelling | channeling
+1530,B2 (1001-2000),investigate,4,investigates | investigated | investigating
+1531,B2 (1001-2000),recommendation,2,recommendations
+1532,B2 (1001-2000),rank,5,ranks | ranked | ranking | rankings
+1533,B2 (1001-2000),typical,1,
+1534,B2 (1001-2000),west,1,
+1535,B2 (1001-2000),friendly,3,friendlier | friendliest
+1536,B2 (1001-2000),resident,2,residents
+1537,B2 (1001-2000),provision,4,provisions | provisioned | provisioning
+1538,B2 (1001-2000),concentrate,4,concentrates | concentrated | concentrating
+1539,B2 (1001-2000),plenty,1,
+1540,B2 (1001-2000),export,4,exports | exported | exporting
+1541,B2 (1001-2000),entirely,1,
+1542,B2 (1001-2000),strongly,1,
+1543,B2 (1001-2000),bridge,4,bridges | bridged | bridging
+1544,B2 (1001-2000),consist,4,consists | consisted | consisting
+1545,B2 (1001-2000),graduate,4,graduates | graduated | graduating
+1546,B2 (1001-2000),brand,4,brands | branded | branding
+1547,B2 (1001-2000),moral,2,morals
+1548,B2 (1001-2000),insist,4,insists | insisted | insisting
+1549,B2 (1001-2000),combination,2,combinations
+1550,B2 (1001-2000),abuse,4,abuses | abused | abusing
+1551,B2 (1001-2000),ice,3,ices | iced
+1552,B2 (1001-2000),principal,2,principals
+1553,B2 (1001-2000),master,4,masters | mastered | mastering
+1554,B2 (1001-2000),definitely,1,
+1555,B2 (1001-2000),session,2,sessions
+1556,B2 (1001-2000),grade,4,grades | graded | grading
+1557,B2 (1001-2000),nevertheless,1,
+1558,B2 (1001-2000),predict,4,predicts | predicted | predicting
+1559,B2 (1001-2000),previously,1,
+1560,B2 (1001-2000),protection,2,protections
+1561,B2 (1001-2000),largely,1,
+1562,B2 (1001-2000),wed,5,weds | wedded | wedding | weddings
+1563,B2 (1001-2000),rent,4,rents | rented | renting
+1564,B2 (1001-2000),shot,2,shots
+1565,B2 (1001-2000),appearance,2,appearances
+1566,B2 (1001-2000),reasonable,1,
+1567,B2 (1001-2000),guarantee,6,guarantees | guaranteed | guaranteeing | guaranty | guaranties
+1568,B2 (1001-2000),till,4,tills | tilled | tilling
+1569,B2 (1001-2000),theme,3,themes | themed
+1570,B2 (1001-2000),judgment,2,judgments
+1571,B2 (1001-2000),odd,3,odder | oddest
+1572,B2 (1001-2000),approve,4,approves | approved | approving
+1573,B2 (1001-2000),loan,4,loans | loaned | loaning
+1574,B2 (1001-2000),definition,2,definitions
+1575,B2 (1001-2000),elect,4,elects | elected | electing
+1576,B2 (1001-2000),atmosphere,2,atmospheres
+1577,B2 (1001-2000),farmer,2,farmers
+1578,B2 (1001-2000),comparison,2,comparisons
+1579,B2 (1001-2000),characteristic,2,characteristics
+1580,B2 (1001-2000),license,8,licenses | licensed | licensing | licence | licences | licenced | licencing
+1581,B2 (1001-2000),rely,4,relies | relied | relying
+1582,B2 (1001-2000),narrow,6,narrows | narrowed | narrowing | narrower | narrowest
+1583,B2 (1001-2000),succeed,4,succeeds | succeeded | succeeding
+1584,B2 (1001-2000),identity,2,identities
+1585,B2 (1001-2000),desk,2,desks
+1586,B2 (1001-2000),permit,4,permits | permitted | permitting
+1587,B2 (1001-2000),seriously,1,
+1588,B2 (1001-2000),wild,4,wilder | wildest | wilds
+1589,B2 (1001-2000),empty,6,empties | emptied | emptying | emptier | emptiest
+1590,B2 (1001-2000),commission,4,commissions | commissioned | commissioning
+1591,B2 (1001-2000),unique,1,
+1592,B2 (1001-2000),association,2,associations
+1593,B2 (1001-2000),instrument,3,instruments | instrumented
+1594,B2 (1001-2000),investor,2,investors
+1595,B2 (1001-2000),practical,1,
+1596,B2 (1001-2000),tea,2,teas
+1597,B2 (1001-2000),lovely,3,lovelier | loveliest
+1598,B2 (1001-2000),soft,3,softer | softest
+1599,B2 (1001-2000),row,4,rows | rowed | rowing
+1600,B2 (1001-2000),youth,2,youths
+1601,B2 (1001-2000),lock,4,locks | locked | locking
+1602,B2 (1001-2000),fuel,4,fuels | fueled | fueling
+1603,B2 (1001-2000),expectation,2,expectations
+1604,B2 (1001-2000),employment,2,employments
+1605,B2 (1001-2000),celebrate,4,celebrates | celebrated | celebrating
+1606,B2 (1001-2000),sexual,1,
+1607,B2 (1001-2000),shoulder,3,shoulders | shouldered
+1608,B2 (1001-2000),breath,2,breaths
+1609,B2 (1001-2000),increasingly,1,
+1610,B2 (1001-2000),import,4,imports | imported | importing
+1611,B2 (1001-2000),bottle,4,bottles | bottled | bottling
+1612,B2 (1001-2000),ourselves,1,
+1613,B2 (1001-2000),sheet,4,sheets | sheeted | sheeting
+1614,B2 (1001-2000),engine,2,engines
+1615,B2 (1001-2000),cast,5,casts | casted | casting | castings
+1616,B2 (1001-2000),notion,2,notions
+1617,B2 (1001-2000),conservative,2,conservatives
+1618,B2 (1001-2000),journey,4,journeys | journeyed | journeying
+1619,B2 (1001-2000),opposition,2,oppositions
+1620,B2 (1001-2000),relief,2,reliefs
+1621,B2 (1001-2000),debt,2,debts
+1622,B2 (1001-2000),honor,8,honors | honored | honoring | honour | honours | honoured | honouring
+1623,B2 (1001-2000),outcome,2,outcomes
+1624,B2 (1001-2000),blame,4,blames | blamed | blaming
+1625,B2 (1001-2000),explanation,2,explanations
+1626,B2 (1001-2000),arise,5,arises | arose | arising | arisen
+1627,B2 (1001-2000),musical,2,musicals
+1628,B2 (1001-2000),recover,4,recovers | recovered | recovering
+1629,B2 (1001-2000),dad,4,dads | daddy | daddies
+1630,B2 (1001-2000),stretch,4,stretches | stretched | stretching
+1631,B2 (1001-2000),declare,4,declares | declared | declaring
+1632,B2 (1001-2000),retire,4,retires | retired | retiring
+1633,B2 (1001-2000),tiny,3,tinier | tiniest
+1634,B2 (1001-2000),careful,1,
+1635,B2 (1001-2000),suitable,1,
+1636,B2 (1001-2000),native,2,natives
+1637,B2 (1001-2000),fruit,4,fruits | fruited | fruiting
+1638,B2 (1001-2000),analyze,7,analyzes | analyzed | analyzing | analyse | analysed | analysing
+1639,B2 (1001-2000),witness,4,witnesses | witnessed | witnessing
+1640,B2 (1001-2000),mail,5,mails | mailed | mailing | mailings
+1641,B2 (1001-2000),terrible,1,
+1642,B2 (1001-2000),researcher,2,researchers
+1643,B2 (1001-2000),ordinary,1,
+1644,B2 (1001-2000),selection,2,selections
+1645,B2 (1001-2000),anywhere,1,
+1646,B2 (1001-2000),mental,1,
+1647,B2 (1001-2000),participant,2,participants
+1648,B2 (1001-2000),vision,2,visions
+1649,B2 (1001-2000),personality,2,personalities
+1650,B2 (1001-2000),specifically,1,
+1651,B2 (1001-2000),fat,4,fats | fatter | fattest
+1652,B2 (1001-2000),entry,2,entries
+1653,B2 (1001-2000),fellow,2,fellows
+1654,B2 (1001-2000),chemical,2,chemicals
+1655,B2 (1001-2000),capture,4,captures | captured | capturing
+1656,B2 (1001-2000),tip,4,tips | tipped | tipping
+1657,B2 (1001-2000),discount,4,discounts | discounted | discounting
+1658,B2 (1001-2000),peak,4,peaks | peaked | peaking
+1659,B2 (1001-2000),chairman,2,chairmen
+1660,B2 (1001-2000),proportion,4,proportions | proportioned | proportioning
+1661,B2 (1001-2000),ear,3,ears | eared
+1662,B2 (1001-2000),disappear,4,disappears | disappeared | disappearing
+1663,B2 (1001-2000),shout,4,shouts | shouted | shouting
+1664,B2 (1001-2000),yard,2,yards
+1665,B2 (1001-2000),constant,2,constants
+1666,B2 (1001-2000),significantly,1,
+1667,B2 (1001-2000),hill,4,hills | hilled | hilling
+1668,B2 (1001-2000),considerable,1,
+1669,B2 (1001-2000),instruction,2,instructions
+1670,B2 (1001-2000),intelligence,2,intelligences
+1671,B2 (1001-2000),ideal,2,ideals
+1672,B2 (1001-2000),folk,2,folks
+1673,B2 (1001-2000),surely,1,
+1674,B2 (1001-2000),guard,4,guards | guarded | guarding
+1675,B2 (1001-2000),cat,2,cats
+1676,B2 (1001-2000),somewhat,1,
+1677,B2 (1001-2000),kiss,4,kisses | kissed | kissing
+1678,B2 (1001-2000),presentation,2,presentations
+1679,B2 (1001-2000),joint,4,joints | jointed | jointing
+1680,B2 (1001-2000),compete,4,competes | competed | competing
+1681,B2 (1001-2000),poll,4,polls | polled | polling
+1682,B2 (1001-2000),weak,3,weaker | weakest
+1683,B2 (1001-2000),faith,2,faiths
+1684,B2 (1001-2000),reduction,2,reductions
+1685,B2 (1001-2000),reserve,4,reserves | reserved | reserving
+1686,B2 (1001-2000),complaint,2,complaints
+1687,B2 (1001-2000),bore,4,bores | bored | boring
+1688,B2 (1001-2000),mission,2,missions
+1689,B2 (1001-2000),somehow,1,
+1690,B2 (1001-2000),tone,4,tones | toned | toning
+1691,B2 (1001-2000),neighborhood,4,neighborhoods | neighbourhood | neighbourhoods
+1692,B2 (1001-2000),passenger,2,passengers
+1693,B2 (1001-2000),justice,2,justices
+1694,B2 (1001-2000),phase,4,phases | phased | phasing
+1695,B2 (1001-2000),thin,6,thins | thinned | thinning | thinner | thinnest
+1696,B2 (1001-2000),rush,4,rushes | rushed | rushing
+1697,B2 (1001-2000),formal,2,formals
+1698,B2 (1001-2000),religion,2,religions
+1699,B2 (1001-2000),employer,2,employers
+1700,B2 (1001-2000),reject,4,rejects | rejected | rejecting
+1701,B2 (1001-2000),latter,1,
+1702,B2 (1001-2000),plate,4,plates | plated | plating
+1703,B2 (1001-2000),ban,4,bans | banned | banning
+1704,B2 (1001-2000),steal,5,steals | stole | stealing | stolen
+1705,B2 (1001-2000),protest,4,protests | protested | protesting
+1706,B2 (1001-2000),index,5,indexes | indexed | indexing | indices
+1707,B2 (1001-2000),sad,3,sadder | saddest
+1708,B2 (1001-2000),frequently,1,
+1709,B2 (1001-2000),circle,4,circles | circled | circling
+1710,B2 (1001-2000),helpful,1,
+1711,B2 (1001-2000),command,4,commands | commanded | commanding
+1712,B2 (1001-2000),attractive,1,
+1713,B2 (1001-2000),sick,3,sicker | sickest
+1714,B2 (1001-2000),impression,2,impressions
+1715,B2 (1001-2000),unable,1,
+1716,B2 (1001-2000),joke,4,jokes | joked | joking
+1717,B2 (1001-2000),sky,2,skies
+1718,B2 (1001-2000),column,3,columns | columned
+1719,B2 (1001-2000),electronic,2,electronics
+1720,B2 (1001-2000),impose,4,imposes | imposed | imposing
+1721,B2 (1001-2000),criminal,2,criminals
+1722,B2 (1001-2000),besides,1,
+1723,B2 (1001-2000),properly,1,
+1724,B2 (1001-2000),ancient,2,ancients
+1725,B2 (1001-2000),coast,4,coasts | coasted | coasting
+1726,B2 (1001-2000),ill,2,ills
+1727,B2 (1001-2000),kick,4,kicks | kicked | kicking
+1728,B2 (1001-2000),closely,1,
+1729,B2 (1001-2000),multiple,2,multiples
+1730,B2 (1001-2000),yield,4,yields | yielded | yielding
+1731,B2 (1001-2000),via,1,
+1732,B2 (1001-2000),legislation,2,legislations
+1733,B2 (1001-2000),county,2,counties
+1734,B2 (1001-2000),unlike,1,
+1735,B2 (1001-2000),mobile,2,mobiles
+1736,B2 (1001-2000),assistant,2,assistants
+1737,B2 (1001-2000),implement,4,implements | implemented | implementing
+1738,B2 (1001-2000),chart,4,charts | charted | charting
+1739,B2 (1001-2000),attach,4,attaches | attached | attaching
+1740,B2 (1001-2000),hell,2,hells
+1741,B2 (1001-2000),everywhere,1,
+1742,B2 (1001-2000),advise,4,advises | advised | advising
+1743,B2 (1001-2000),household,2,households
+1744,B2 (1001-2000),acknowledge,4,acknowledges | acknowledged | acknowledging
+1745,B2 (1001-2000),reward,4,rewards | rewarded | rewarding
+1746,B2 (1001-2000),east,1,
+1747,B2 (1001-2000),hat,3,hats | hatted
+1748,B2 (1001-2000),academic,2,academics
+1749,B2 (1001-2000),voter,2,voters
+1750,B2 (1001-2000),meanwhile,1,
+1751,B2 (1001-2000),furthermore,1,
+1752,B2 (1001-2000),accuse,4,accuses | accused | accusing
+1753,B2 (1001-2000),scientific,1,
+1754,B2 (1001-2000),wage,4,wages | waged | waging
+1755,B2 (1001-2000),absence,2,absences
+1756,B2 (1001-2000),construct,4,constructs | constructed | constructing
+1757,B2 (1001-2000),remark,4,remarks | remarked | remarking
+1758,B2 (1001-2000),medicine,2,medicines
+1759,B2 (1001-2000),professor,3,professors | prof
+1760,B2 (1001-2000),rare,3,rarer | rarest
+1761,B2 (1001-2000),intention,2,intentions
+1762,B2 (1001-2000),dozen,2,dozens
+1763,B2 (1001-2000),settlement,2,settlements
+1764,B2 (1001-2000),gap,4,gaps | gapped | gapping
+1765,B2 (1001-2000),widely,1,
+1766,B2 (1001-2000),minimum,3,minima | minimums
+1767,B2 (1001-2000),northern,1,
+1768,B2 (1001-2000),estate,2,estates
+1769,B2 (1001-2000),equally,1,
+1770,B2 (1001-2000),expose,4,exposes | exposed | exposing
+1771,B2 (1001-2000),alive,1,
+1772,B2 (1001-2000),shut,2,shuts
+1773,B2 (1001-2000),victory,2,victories
+1774,B2 (1001-2000),resolve,4,resolves | resolved | resolving
+1775,B2 (1001-2000),critic,2,critics
+1776,B2 (1001-2000),variable,2,variables
+1777,B2 (1001-2000),enormous,1,
+1778,B2 (1001-2000),sweet,4,sweets | sweeter | sweetest
+1779,B2 (1001-2000),permanent,1,
+1780,B2 (1001-2000),emotion,2,emotions
+1781,B2 (1001-2000),pursue,4,pursues | pursued | pursuing
+1782,B2 (1001-2000),tall,3,taller | tallest
+1783,B2 (1001-2000),urge,5,urges | urged | urging | urgings
+1784,B2 (1001-2000),enemy,2,enemies
+1785,B2 (1001-2000),appoint,4,appoints | appointed | appointing
+1786,B2 (1001-2000),milk,4,milks | milked | milking
+1787,B2 (1001-2000),talent,3,talents | talented
+1788,B2 (1001-2000),smell,4,smells | smelled | smelling
+1789,B2 (1001-2000),prior,2,priors
+1790,B2 (1001-2000),priority,2,priorities
+1791,B2 (1001-2000),online,1,
+1792,B2 (1001-2000),phrase,4,phrases | phrased | phrasing
+1793,B2 (1001-2000),pilot,4,pilots | piloted | piloting
+1794,B2 (1001-2000),stable,4,stables | stabled | stabling
+1795,B2 (1001-2000),merely,1,
+1796,B2 (1001-2000),resolution,2,resolutions
+1797,B2 (1001-2000),communicate,4,communicates | communicated | communicating
+1798,B2 (1001-2000),injury,2,injuries
+1799,B2 (1001-2000),vast,3,vaster | vastest
+1800,B2 (1001-2000),exhibition,2,exhibitions
+1801,B2 (1001-2000),producer,2,producers
+1802,B2 (1001-2000),regional,2,regionals
+1803,B2 (1001-2000),immediate,1,
+1804,B2 (1001-2000),incident,2,incidents
+1805,B2 (1001-2000),childhood,2,childhoods
+1806,B2 (1001-2000),draft,6,drafts | drafted | drafting | draught | draughts
+1807,B2 (1001-2000),slip,4,slips | slipped | slipping
+1808,B2 (1001-2000),accompany,4,accompanies | accompanied | accompanying
+1809,B2 (1001-2000),politician,2,politicians
+1810,B2 (1001-2000),angry,3,angrier | angriest
+1811,B2 (1001-2000),knock,4,knocks | knocked | knocking
+1812,B2 (1001-2000),seed,4,seeds | seeded | seeding
+1813,B2 (1001-2000),salary,3,salaries | salaried
+1814,B2 (1001-2000),illustrate,4,illustrates | illustrated | illustrating
+1815,B2 (1001-2000),imply,4,implies | implied | implying
+1816,B2 (1001-2000),breakfast,4,breakfasts | breakfasted | breakfasting
+1817,B2 (1001-2000),temporary,1,
+1818,B2 (1001-2000),liberal,2,liberals
+1819,B2 (1001-2000),lake,2,lakes
+1820,B2 (1001-2000),qualify,4,qualifies | qualified | qualifying
+1821,B2 (1001-2000),competitive,1,
+1822,B2 (1001-2000),truly,1,
+1823,B2 (1001-2000),hi,1,
+1824,B2 (1001-2000),yellow,4,yellows | yellowed | yellowing
+1825,B2 (1001-2000),habit,3,habits | habited
+1826,B2 (1001-2000),disk,4,disks | disc | discs
+1827,B2 (1001-2000),core,4,cores | cored | coring
+1828,B2 (1001-2000),emotional,1,
+1829,B2 (1001-2000),aircraft,2,aircrafts
+1830,B2 (1001-2000),self,2,selves
+1831,B2 (1001-2000),metal,2,metals
+1832,B2 (1001-2000),existence,2,existences
+1833,B2 (1001-2000),bone,4,bones | boned | boning
+1834,B2 (1001-2000),panel,6,panels | paneled | paneling | panelled | panelling
+1835,B2 (1001-2000),prime,4,primes | primed | priming
+1836,B2 (1001-2000),appointment,2,appointments
+1837,B2 (1001-2000),emphasize,8,emphasizes | emphasized | emphasizing | emphasise | emphasises | emphasised | emphasising
+1838,B2 (1001-2000),maximum,1,
+1839,B2 (1001-2000),effectively,1,
+1840,B2 (1001-2000),elsewhere,1,
+1841,B2 (1001-2000),bother,4,bothers | bothered | bothering
+1842,B2 (1001-2000),initiative,2,initiatives
+1843,B2 (1001-2000),sharp,3,sharper | sharpest
+1844,B2 (1001-2000),diet,4,diets | dieted | dieting
+1845,B2 (1001-2000),motion,4,motions | motioned | motioning
+1846,B2 (1001-2000),gray,12,grays | grayed | graying | grayer | grayest | grey | greys | greyed | greying | greyer | greyest
+1847,B2 (1001-2000),plastic,2,plastics
+1848,B2 (1001-2000),complicate,4,complicates | complicated | complicating
+1849,B2 (1001-2000),discipline,4,disciplines | disciplined | disciplining
+1850,B2 (1001-2000),disappoint,4,disappoints | disappointed | disappointing
+1851,B2 (1001-2000),boss,4,bosses | bossed | bossing
+1852,B2 (1001-2000),assumption,2,assumptions
+1853,B2 (1001-2000),freeze,5,freezes | froze | freezing | frozen
+1854,B2 (1001-2000),extreme,2,extremes
+1855,B2 (1001-2000),passage,2,passages
+1856,B2 (1001-2000),reputation,2,reputations
+1857,B2 (1001-2000),forth,1,
+1858,B2 (1001-2000),negotiation,2,negotiations
+1859,B2 (1001-2000),mechanism,2,mechanisms
+1860,B2 (1001-2000),coat,5,coats | coated | coating | coatings
+1861,B2 (1001-2000),democracy,2,democracies
+1862,B2 (1001-2000),pocket,4,pockets | pocketed | pocketing
+1863,B2 (1001-2000),lucky,3,luckier | luckiest
+1864,B2 (1001-2000),crash,4,crashes | crashed | crashing
+1865,B2 (1001-2000),observation,2,observations
+1866,B2 (1001-2000),meat,2,meats
+1867,B2 (1001-2000),concentration,2,concentrations
+1868,B2 (1001-2000),implication,2,implications
+1869,B2 (1001-2000),deserve,4,deserves | deserved | deserving
+1870,B2 (1001-2000),unusual,1,
+1871,B2 (1001-2000),defend,4,defends | defended | defending
+1872,B2 (1001-2000),classic,2,classics
+1873,B2 (1001-2000),king,2,kings
+1874,B2 (1001-2000),interaction,2,interactions
+1875,B2 (1001-2000),repair,4,repairs | repaired | repairing
+1876,B2 (1001-2000),collapse,4,collapses | collapsed | collapsing
+1877,B2 (1001-2000),borrow,5,borrows | borrowed | borrowing | borrowings
+1878,B2 (1001-2000),fundamental,2,fundamentals
+1879,B2 (1001-2000),dish,4,dishes | dished | dishing
+1880,B2 (1001-2000),abroad,1,
+1881,B2 (1001-2000),soul,2,souls
+1882,B2 (1001-2000),capable,1,
+1883,B2 (1001-2000),defeat,4,defeats | defeated | defeating
+1884,B2 (1001-2000),presidential,1,
+1885,B2 (1001-2000),perfectly,1,
+1886,B2 (1001-2000),enhance,4,enhances | enhanced | enhancing
+1887,B2 (1001-2000),proud,3,prouder | proudest
+1888,B2 (1001-2000),emergency,2,emergencies
+1889,B2 (1001-2000),educational,1,
+1890,B2 (1001-2000),distinguish,4,distinguishes | distinguished | distinguishing
+1891,B2 (1001-2000),substantial,1,
+1892,B2 (1001-2000),nearby,1,
+1893,B2 (1001-2000),manufacturer,2,manufacturers
+1894,B2 (1001-2000),slide,4,slides | slid | sliding
+1895,B2 (1001-2000),valuable,2,valuables
+1896,B2 (1001-2000),personally,1,
+1897,B2 (1001-2000),breast,4,breasts | breasted | breasting
+1898,B2 (1001-2000),cope,4,copes | coped | coping
+1899,B2 (1001-2000),approximately,1,
+1900,B2 (1001-2000),accommodation,2,accommodations
+1901,B2 (1001-2000),highlight,4,highlights | highlighted | highlighting
+1902,B2 (1001-2000),reporter,2,reporters
+1903,B2 (1001-2000),climate,2,climates
+1904,B2 (1001-2000),shirt,4,shirts | shirted | shirting
+1905,B2 (1001-2000),exception,2,exceptions
+1906,B2 (1001-2000),corporation,2,corporations
+1907,B2 (1001-2000),chip,4,chips | chipped | chipping
+1908,B2 (1001-2000),winner,2,winners
+1909,B2 (1001-2000),encounter,4,encounters | encountered | encountering
+1910,B2 (1001-2000),brown,6,browns | browned | browning | browner | brownest
+1911,B2 (1001-2000),breathe,4,breathes | breathed | breathing
+1912,B2 (1001-2000),excuse,4,excuses | excused | excusing
+1913,B2 (1001-2000),partly,1,
+1914,B2 (1001-2000),tennis,1,
+1915,B2 (1001-2000),urban,1,
+1916,B2 (1001-2000),confuse,4,confuses | confused | confusing
+1917,B2 (1001-2000),southern,1,
+1918,B2 (1001-2000),output,4,outputs | outputted | outputting
+1919,B2 (1001-2000),beauty,2,beauties
+1920,B2 (1001-2000),massive,1,
+1921,B2 (1001-2000),install,4,installs | installed | installing
+1922,B2 (1001-2000),calculate,4,calculates | calculated | calculating
+1923,B2 (1001-2000),mouse,3,mouses | mice
+1924,B2 (1001-2000),mathematics,4,mathematic | math | maths
+1925,B2 (1001-2000),upper,2,uppers
+1926,B2 (1001-2000),creation,2,creations
+1927,B2 (1001-2000),occupy,4,occupies | occupied | occupying
+1928,B2 (1001-2000),outline,4,outlines | outlined | outlining
+1929,B2 (1001-2000),sufficient,1,
+1930,B2 (1001-2000),update,4,updates | updated | updating
+1931,B2 (1001-2000),luck,4,lucks | lucked | lucking
+1932,B2 (1001-2000),preserve,4,preserves | preserved | preserving
+1933,B2 (1001-2000),split,3,splits | splitting
+1934,B2 (1001-2000),swing,4,swings | swung | swinging
+1935,B2 (1001-2000),illness,2,illnesses
+1936,B2 (1001-2000),journalist,2,journalists
+1937,B2 (1001-2000),sudden,1,
+1938,B2 (1001-2000),advertisement,4,advertisements | advertisment | advertisments
+1939,B2 (1001-2000),consistent,1,
+1940,B2 (1001-2000),originally,1,
+1941,B2 (1001-2000),aside,2,asides
+1942,B2 (1001-2000),comfort,4,comforts | comforted | comforting
+1943,B2 (1001-2000),secondly,1,
+1944,B2 (1001-2000),severe,3,severer | severest
+1945,B2 (1001-2000),gene,2,genes
+1946,B2 (1001-2000),prospect,4,prospects | prospected | prospecting
+1947,B2 (1001-2000),snow,4,snows | snowed | snowing
+1948,B2 (1001-2000),plot,4,plots | plotted | plotting
+1949,B2 (1001-2000),neck,4,necks | necked | necking
+1950,B2 (1001-2000),criterion,2,criterions
+1951,B2 (1001-2000),primarily,1,
+1952,B2 (1001-2000),integrate,4,integrates | integrated | integrating
+1953,B2 (1001-2000),criticism,2,criticisms
+1954,B2 (1001-2000),convention,2,conventions
+1955,B2 (1001-2000),bet,4,bets | betted | betting
+1956,B2 (1001-2000),retain,4,retains | retained | retaining
+1957,B2 (1001-2000),sequence,5,sequences | sequenced | sequencing | sequencings
+1958,B2 (1001-2000),plain,4,plains | plainer | plainest
+1959,B2 (1001-2000),volunteer,4,volunteers | volunteered | volunteering
+1960,B2 (1001-2000),rural,1,
+1961,B2 (1001-2000),calm,6,calms | calmed | calming | calmer | calmest
+1962,B2 (1001-2000),abandon,4,abandons | abandoned | abandoning
+1963,B2 (1001-2000),examination,2,examinations
+1964,B2 (1001-2000),silence,4,silences | silenced | silencing
+1965,B2 (1001-2000),rapidly,1,
+1966,B2 (1001-2000),efficient,1,
+1967,B2 (1001-2000),revolution,2,revolutions
+1968,B2 (1001-2000),delight,4,delights | delighted | delighting
+1969,B2 (1001-2000),spell,6,spells | spelled | spelling | spelt | spellings
+1970,B2 (1001-2000),premise,4,premises | premised | premising
+1971,B2 (1001-2000),lean,8,leans | leaned | leaning | leanings | leant | leaner | leanest
+1972,B2 (1001-2000),dramatic,2,dramatics
+1973,B2 (1001-2000),differ,4,differs | differed | differing
+1974,B2 (1001-2000),grateful,1,
+1975,B2 (1001-2000),protein,2,proteins
+1976,B2 (1001-2000),bike,4,bikes | biked | biking
+1977,B2 (1001-2000),distribute,4,distributes | distributed | distributing
+1978,B2 (1001-2000),intellectual,2,intellectuals
+1979,B2 (1001-2000),derive,4,derives | derived | deriving
+1980,B2 (1001-2000),crucial,1,
+1981,B2 (1001-2000),unemployment,1,
+1982,B2 (1001-2000),wheel,4,wheels | wheeled | wheeling
+1983,B2 (1001-2000),crop,4,crops | cropped | cropping
+1984,B2 (1001-2000),minority,2,minorities
+1985,B2 (1001-2000),origin,2,origins
+1986,B2 (1001-2000),interpretation,2,interpretations
+1987,B2 (1001-2000),gentleman,2,gentlemen
+1988,B2 (1001-2000),drama,2,dramas
+1989,B2 (1001-2000),landscape,4,landscapes | landscaped | landscaping
+1990,B2 (1001-2000),educate,4,educates | educated | educating
+1991,B2 (1001-2000),toy,4,toys | toyed | toying
+1992,B2 (1001-2000),fault,4,faults | faulted | faulting
+1993,B2 (1001-2000),exhibit,4,exhibits | exhibited | exhibiting
+1994,B2 (1001-2000),minor,2,minors
+1995,B2 (1001-2000),hunt,4,hunts | hunted | hunting
+1996,B2 (1001-2000),storm,4,storms | stormed | storming
+1997,B2 (1001-2000),thick,3,thicker | thickest
+1998,B2 (1001-2000),achievement,2,achievements
+1999,B2 (1001-2000),negotiate,4,negotiates | negotiated | negotiating
+2000,B2 (1001-2000),shoot,4,shoots | shooting | shootings
+2001,B3 (2001-2801),supplier,2,suppliers
+2002,B3 (2001-2801),prize,3,prizes | prized
+2003,B3 (2001-2801),typically,1,
+2004,B3 (2001-2801),peer,4,peers | peered | peering
+2005,B3 (2001-2801),pension,4,pensions | pensioned | pensioning
+2006,B3 (2001-2801),wing,4,wings | winged | winging
+2007,B3 (2001-2801),acquisition,2,acquisitions
+2008,B3 (2001-2801),laughter,1,
+2009,B3 (2001-2801),deeply,1,
+2010,B3 (2001-2801),recognition,2,recognitions
+2011,B3 (2001-2801),electricity,1,
+2012,B3 (2001-2801),assistance,2,assistances
+2013,B3 (2001-2801),roof,4,roofs | roofed | roofing
+2014,B3 (2001-2801),retirement,2,retirements
+2015,B3 (2001-2801),respectively,1,
+2016,B3 (2001-2801),variation,2,variations
+2017,B3 (2001-2801),ultimately,1,
+2018,B3 (2001-2801),proof,4,proofs | proofed | proofing
+2019,B3 (2001-2801),soil,4,soils | soiled | soiling
+2020,B3 (2001-2801),smart,6,smarts | smarted | smarting | smarter | smartest
+2021,B3 (2001-2801),layer,4,layers | layered | layering
+2022,B3 (2001-2801),upset,3,upsets | upsetting
+2023,B3 (2001-2801),tooth,3,teeth | toothed
+2024,B3 (2001-2801),representation,2,representations
+2025,B3 (2001-2801),preparation,2,preparations
+2026,B3 (2001-2801),dispute,4,disputes | disputed | disputing
+2027,B3 (2001-2801),agenda,2,agendas
+2028,B3 (2001-2801),emphasis,2,emphases
+2029,B3 (2001-2801),edition,2,editions
+2030,B3 (2001-2801),silver,3,silvers | silvered
+2031,B3 (2001-2801),entertainment,2,entertainments
+2032,B3 (2001-2801),honest,1,
+2033,B3 (2001-2801),undertake,6,undertakes | undertook | undertaking | undertaken | undertakings
+2034,B3 (2001-2801),retail,4,retails | retailed | retailing
+2035,B3 (2001-2801),wire,5,wires | wired | wiring | wirings
+2036,B3 (2001-2801),unlikely,3,unlikelier | unlikeliest
+2037,B3 (2001-2801),gay,4,gayer | gayest | gays
+2038,B3 (2001-2801),publication,2,publications
+2039,B3 (2001-2801),slight,6,slights | slighted | slighting | slighter | slightest
+2040,B3 (2001-2801),unknown,2,unknowns
+2041,B3 (2001-2801),framework,2,frameworks
+2042,B3 (2001-2801),zone,5,zones | zoned | zoning | zonings
+2043,B3 (2001-2801),restrict,4,restricts | restricted | restricting
+2044,B3 (2001-2801),trace,5,traces | traced | tracing | tracings
+2045,B3 (2001-2801),inch,4,inches | inched | inching
+2046,B3 (2001-2801),equivalent,2,equivalents
+2047,B3 (2001-2801),solid,2,solids
+2048,B3 (2001-2801),enterprise,3,enterprises | enterprising
+2049,B3 (2001-2801),elderly,1,
+2050,B3 (2001-2801),owe,4,owes | owed | owing
+2051,B3 (2001-2801),governor,2,governors
+2052,B3 (2001-2801),uniform,3,uniforms | uniformed
+2053,B3 (2001-2801),port,4,ports | ported | porting
+2054,B3 (2001-2801),pitch,4,pitches | pitched | pitching
+2055,B3 (2001-2801),arrival,2,arrivals
+2056,B3 (2001-2801),contemporary,2,contemporaries
+2057,B3 (2001-2801),gate,4,gates | gated | gating
+2058,B3 (2001-2801),ease,4,eases | eased | easing
+2059,B3 (2001-2801),beer,2,beers
+2060,B3 (2001-2801),specialist,2,specialists
+2061,B3 (2001-2801),assure,4,assures | assured | assuring
+2062,B3 (2001-2801),profile,5,profiles | profiled | profiling | profilings
+2063,B3 (2001-2801),mood,2,moods
+2064,B3 (2001-2801),episode,2,episodes
+2065,B3 (2001-2801),crack,4,cracks | cracked | cracking
+2066,B3 (2001-2801),numerous,1,
+2067,B3 (2001-2801),submit,4,submits | submitted | submitting
+2068,B3 (2001-2801),symptom,2,symptoms
+2069,B3 (2001-2801),virtually,1,
+2070,B3 (2001-2801),era,2,eras
+2071,B3 (2001-2801),coverage,1,
+2072,B3 (2001-2801),tension,4,tensions | tensioned | tensioning
+2073,B3 (2001-2801),cable,4,cables | cabled | cabling
+2074,B3 (2001-2801),sensitive,1,
+2075,B3 (2001-2801),nervous,1,
+2076,B3 (2001-2801),input,4,inputs | inputted | inputting
+2077,B3 (2001-2801),isolate,4,isolates | isolated | isolating
+2078,B3 (2001-2801),prisoner,2,prisoners
+2079,B3 (2001-2801),eliminate,4,eliminates | eliminated | eliminating
+2080,B3 (2001-2801),tight,3,tighter | tightest
+2081,B3 (2001-2801),wet,6,wets | wetted | wetting | wetter | wettest
+2082,B3 (2001-2801),secondary,1,
+2083,B3 (2001-2801),welfare,2,welfares
+2084,B3 (2001-2801),recruit,4,recruits | recruited | recruiting
+2085,B3 (2001-2801),exclude,4,excludes | excluded | excluding
+2086,B3 (2001-2801),string,4,strings | strung | stringing
+2087,B3 (2001-2801),cloud,4,clouds | clouded | clouding
+2088,B3 (2001-2801),persuade,4,persuades | persuaded | persuading
+2089,B3 (2001-2801),inspire,4,inspires | inspired | inspiring
+2090,B3 (2001-2801),grand,3,grander | grandest
+2091,B3 (2001-2801),hence,1,
+2092,B3 (2001-2801),crew,4,crews | crewed | crewing
+2093,B3 (2001-2801),phenomenon,2,phenomena
+2094,B3 (2001-2801),pupil,2,pupils
+2095,B3 (2001-2801),false,3,falser | falsest
+2096,B3 (2001-2801),assist,4,assists | assisted | assisting
+2097,B3 (2001-2801),restore,4,restores | restored | restoring
+2098,B3 (2001-2801),formula,3,formulas | formulae
+2099,B3 (2001-2801),alter,4,alters | altered | altering
+2100,B3 (2001-2801),perceive,4,perceives | perceived | perceiving
+2101,B3 (2001-2801),routine,2,routines
+2102,B3 (2001-2801),sink,5,sinks | sank | sinking | sunk
+2103,B3 (2001-2801),stare,4,stares | stared | staring
+2104,B3 (2001-2801),anymore,1,
+2105,B3 (2001-2801),hero,2,heroes
+2106,B3 (2001-2801),supporter,2,supporters
+2107,B3 (2001-2801),convert,4,converts | converted | converting
+2108,B3 (2001-2801),steady,6,steadies | steadied | steadying | steadier | steadiest
+2109,B3 (2001-2801),meter,6,meters | metered | metering | metre | metres
+2110,B3 (2001-2801),truck,4,trucks | trucked | trucking
+2111,B3 (2001-2801),nose,4,noses | nosed | nosing
+2112,B3 (2001-2801),beside,1,
+2113,B3 (2001-2801),sail,4,sails | sailed | sailing
+2114,B3 (2001-2801),disaster,2,disasters
+2115,B3 (2001-2801),pace,4,paces | paced | pacing
+2116,B3 (2001-2801),heavily,1,
+2117,B3 (2001-2801),devote,4,devotes | devoted | devoting
+2118,B3 (2001-2801),terrorist,2,terrorists
+2119,B3 (2001-2801),justify,4,justifies | justified | justifying
+2120,B3 (2001-2801),vital,2,vitals
+2121,B3 (2001-2801),fascinate,4,fascinates | fascinated | fascinating
+2122,B3 (2001-2801),external,2,externals
+2123,B3 (2001-2801),spare,6,spares | spared | sparing | sparer | sparest
+2124,B3 (2001-2801),whenever,1,
+2125,B3 (2001-2801),depression,2,depressions
+2126,B3 (2001-2801),guilty,3,guiltier | guiltiest
+2127,B3 (2001-2801),underlie,4,underlies | underlying | underlain
+2128,B3 (2001-2801),mom,4,moms | mommy | mommies
+2129,B3 (2001-2801),distinction,2,distinctions
+2130,B3 (2001-2801),satisfaction,2,satisfactions
+2131,B3 (2001-2801),incorporate,4,incorporates | incorporated | incorporating
+2132,B3 (2001-2801),pour,4,pours | poured | pouring
+2133,B3 (2001-2801),sweep,5,sweeps | swept | sweeping | sweepings
+2134,B3 (2001-2801),obligation,2,obligations
+2135,B3 (2001-2801),sir,1,
+2136,B3 (2001-2801),evaluate,4,evaluates | evaluated | evaluating
+2137,B3 (2001-2801),anger,3,angers | angered
+2138,B3 (2001-2801),pub,2,pubs
+2139,B3 (2001-2801),perception,2,perceptions
+2140,B3 (2001-2801),naturally,1,
+2141,B3 (2001-2801),currency,2,currencies
+2142,B3 (2001-2801),database,2,databases
+2143,B3 (2001-2801),initially,1,
+2144,B3 (2001-2801),territory,2,territories
+2145,B3 (2001-2801),stream,4,streams | streamed | streaming
+2146,B3 (2001-2801),rarely,1,
+2147,B3 (2001-2801),height,2,heights
+2148,B3 (2001-2801),apparent,1,
+2149,B3 (2001-2801),western,2,westerns
+2150,B3 (2001-2801),expansion,2,expansions
+2151,B3 (2001-2801),constantly,1,
+2152,B3 (2001-2801),muscle,3,muscles | muscled
+2153,B3 (2001-2801),scare,4,scares | scared | scaring
+2154,B3 (2001-2801),badly,1,
+2155,B3 (2001-2801),everyday,1,
+2156,B3 (2001-2801),boundary,2,boundaries
+2157,B3 (2001-2801),ratio,2,ratios
+2158,B3 (2001-2801),essay,4,essays | essayed | essaying
+2159,B3 (2001-2801),scream,4,screams | screamed | screaming
+2160,B3 (2001-2801),withdraw,5,withdraws | withdrew | withdrawing | withdrawn
+2161,B3 (2001-2801),pollution,2,pollutions
+2162,B3 (2001-2801),disorder,4,disorders | disordered | disordering
+2163,B3 (2001-2801),furniture,1,
+2164,B3 (2001-2801),symbol,2,symbols
+2165,B3 (2001-2801),apartment,2,apartments
+2166,B3 (2001-2801),demonstration,2,demonstrations
+2167,B3 (2001-2801),analyst,2,analysts
+2168,B3 (2001-2801),platform,2,platforms
+2169,B3 (2001-2801),steel,4,steels | steeled | steeling
+2170,B3 (2001-2801),cake,4,cakes | caked | caking
+2171,B3 (2001-2801),transform,4,transforms | transformed | transforming
+2172,B3 (2001-2801),wound,4,wounds | wounded | wounding
+2173,B3 (2001-2801),restriction,2,restrictions
+2174,B3 (2001-2801),foundation,2,foundations
+2175,B3 (2001-2801),designer,2,designers
+2176,B3 (2001-2801),strain,4,strains | strained | straining
+2177,B3 (2001-2801),innovation,2,innovations
+2178,B3 (2001-2801),album,2,albums
+2179,B3 (2001-2801),singer,2,singers
+2180,B3 (2001-2801),trail,4,trails | trailed | trailing
+2181,B3 (2001-2801),trap,5,traps | trapped | trapping | trappings
+2182,B3 (2001-2801),loose,6,looses | loosed | loosing | looser | loosest
+2183,B3 (2001-2801),extension,2,extensions
+2184,B3 (2001-2801),wealth,1,
+2185,B3 (2001-2801),gradually,1,
+2186,B3 (2001-2801),tank,4,tanks | tanked | tanking
+2187,B3 (2001-2801),evil,4,evils | eviler | evilest
+2188,B3 (2001-2801),remarkable,1,
+2189,B3 (2001-2801),tune,4,tunes | tuned | tuning
+2190,B3 (2001-2801),grass,4,grasses | grassed | grassing
+2191,B3 (2001-2801),invitation,2,invitations
+2192,B3 (2001-2801),transition,4,transitions | transitioned | transitioning
+2193,B3 (2001-2801),frighten,4,frightens | frightened | frightening
+2194,B3 (2001-2801),bid,4,bids | bade | bidding
+2195,B3 (2001-2801),breed,4,breeds | bred | breeding
+2196,B3 (2001-2801),extraordinary,1,
+2197,B3 (2001-2801),brilliant,1,
+2198,B3 (2001-2801),adviser,2,advisers
+2199,B3 (2001-2801),stem,4,stems | stemmed | stemming
+2200,B3 (2001-2801),reverse,4,reverses | reversed | reversing
+2201,B3 (2001-2801),mode,2,modes
+2202,B3 (2001-2801),mirror,4,mirrors | mirrored | mirroring
+2203,B3 (2001-2801),awful,1,
+2204,B3 (2001-2801),pose,4,poses | posed | posing
+2205,B3 (2001-2801),adjust,4,adjusts | adjusted | adjusting
+2206,B3 (2001-2801),creative,1,
+2207,B3 (2001-2801),nowadays,1,
+2208,B3 (2001-2801),poem,2,poems
+2209,B3 (2001-2801),agricultural,1,
+2210,B3 (2001-2801),competitor,2,competitors
+2211,B3 (2001-2801),alcohol,2,alcohols
+2212,B3 (2001-2801),festival,2,festivals
+2213,B3 (2001-2801),vegetable,2,vegetables
+2214,B3 (2001-2801),van,2,vans
+2215,B3 (2001-2801),confident,2,confidents
+2216,B3 (2001-2801),planet,2,planets
+2217,B3 (2001-2801),curve,4,curves | curved | curving
+2218,B3 (2001-2801),knee,4,knees | kneed | kneeing
+2219,B3 (2001-2801),overcome,4,overcomes | overcame | overcoming
+2220,B3 (2001-2801),web,5,webs | webbed | webbing | webbings
+2221,B3 (2001-2801),depth,2,depths
+2222,B3 (2001-2801),entrance,4,entrances | entranced | entrancing
+2223,B3 (2001-2801),log,4,logs | logged | logging
+2224,B3 (2001-2801),giant,2,giants
+2225,B3 (2001-2801),god,2,gods
+2226,B3 (2001-2801),portion,4,portions | portioned | portioning
+2227,B3 (2001-2801),substance,2,substances
+2228,B3 (2001-2801),extensive,1,
+2229,B3 (2001-2801),interpret,4,interprets | interpreted | interpreting
+2230,B3 (2001-2801),independence,2,independences
+2231,B3 (2001-2801),sugar,3,sugars | sugared
+2232,B3 (2001-2801),inner,2,inners
+2233,B3 (2001-2801),harm,4,harms | harmed | harming
+2234,B3 (2001-2801),consult,4,consults | consulted | consulting
+2235,B3 (2001-2801),pink,6,pinks | pinked | pinking | pinker | pinkest
+2236,B3 (2001-2801),shadow,2,shadows
+2237,B3 (2001-2801),strip,4,strips | stripped | stripping
+2238,B3 (2001-2801),smooth,5,smoothed | smoothing | smoother | smoothest
+2239,B3 (2001-2801),intervention,2,interventions
+2240,B3 (2001-2801),impress,4,impresses | impressed | impressing
+2241,B3 (2001-2801),exam,2,exams
+2242,B3 (2001-2801),vice,2,vices
+2243,B3 (2001-2801),radical,2,radicals
+2244,B3 (2001-2801),similarly,1,
+2245,B3 (2001-2801),behave,4,behaves | behaved | behaving
+2246,B3 (2001-2801),loud,3,louder | loudest
+2247,B3 (2001-2801),dimension,4,dimensions | dimensioned | dimensioning
+2248,B3 (2001-2801),subsequent,1,
+2249,B3 (2001-2801),infection,2,infections
+2250,B3 (2001-2801),jacket,2,jackets
+2251,B3 (2001-2801),efficiency,2,efficiencies
+2252,B3 (2001-2801),dirty,6,dirties | dirtied | dirtying | dirtier | dirtiest
+2253,B3 (2001-2801),statistic,2,statistics
+2254,B3 (2001-2801),regularly,1,
+2255,B3 (2001-2801),resort,4,resorts | resorted | resorting
+2256,B3 (2001-2801),iron,4,irons | ironed | ironing
+2257,B3 (2001-2801),broadcast,4,broadcasts | broadcasted | broadcasting
+2258,B3 (2001-2801),membership,2,memberships
+2259,B3 (2001-2801),bread,4,breads | breaded | breading
+2260,B3 (2001-2801),blind,6,blinds | blinded | blinding | blinder | blindest
+2261,B3 (2001-2801),pure,3,purer | purest
+2262,B3 (2001-2801),bloody,6,bloodies | bloodied | bloodying | bloodier | bloodiest
+2263,B3 (2001-2801),ally,3,allies | allied
+2264,B3 (2001-2801),quantity,2,quantities
+2265,B3 (2001-2801),bend,5,bends | bended | bending | bent
+2266,B3 (2001-2801),mature,4,matures | matured | maturing
+2267,B3 (2001-2801),briefly,1,
+2268,B3 (2001-2801),alarm,4,alarms | alarmed | alarming
+2269,B3 (2001-2801),disturb,4,disturbs | disturbed | disturbing
+2270,B3 (2001-2801),sustain,4,sustains | sustained | sustaining
+2271,B3 (2001-2801),flood,4,floods | flooded | flooding
+2272,B3 (2001-2801),poverty,1,
+2273,B3 (2001-2801),crazy,4,crazier | craziest | crazies
+2274,B3 (2001-2801),cite,4,cites | cited | citing
+2275,B3 (2001-2801),newly,1,
+2276,B3 (2001-2801),parallel,4,parallels | paralleled | paralleling
+2277,B3 (2001-2801),gender,3,genders | gendered
+2278,B3 (2001-2801),sponsor,4,sponsors | sponsored | sponsoring
+2279,B3 (2001-2801),boot,4,boots | booted | booting
+2280,B3 (2001-2801),accurate,1,
+2281,B3 (2001-2801),dealer,2,dealers
+2282,B3 (2001-2801),button,4,buttons | buttoned | buttoning
+2283,B3 (2001-2801),burden,4,burdens | burdened | burdening
+2284,B3 (2001-2801),desert,4,deserts | deserted | deserting
+2285,B3 (2001-2801),mate,4,mates | mated | mating
+2286,B3 (2001-2801),occasionally,1,
+2287,B3 (2001-2801),shareholder,2,shareholders
+2288,B3 (2001-2801),bowl,4,bowls | bowled | bowling
+2289,B3 (2001-2801),discovery,2,discoveries
+2290,B3 (2001-2801),resistance,2,resistances
+2291,B3 (2001-2801),bath,2,baths
+2292,B3 (2001-2801),frequency,2,frequencies
+2293,B3 (2001-2801),criticize,8,criticizes | criticized | criticizing | criticise | criticises | criticised | criticising
+2294,B3 (2001-2801),tap,4,taps | tapped | tapping
+2295,B3 (2001-2801),philosophy,2,philosophies
+2296,B3 (2001-2801),lip,3,lips | lipped
+2297,B3 (2001-2801),attribute,4,attributes | attributed | attributing
+2298,B3 (2001-2801),apologize,8,apologizes | apologized | apologizing | apologise | apologises | apologised | apologising
+2299,B3 (2001-2801),approval,2,approvals
+2300,B3 (2001-2801),grab,4,grabs | grabbed | grabbing
+2301,B3 (2001-2801),entitle,4,entitles | entitled | entitling
+2302,B3 (2001-2801),lend,4,lends | lent | lending
+2303,B3 (2001-2801),involvement,2,involvements
+2304,B3 (2001-2801),exposure,2,exposures
+2305,B3 (2001-2801),conventional,1,
+2306,B3 (2001-2801),digital,2,digitals
+2307,B3 (2001-2801),translate,4,translates | translated | translating
+2308,B3 (2001-2801),edit,4,edits | edited | editing
+2309,B3 (2001-2801),formation,2,formations
+2310,B3 (2001-2801),deposit,4,deposits | deposited | depositing
+2311,B3 (2001-2801),pleasant,3,pleasanter | pleasantest
+2312,B3 (2001-2801),overseas,2,oversea
+2313,B3 (2001-2801),advocate,4,advocates | advocated | advocating
+2314,B3 (2001-2801),establishment,2,establishments
+2315,B3 (2001-2801),summary,2,summaries
+2316,B3 (2001-2801),rough,6,roughs | roughed | roughing | rougher | roughest
+2317,B3 (2001-2801),pen,4,pens | penned | penning
+2318,B3 (2001-2801),recovery,2,recoveries
+2319,B3 (2001-2801),seal,5,seals | sealed | sealing | sealings
+2320,B3 (2001-2801),tube,4,tubes | tubed | tubing
+2321,B3 (2001-2801),tower,4,towers | towered | towering
+2322,B3 (2001-2801),characterize,8,characterizes | characterized | characterizing | characterise | characterises | characterised | characterising
+2323,B3 (2001-2801),specify,4,specifies | specified | specifying
+2324,B3 (2001-2801),exact,4,exacts | exacted | exacting
+2325,B3 (2001-2801),spin,4,spins | spun | spinning
+2326,B3 (2001-2801),operator,2,operators
+2327,B3 (2001-2801),infant,2,infants
+2328,B3 (2001-2801),dig,4,digs | dug | digging
+2329,B3 (2001-2801),drag,4,drags | dragged | dragging
+2330,B3 (2001-2801),mount,5,mounts | mounted | mounting | mountings
+2331,B3 (2001-2801),wrap,5,wraps | wrapped | wrapping | wrappings
+2332,B3 (2001-2801),anticipate,4,anticipates | anticipated | anticipating
+2333,B3 (2001-2801),dependent,2,dependents
+2334,B3 (2001-2801),specialize,8,specializes | specialized | specializing | specialise | specialises | specialised | specialising
+2335,B3 (2001-2801),angle,4,angles | angled | angling
+2336,B3 (2001-2801),chicken,3,chickens | chickened
+2337,B3 (2001-2801),anxiety,2,anxieties
+2338,B3 (2001-2801),virus,2,viruses
+2339,B3 (2001-2801),precisely,1,
+2340,B3 (2001-2801),rival,6,rivals | rivaled | rivaling | rivalled | rivalling
+2341,B3 (2001-2801),offense,4,offenses | offence | offences
+2342,B3 (2001-2801),detect,4,detects | detected | detecting
+2343,B3 (2001-2801),teenager,2,teenagers
+2344,B3 (2001-2801),admire,4,admires | admired | admiring
+2345,B3 (2001-2801),moderate,4,moderates | moderated | moderating
+2346,B3 (2001-2801),surgery,2,surgeries
+2347,B3 (2001-2801),musician,2,musicians
+2348,B3 (2001-2801),significance,2,significances
+2349,B3 (2001-2801),shower,4,showers | showered | showering
+2350,B3 (2001-2801),illegal,1,
+2351,B3 (2001-2801),charity,2,charities
+2352,B3 (2001-2801),universal,2,universals
+2353,B3 (2001-2801),cigarette,2,cigarettes
+2354,B3 (2001-2801),constitute,4,constitutes | constituted | constituting
+2355,B3 (2001-2801),adequate,1,
+2356,B3 (2001-2801),consultant,2,consultants
+2357,B3 (2001-2801),historian,2,historians
+2358,B3 (2001-2801),cousin,2,cousins
+2359,B3 (2001-2801),visual,2,visuals
+2360,B3 (2001-2801),stupid,3,stupider | stupidest
+2361,B3 (2001-2801),keen,6,keens | keened | keening | keener | keenest
+2362,B3 (2001-2801),ethnic,2,ethnics
+2363,B3 (2001-2801),twin,2,twins
+2364,B3 (2001-2801),clinical,1,
+2365,B3 (2001-2801),eastern,1,
+2366,B3 (2001-2801),forecast,4,forecasts | forecasted | forecasting
+2367,B3 (2001-2801),segment,4,segments | segmented | segmenting
+2368,B3 (2001-2801),custom,2,customs
+2369,B3 (2001-2801),adapt,4,adapts | adapted | adapting
+2370,B3 (2001-2801),sand,4,sands | sanded | sanding
+2371,B3 (2001-2801),cap,4,caps | capped | capping
+2372,B3 (2001-2801),prompt,5,prompts | prompted | prompting | promptings
+2373,B3 (2001-2801),charm,4,charms | charmed | charming
+2374,B3 (2001-2801),react,4,reacts | reacted | reacting
+2375,B3 (2001-2801),lecture,4,lectures | lectured | lecturing
+2376,B3 (2001-2801),venture,4,ventures | ventured | venturing
+2377,B3 (2001-2801),compound,4,compounds | compounded | compounding
+2378,B3 (2001-2801),rescue,4,rescues | rescued | rescuing
+2379,B3 (2001-2801),mess,4,messes | messed | messing
+2380,B3 (2001-2801),preference,2,preferences
+2381,B3 (2001-2801),comprehensive,1,
+2382,B3 (2001-2801),incentive,2,incentives
+2383,B3 (2001-2801),league,2,leagues
+2384,B3 (2001-2801),dialog,8,dialogs | dialoged | dialoging | dialogue | dialogues | dialogued | dialoguing
+2385,B3 (2001-2801),cream,4,creams | creamed | creaming
+2386,B3 (2001-2801),rapid,1,
+2387,B3 (2001-2801),cancel,6,cancels | canceled | canceling | cancelled | cancelling
+2388,B3 (2001-2801),regret,4,regrets | regretted | regretting
+2389,B3 (2001-2801),dismiss,4,dismisses | dismissed | dismissing
+2390,B3 (2001-2801),margin,2,margins
+2391,B3 (2001-2801),beneath,1,
+2392,B3 (2001-2801),opponent,2,opponents
+2393,B3 (2001-2801),resist,4,resists | resisted | resisting
+2394,B3 (2001-2801),capability,2,capabilities
+2395,B3 (2001-2801),absolute,2,absolutes
+2396,B3 (2001-2801),correspond,4,corresponds | corresponded | corresponding
+2397,B3 (2001-2801),stroke,4,strokes | stroked | stroking
+2398,B3 (2001-2801),dare,4,dares | dared | daring
+2399,B3 (2001-2801),barrier,2,barriers
+2400,B3 (2001-2801),rid,4,rids | ridded | ridding
+2401,B3 (2001-2801),divorce,4,divorces | divorced | divorcing
+2402,B3 (2001-2801),ruin,4,ruins | ruined | ruining
+2403,B3 (2001-2801),bury,4,buries | buried | burying
+2404,B3 (2001-2801),counsel,6,counsels | counselled | counseled | counselling | counseling
+2405,B3 (2001-2801),tendency,2,tendencies
+2406,B3 (2001-2801),frequent,4,frequents | frequented | frequenting
+2407,B3 (2001-2801),motor,4,motors | motored | motoring
+2408,B3 (2001-2801),survival,2,survivals
+2409,B3 (2001-2801),counter,4,counters | countered | countering
+2410,B3 (2001-2801),possess,4,possesses | possessed | possessing
+2411,B3 (2001-2801),permission,2,permissions
+2412,B3 (2001-2801),valley,2,valleys
+2413,B3 (2001-2801),float,4,floats | floated | floating
+2414,B3 (2001-2801),mad,3,madder | maddest
+2415,B3 (2001-2801),greatly,1,
+2416,B3 (2001-2801),visible,1,
+2417,B3 (2001-2801),electric,2,electrics
+2418,B3 (2001-2801),impressive,1,
+2419,B3 (2001-2801),evolution,2,evolutions
+2420,B3 (2001-2801),awareness,1,
+2421,B3 (2001-2801),violent,1,
+2422,B3 (2001-2801),slave,4,slaves | slaved | slaving
+2423,B3 (2001-2801),wealthy,3,wealthier | wealthiest
+2424,B3 (2001-2801),architecture,2,architectures
+2425,B3 (2001-2801),acceptable,1,
+2426,B3 (2001-2801),journal,3,journals | journaling
+2427,B3 (2001-2801),coal,2,coals
+2428,B3 (2001-2801),measurement,2,measurements
+2429,B3 (2001-2801),random,1,
+2430,B3 (2001-2801),successfully,1,
+2431,B3 (2001-2801),depress,4,depresses | depressed | depressing
+2432,B3 (2001-2801),illustration,2,illustrations
+2433,B3 (2001-2801),burst,3,bursts | bursting
+2434,B3 (2001-2801),privilege,4,privileges | privileged | privileging
+2435,B3 (2001-2801),buyer,2,buyers
+2436,B3 (2001-2801),mutual,1,
+2437,B3 (2001-2801),rail,5,rails | railed | railing | railings
+2438,B3 (2001-2801),motivate,4,motivates | motivated | motivating
+2439,B3 (2001-2801),laboratory,2,laboratories
+2440,B3 (2001-2801),mortgage,4,mortgages | mortgaged | mortgaging
+2441,B3 (2001-2801),promotion,2,promotions
+2442,B3 (2001-2801),passion,2,passions
+2443,B3 (2001-2801),champion,4,champions | championed | championing
+2444,B3 (2001-2801),fulfill,8,fulfills | fulfilled | fulfilling | fulfil | fulfils | fulfiled | fulfiling
+2445,B3 (2001-2801),dust,4,dusts | dusted | dusting
+2446,B3 (2001-2801),dedicate,4,dedicates | dedicated | dedicating
+2447,B3 (2001-2801),roughly,1,
+2448,B3 (2001-2801),skirt,4,skirts | skirted | skirting
+2449,B3 (2001-2801),province,2,provinces
+2450,B3 (2001-2801),march,4,marches | marched | marching
+2451,B3 (2001-2801),evaluation,2,evaluations
+2452,B3 (2001-2801),compromise,4,compromises | compromised | compromising
+2453,B3 (2001-2801),accomplish,4,accomplishes | accomplished | accomplishing
+2454,B3 (2001-2801),weakness,2,weaknesses
+2455,B3 (2001-2801),announcement,2,announcements
+2456,B3 (2001-2801),salt,4,salts | salted | salting
+2457,B3 (2001-2801),glance,4,glances | glanced | glancing
+2458,B3 (2001-2801),opera,2,operas
+2459,B3 (2001-2801),contest,4,contests | contested | contesting
+2460,B3 (2001-2801),brush,5,brushes | brushed | brushing | brushings
+2461,B3 (2001-2801),embarrass,4,embarrasses | embarrassed | embarrassing
+2462,B3 (2001-2801),gallery,2,galleries
+2463,B3 (2001-2801),genetic,1,
+2464,B3 (2001-2801),aggressive,1,
+2465,B3 (2001-2801),chest,2,chests
+2466,B3 (2001-2801),format,4,formats | formatted | formatting
+2467,B3 (2001-2801),literary,1,
+2468,B3 (2001-2801),govern,4,governs | governed | governing
+2469,B3 (2001-2801),embrace,4,embraces | embraced | embracing
+2470,B3 (2001-2801),praise,4,praises | praised | praising
+2471,B3 (2001-2801),silent,1,
+2472,B3 (2001-2801),pump,4,pumps | pumped | pumping
+2473,B3 (2001-2801),publisher,2,publishers
+2474,B3 (2001-2801),celebration,2,celebrations
+2475,B3 (2001-2801),golf,4,golfs | golfed | golfing
+2476,B3 (2001-2801),compensation,2,compensations
+2477,B3 (2001-2801),classical,1,
+2478,B3 (2001-2801),weigh,4,weighs | weighed | weighing
+2479,B3 (2001-2801),versus,1,
+2480,B3 (2001-2801),deficit,2,deficits
+2481,B3 (2001-2801),modify,4,modifies | modified | modifying
+2482,B3 (2001-2801),flash,4,flashes | flashed | flashing
+2483,B3 (2001-2801),friendship,2,friendships
+2484,B3 (2001-2801),profession,2,professions
+2485,B3 (2001-2801),literally,1,
+2486,B3 (2001-2801),equation,2,equations
+2487,B3 (2001-2801),gesture,4,gestures | gestured | gesturing
+2488,B3 (2001-2801),entertain,4,entertains | entertained | entertaining
+2489,B3 (2001-2801),fantastic,1,
+2490,B3 (2001-2801),assign,4,assigns | assigned | assigning
+2491,B3 (2001-2801),inflation,2,inflations
+2492,B3 (2001-2801),historic,1,
+2493,B3 (2001-2801),injure,4,injures | injured | injuring
+2494,B3 (2001-2801),remote,3,remoter | remotest
+2495,B3 (2001-2801),therapy,2,therapies
+2496,B3 (2001-2801),orange,2,oranges
+2497,B3 (2001-2801),twist,4,twists | twisted | twisting
+2498,B3 (2001-2801),personnel,1,
+2499,B3 (2001-2801),imagination,2,imaginations
+2500,B3 (2001-2801),disagree,4,disagrees | disagreed | disagreeing
+2501,B3 (2001-2801),throat,2,throats
+2502,B3 (2001-2801),insight,2,insights
+2503,B3 (2001-2801),tackle,4,tackles | tackled | tackling
+2504,B3 (2001-2801),forever,1,
+2505,B3 (2001-2801),exceed,4,exceeds | exceeded | exceeding
+2506,B3 (2001-2801),expenditure,2,expenditures
+2507,B3 (2001-2801),joy,2,joys
+2508,B3 (2001-2801),pregnant,1,
+2509,B3 (2001-2801),reliable,2,reliables
+2510,B3 (2001-2801),gear,5,gears | geared | gearing | gearings
+2511,B3 (2001-2801),poet,2,poets
+2512,B3 (2001-2801),fortune,2,fortunes
+2513,B3 (2001-2801),ceremony,2,ceremonies
+2514,B3 (2001-2801),pile,4,piles | piled | piling
+2515,B3 (2001-2801),pig,4,pigs | pigged | pigging
+2516,B3 (2001-2801),mixture,2,mixtures
+2517,B3 (2001-2801),automatically,1,
+2518,B3 (2001-2801),scholar,2,scholars
+2519,B3 (2001-2801),psychological,1,
+2520,B3 (2001-2801),dramatically,1,
+2521,B3 (2001-2801),stake,4,stakes | staked | staking
+2522,B3 (2001-2801),creature,2,creatures
+2523,B3 (2001-2801),partnership,2,partnerships
+2524,B3 (2001-2801),participation,2,participations
+2525,B3 (2001-2801),clause,2,clauses
+2526,B3 (2001-2801),penalty,2,penalties
+2527,B3 (2001-2801),chamber,4,chambers | chambered | chambering
+2528,B3 (2001-2801),fancy,5,fancies | fancied | fancying | fanciest
+2529,B3 (2001-2801),poetry,2,poetries
+2530,B3 (2001-2801),chat,4,chats | chatted | chatting
+2531,B3 (2001-2801),clothing,1,
+2532,B3 (2001-2801),evolve,4,evolves | evolved | evolving
+2533,B3 (2001-2801),sake,2,sakes
+2534,B3 (2001-2801),shelf,4,shelves | shelved | shelving
+2535,B3 (2001-2801),boost,4,boosts | boosted | boosting
+2536,B3 (2001-2801),tail,4,tails | tailed | tailing
+2537,B3 (2001-2801),possession,2,possessions
+2538,B3 (2001-2801),abortion,2,abortions
+2539,B3 (2001-2801),curious,2,curiouser
+2540,B3 (2001-2801),wooden,1,
+2541,B3 (2001-2801),boom,4,booms | boomed | booming
+2542,B3 (2001-2801),tale,2,tales
+2543,B3 (2001-2801),democratic,1,
+2544,B3 (2001-2801),maintenance,2,maintenances
+2545,B3 (2001-2801),consequently,1,
+2546,B3 (2001-2801),pot,4,pots | potted | potting
+2547,B3 (2001-2801),cow,4,cows | cowed | cowing
+2548,B3 (2001-2801),strengthen,4,strengthens | strengthened | strengthening
+2549,B3 (2001-2801),whilst,1,
+2550,B3 (2001-2801),constraint,2,constraints
+2551,B3 (2001-2801),fold,4,folds | folded | folding
+2552,B3 (2001-2801),bin,4,bins | binned | binning
+2553,B3 (2001-2801),undergo,5,undergoes | underwent | undergoing | undergone
+2554,B3 (2001-2801),potentially,1,
+2555,B3 (2001-2801),scope,4,scopes | scoped | scoping
+2556,B3 (2001-2801),pretend,4,pretends | pretended | pretending
+2557,B3 (2001-2801),diversity,2,diversities
+2558,B3 (2001-2801),allege,3,alleges | alleged
+2559,B3 (2001-2801),pride,4,prides | prided | priding
+2560,B3 (2001-2801),intense,1,
+2561,B3 (2001-2801),inquiry,2,inquiries
+2562,B3 (2001-2801),resign,4,resigns | resigned | resigning
+2563,B3 (2001-2801),craft,4,crafts | crafted | crafting
+2564,B3 (2001-2801),strict,3,stricter | strictest
+2565,B3 (2001-2801),concrete,4,concretes | concreted | concreting
+2566,B3 (2001-2801),shell,3,shells | shelled
+2567,B3 (2001-2801),damn,4,damns | damned | damning
+2568,B3 (2001-2801),distinct,1,
+2569,B3 (2001-2801),humor,8,humors | humored | humoring | humorings | humour | humours | humoured
+2570,B3 (2001-2801),limitation,2,limitations
+2571,B3 (2001-2801),indication,2,indications
+2572,B3 (2001-2801),stability,2,stabilities
+2573,B3 (2001-2801),wise,6,wises | wised | wising | wiser | wisest
+2574,B3 (2001-2801),neglect,4,neglects | neglected | neglecting
+2575,B3 (2001-2801),compose,4,composes | composed | composing
+2576,B3 (2001-2801),jail,4,jails | jailed | jailing
+2577,B3 (2001-2801),shelter,3,shelters | sheltered
+2578,B3 (2001-2801),mere,2,merest
+2579,B3 (2001-2801),carbon,2,carbons
+2580,B3 (2001-2801),regulate,4,regulates | regulated | regulating
+2581,B3 (2001-2801),cheese,2,cheeses
+2582,B3 (2001-2801),trigger,4,triggers | triggered | triggering
+2583,B3 (2001-2801),pipe,4,pipes | piped | piping
+2584,B3 (2001-2801),destruction,2,destructions
+2585,B3 (2001-2801),guitar,2,guitars
+2586,B3 (2001-2801),flag,4,flags | flagged | flagging
+2587,B3 (2001-2801),piano,2,pianos
+2588,B3 (2001-2801),magic,1,
+2589,B3 (2001-2801),mystery,2,mysteries
+2590,B3 (2001-2801),ski,4,skis | skied | skiing
+2591,B3 (2001-2801),whisper,5,whispers | whispered | whispering | whisperings
+2592,B3 (2001-2801),rear,4,rears | reared | rearing
+2593,B3 (2001-2801),menu,2,menus
+2594,B3 (2001-2801),species,1,
+2595,B3 (2001-2801),moon,3,moons | mooned
+2596,B3 (2001-2801),presumably,1,
+2597,B3 (2001-2801),bless,6,blesses | blessed | blessing | blessings | blest
+2598,B3 (2001-2801),airline,2,airlines
+2599,B3 (2001-2801),amendment,2,amendments
+2600,B3 (2001-2801),grandmother,2,grandmothers
+2601,B3 (2001-2801),jury,2,juries
+2602,B3 (2001-2801),cooperation,1,
+2603,B3 (2001-2801),civilian,2,civilians
+2604,B3 (2001-2801),composition,2,compositions
+2605,B3 (2001-2801),coin,4,coins | coined | coining
+2606,B3 (2001-2801),regardless,1,
+2607,B3 (2001-2801),scan,4,scans | scanned | scanning
+2608,B3 (2001-2801),bunch,4,bunches | bunched | bunching
+2609,B3 (2001-2801),racial,2,racials
+2610,B3 (2001-2801),greet,5,greets | greeted | greeting | greetings
+2611,B3 (2001-2801),hopefully,1,
+2612,B3 (2001-2801),sanction,4,sanctions | sanctioned | sanctioning
+2613,B3 (2001-2801),trick,4,tricks | tricked | tricking
+2614,B3 (2001-2801),paragraph,4,paragraphs | paragraphed | paragraphing
+2615,B3 (2001-2801),maker,2,makers
+2616,B3 (2001-2801),chocolate,2,chocolates
+2617,B3 (2001-2801),stimulate,4,stimulates | stimulated | stimulating
+2618,B3 (2001-2801),belt,4,belts | belted | belting
+2619,B3 (2001-2801),potato,2,potatoes
+2620,B3 (2001-2801),narrative,2,narratives
+2621,B3 (2001-2801),tissue,2,tissues
+2622,B3 (2001-2801),barely,1,
+2623,B3 (2001-2801),invent,4,invents | invented | inventing
+2624,B3 (2001-2801),tourism,1,
+2625,B3 (2001-2801),pro,2,pros
+2626,B3 (2001-2801),stair,2,stairs
+2627,B3 (2001-2801),hesitate,4,hesitates | hesitated | hesitating
+2628,B3 (2001-2801),shine,5,shines | shined | shining | shone
+2629,B3 (2001-2801),motivation,2,motivations
+2630,B3 (2001-2801),romantic,2,romantics
+2631,B3 (2001-2801),firmly,1,
+2632,B3 (2001-2801),interior,2,interiors
+2633,B3 (2001-2801),stomach,4,stomachs | stomached | stomaching
+2634,B3 (2001-2801),nowhere,1,
+2635,B3 (2001-2801),pray,4,prays | prayed | praying
+2636,B3 (2001-2801),championship,2,championships
+2637,B3 (2001-2801),servant,2,servants
+2638,B3 (2001-2801),immigrant,2,immigrants
+2639,B3 (2001-2801),excess,2,excesses
+2640,B3 (2001-2801),complexity,2,complexities
+2641,B3 (2001-2801),liability,2,liabilities
+2642,B3 (2001-2801),surprisingly,1,
+2643,B3 (2001-2801),extract,4,extracts | extracted | extracting
+2644,B3 (2001-2801),implementation,2,implementations
+2645,B3 (2001-2801),bias,4,biases | biased | biasing
+2646,B3 (2001-2801),differently,1,
+2647,B3 (2001-2801),catalog,8,catalogs | cataloged | cataloging | catalogue | catalogues | catalogued | cataloguing
+2648,B3 (2001-2801),continuous,1,
+2649,B3 (2001-2801),golden,1,
+2650,B3 (2001-2801),stamp,4,stamps | stamped | stamping
+2651,B3 (2001-2801),guideline,2,guidelines
+2652,B3 (2001-2801),envelope,2,envelopes
+2653,B3 (2001-2801),knife,5,knifes | knifed | knifing | knives
+2654,B3 (2001-2801),biological,1,
+2655,B3 (2001-2801),consume,4,consumes | consumed | consuming
+2656,B3 (2001-2801),luxury,2,luxuries
+2657,B3 (2001-2801),weekly,2,weeklies
+2658,B3 (2001-2801),wherever,1,
+2659,B3 (2001-2801),bite,4,bites | biting | bitten
+2660,B3 (2001-2801),printer,2,printers
+2661,B3 (2001-2801),firstly,1,
+2662,B3 (2001-2801),anxious,1,
+2663,B3 (2001-2801),adventure,4,adventures | adventured | adventuring
+2664,B3 (2001-2801),fence,5,fences | fenced | fencing | fencings
+2665,B3 (2001-2801),exhaust,4,exhausts | exhausted | exhausting
+2666,B3 (2001-2801),attraction,2,attractions
+2667,B3 (2001-2801),ocean,2,oceans
+2668,B3 (2001-2801),quietly,1,
+2669,B3 (2001-2801),castle,4,castles | castled | castling
+2670,B3 (2001-2801),veteran,2,veterans
+2671,B3 (2001-2801),reflection,2,reflections
+2672,B3 (2001-2801),nerve,4,nerves | nerved | nerving
+2673,B3 (2001-2801),determination,2,determinations
+2674,B3 (2001-2801),altogether,1,
+2675,B3 (2001-2801),fiction,2,fictions
+2676,B3 (2001-2801),carpet,4,carpets | carpeted | carpeting
+2677,B3 (2001-2801),cluster,4,clusters | clustered | clustering
+2678,B3 (2001-2801),confusion,2,confusions
+2679,B3 (2001-2801),hurry,4,hurries | hurried | hurrying
+2680,B3 (2001-2801),logic,2,logics
+2681,B3 (2001-2801),controversial,1,
+2682,B3 (2001-2801),raw,3,rawer | rawest
+2683,B3 (2001-2801),grammar,2,grammars
+2684,B3 (2001-2801),revise,4,revises | revised | revising
+2685,B3 (2001-2801),hint,4,hints | hinted | hinting
+2686,B3 (2001-2801),hook,4,hooks | hooked | hooking
+2687,B3 (2001-2801),bell,4,bells | belled | belling
+2688,B3 (2001-2801),liquid,2,liquids
+2689,B3 (2001-2801),panic,4,panics | panicked | panicking
+2690,B3 (2001-2801),uncle,2,uncles
+2691,B3 (2001-2801),rice,2,rices
+2692,B3 (2001-2801),slope,2,slopes
+2693,B3 (2001-2801),happiness,1,
+2694,B3 (2001-2801),genuine,1,
+2695,B3 (2001-2801),vessel,2,vessels
+2696,B3 (2001-2801),verb,2,verbs
+2697,B3 (2001-2801),reckon,4,reckons | reckoned | reckoning
+2698,B3 (2001-2801),silly,3,sillier | silliest
+2699,B3 (2001-2801),transportation,2,transportations
+2700,B3 (2001-2801),harbor,7,harbors | harbored | harboring | harbour | harbours | harbouring
+2701,B3 (2001-2801),comedy,2,comedies
+2702,B3 (2001-2801),chase,4,chases | chased | chasing
+2703,B3 (2001-2801),storage,2,storages
+2704,B3 (2001-2801),universe,2,universes
+2705,B3 (2001-2801),horrible,1,
+2706,B3 (2001-2801),sheep,1,
+2707,B3 (2001-2801),lover,2,lovers
+2708,B3 (2001-2801),rat,4,rats | ratted | ratting
+2709,B3 (2001-2801),portrait,2,portraits
+2710,B3 (2001-2801),innocent,2,innocents
+2711,B3 (2001-2801),substitute,4,substitutes | substituted | substituting
+2712,B3 (2001-2801),supplement,4,supplements | supplemented | supplementing
+2713,B3 (2001-2801),adjustment,2,adjustments
+2714,B3 (2001-2801),reasonably,1,
+2715,B3 (2001-2801),filter,4,filters | filtered | filtering
+2716,B3 (2001-2801),flexible,1,
+2717,B3 (2001-2801),abstract,4,abstracts | abstracted | abstracting
+2718,B3 (2001-2801),tent,4,tents | tented | tenting
+2719,B3 (2001-2801),precise,1,
+2720,B3 (2001-2801),distant,1,
+2721,B3 (2001-2801),stranger,2,strangers
+2722,B3 (2001-2801),shade,4,shades | shaded | shading
+2723,B3 (2001-2801),grain,4,grains | grained | graining
+2724,B3 (2001-2801),situate,4,situates | situated | situating
+2725,B3 (2001-2801),summarize,8,summarizes | summarized | summarizing | summarise | summarises | summarised | summarising
+2726,B3 (2001-2801),leap,5,leaps | leaped | leaping | leapt
+2727,B3 (2001-2801),snap,4,snaps | snapped | snapping
+2728,B3 (2001-2801),probability,2,probabilities
+2729,B3 (2001-2801),leather,4,leathers | leathered | leathering
+2730,B3 (2001-2801),uncertainty,2,uncertainties
+2731,B3 (2001-2801),swear,5,swears | swore | swearing | sworn
+2732,B3 (2001-2801),refugee,2,refugees
+2733,B3 (2001-2801),shore,4,shores | shored | shoring
+2734,B3 (2001-2801),monthly,1,
+2735,B3 (2001-2801),comprise,4,comprises | comprised | comprising
+2736,B3 (2001-2801),stir,5,stirs | stirred | stirring | stirrings
+2737,B3 (2001-2801),excitement,2,excitements
+2738,B3 (2001-2801),sigh,4,sighs | sighed | sighing
+2739,B3 (2001-2801),pregnancy,2,pregnancies
+2740,B3 (2001-2801),experimental,2,experimentals
+2741,B3 (2001-2801),institutional,1,
+2742,B3 (2001-2801),slice,4,slices | sliced | slicing
+2743,B3 (2001-2801),wander,5,wanders | wandered | wandering | wanderings
+2744,B3 (2001-2801),empire,2,empires
+2745,B3 (2001-2801),subsequently,1,
+2746,B3 (2001-2801),gentle,6,gentles | gentled | gentling | gentler | gentlest
+2747,B3 (2001-2801),attendance,2,attendances
+2748,B3 (2001-2801),ownership,2,ownerships
+2749,B3 (2001-2801),qualification,2,qualifications
+2750,B3 (2001-2801),suspend,4,suspends | suspended | suspending
+2751,B3 (2001-2801),functional,1,
+2752,B3 (2001-2801),voluntary,1,
+2753,B3 (2001-2801),pale,6,pales | paled | paling | paler | palest
+2754,B3 (2001-2801),stain,4,stains | stained | staining
+2755,B3 (2001-2801),athlete,2,athletes
+2756,B3 (2001-2801),organic,2,organics
+2757,B3 (2001-2801),tongue,4,tongues | tongued | tonguing
+2758,B3 (2001-2801),server,2,servers
+2759,B3 (2001-2801),structural,1,
+2760,B3 (2001-2801),fool,4,fools | fooled | fooling
+2761,B3 (2001-2801),alongside,1,
+2762,B3 (2001-2801),unite,4,unites | united | uniting
+2763,B3 (2001-2801),gently,1,
+2764,B3 (2001-2801),compute,4,computes | computed | computing
+2765,B3 (2001-2801),wipe,4,wipes | wiped | wiping
+2766,B3 (2001-2801),weird,3,weirder | weirdest
+2767,B3 (2001-2801),gaze,4,gazes | gazed | gazing
+2768,B3 (2001-2801),fade,4,fades | faded | fading
+2769,B3 (2001-2801),cough,4,coughs | coughed | coughing
+2770,B3 (2001-2801),hypothesis,2,hypotheses
+2771,B3 (2001-2801),royal,2,royals
+2772,B3 (2001-2801),theoretical,1,
+2773,B3 (2001-2801),curtain,4,curtains | curtained | curtaining
+2774,B3 (2001-2801),mayor,2,mayors
+2775,B3 (2001-2801),darkness,1,
+2776,B3 (2001-2801),aunt,2,aunts
+2777,B3 (2001-2801),tournament,2,tournaments
+2778,B3 (2001-2801),registration,2,registrations
+2779,B3 (2001-2801),fragment,4,fragments | fragmented | fragmenting
+2780,B3 (2001-2801),listener,2,listeners
+2781,B3 (2001-2801),tender,2,tenders
+2782,B3 (2001-2801),density,2,densities
+2783,B3 (2001-2801),ugly,3,uglier | ugliest
+2784,B3 (2001-2801),module,2,modules
+2785,B3 (2001-2801),faithfully,1,
+2786,B3 (2001-2801),autumn,2,autumns
+2787,B3 (2001-2801),cheek,3,cheeks | cheeked
+2788,B3 (2001-2801),attachment,2,attachments
+2789,B3 (2001-2801),holder,2,holders
+2790,B3 (2001-2801),grin,4,grins | grinned | grinning
+2791,B3 (2001-2801),noun,2,nouns
+2792,B3 (2001-2801),fortunate,1,
+2793,B3 (2001-2801),alright,1,
+2794,B3 (2001-2801),lazy,3,lazier | laziest
+2795,B3 (2001-2801),hello,1,
+2796,B3 (2001-2801),hunger,4,hungers | hungered | hungering
+2797,B3 (2001-2801),insure,4,insures | insured | insuring
+2798,B3 (2001-2801),ashamed,1,
+2799,B3 (2001-2801),found,4,founds | founded | founding
+2800,B3 (2001-2801),thirst,4,thirsts | thirsted | thirsting
+2801,B3 (2001-2801),dominate,4,dominates | dominated | dominating
