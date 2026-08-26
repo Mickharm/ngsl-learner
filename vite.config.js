@@ -29,6 +29,12 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,json}'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+        // Without these, a redeploy keeps serving the previous build until the
+        // user closes every tab — which on an iPhone home-screen app is
+        // basically never. Take over immediately and bin the old precache.
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
