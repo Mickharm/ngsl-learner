@@ -22,6 +22,24 @@ export class GeminiError extends Error {
 }
 
 function describeStatus (status, body) {
+  const text = String(body || '')
+
+  // Google AI Studio has started issuing keys prefixed `AQ.` on some accounts,
+  // and a subset of those are rejected by the Generative Language API with
+  // ACCESS_TOKEN_TYPE_UNSUPPORTED no matter how the request is authenticated.
+  // It is a Google-side problem with a known workaround, so say so rather than
+  // letting it read as "you typed your key wrong".
+  if (status === 401 && /ACCESS_TOKEN_TYPE_UNSUPPORTED|Expected OAuth 2 access token/i.test(text)) {
+    return 'Google 不接受這把金鑰（401）。AI Studio 對部分帳號發出的 AQ. 開頭金鑰'
+      + '無法用於 Gemini API，這是 Google 端的已知問題，不是你設定錯。'
+      + '解法：改到 Google Cloud Console → APIs & Services → Credentials 建立 API key'
+      + '（格式為 AIza...），並確認該專案已啟用 Generative Language API。'
+  }
+  if (status === 403 && /SERVICE_DISABLED|has not been used in project/i.test(text)) {
+    return '這個專案還沒啟用 Generative Language API（403）。'
+      + '到 Google Cloud Console 搜尋 "Generative Language API" 並按 Enable。'
+  }
+
   if (status === 400) return 'API Key 格式錯誤或請求無效（400）'
   if (status === 401 || status === 403) return 'API Key 無效或沒有權限（' + status + '）'
   if (status === 404) return '這個 API Key 沒有這個模型（404）'
@@ -438,7 +456,8 @@ export async function testConnection ({ key, model = DEFAULT_MODEL } = {}) {
 }
 
 export async function listModels (key) {
-  const res = await fetch(`${ENDPOINT}?pageSize=100`, { headers: { 'x-goog-api-key': key } })
+  if (!key) throw new GeminiError('尚未設定 Gemini API Key')
+  const res = await fetch(`${ENDPOINT}?pageSize=200`, { headers: { 'x-goog-api-key': key } })
   if (!res.ok) throw new GeminiError(describeStatus(res.status, await res.text().catch(() => '')), { status: res.status })
   const json = await res.json()
   return (json.models || [])

@@ -80,6 +80,12 @@ Supabase Dashboard → SQL Editor → New query → 貼上 `supabase/schema.sql`
 
 到「設定」頁面貼上 Key → 測試連線。單字資料會在需要時自動產生（每天約 1-2 次呼叫）。
 
+**金鑰要從哪裡拿**：Google AI Studio 目前對部分帳號只發 `AQ.` 開頭的金鑰，而這批金鑰
+有一部分無法通過 Gemini API 認證（401 `ACCESS_TOKEN_TYPE_UNSUPPORTED`），是 Google
+端的已知問題。若遇到，改到 **Google Cloud Console → APIs & Services → Credentials →
+Create credentials → API key** 建立 `AIza...` 格式的金鑰，並確認該專案已啟用
+**Generative Language API**。App 的錯誤訊息會直接指出是哪一種情況。
+
 想一次備妥全部 2801 個字：設定頁面 →「一次產生全部單字資料」，約 10 分鐘。
 或用命令列（可中斷續跑）：
 

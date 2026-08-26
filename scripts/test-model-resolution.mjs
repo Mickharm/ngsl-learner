@@ -59,5 +59,52 @@ console.log(`${bad ? 'FAIL' : 'PASS'}  avoids embedding/image/tts/live variants 
 if (bad) fail++
 
 console.log(`\nDEFAULT_MODEL = ${DEFAULT_MODEL}`)
-console.log(fail ? `${fail} FAILURE(S)` : 'all passed')
-process.exit(fail ? 1 : 0)
+console.log(fail ? `${fail} ranking FAILURE(S)` : 'ranking checks passed')
+
+/* ---- error diagnosis: the AQ.-key trap must not read as user error ---- */
+
+async function statusFor (status, body) {
+  const realFetch = globalThis.fetch
+  globalThis.fetch = async () => ({ ok: false, status, text: async () => body })
+  try {
+    await (await import(here)).listModels('any-key')
+    return '(no error thrown)'
+  } catch (e) {
+    return e.message
+  } finally { globalThis.fetch = realFetch }
+}
+
+const diagCases = [
+  [
+    'AQ. key rejected → names the Google-side cause and the workaround',
+    401,
+    '{"error":{"code":401,"status":"UNAUTHENTICATED","message":"Request had invalid authentication credentials. Expected OAuth 2 access token","details":[{"reason":"ACCESS_TOKEN_TYPE_UNSUPPORTED"}]}}',
+    m => m.includes('Google Cloud Console') && m.includes('不是你設定錯')
+  ],
+  [
+    'API not enabled → tells them to enable it',
+    403,
+    '{"error":{"code":403,"message":"Generative Language API has not been used in project 1234 before","status":"PERMISSION_DENIED","details":[{"reason":"SERVICE_DISABLED"}]}}',
+    m => m.includes('Enable')
+  ],
+  [
+    'plain 401 → generic message, not the AQ. story',
+    401,
+    '{"error":{"code":401,"message":"API key not valid"}}',
+    m => !m.includes('Google Cloud Console')
+  ]
+]
+
+let dfail = 0
+for (const [label, status, body, check] of diagCases) {
+  const msg = await statusFor(status, body)
+  const ok = check(msg)
+  if (!ok) dfail++
+  console.log(`${ok ? 'PASS' : 'FAIL'}  ${label}`)
+  if (!ok) console.log(`        got: ${msg}`)
+}
+console.log(dfail ? `${dfail} diagnosis FAILURE(S)` : 'diagnosis checks passed')
+
+const total = fail + dfail
+console.log(total ? `\n${total} FAILURE(S)` : '\nall passed')
+process.exit(total ? 1 : 0)
