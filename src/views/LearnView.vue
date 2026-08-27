@@ -140,7 +140,7 @@ onMounted(async () => {
   ids.value = session.lockNewIds()
   if (!ids.value.length) {
     session.markDone('learn')
-    router.replace('/review')
+    router.replace(session.nextRoute('learn'))
   }
 })
 onUnmounted(() => session.stopClock())

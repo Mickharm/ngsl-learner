@@ -121,8 +121,11 @@ onUnmounted(() => session.stopClock())
     <section class="quest">
       <div class="quest__head">
         <h2 class="section-title zh">今日關卡</h2>
+        <span class="quest__track" :class="`quest__track--${session.plan.track}`">
+          {{ session.plan.track === 'A' ? '文法日' : '基礎日' }}
+        </span>
         <span class="quest__est zh">約 <span class="num">{{ session.plan.estimatedMinutes }}</span> 分鐘</span>
-        <span class="quest__count num">{{ session.completedCount }}/{{ session.PHASES.length }}</span>
+        <span class="quest__count num">{{ session.completedCount }}/{{ session.todayPhases.length }}</span>
       </div>
 
       <ol class="steps">
@@ -273,7 +276,13 @@ onUnmounted(() => session.stopClock())
 
 /* quest */
 .quest { margin-bottom: var(--sp-5); }
-.quest__head { display: flex; align-items: baseline; gap: var(--sp-3); margin-bottom: var(--sp-3); }
+.quest__head { display: flex; align-items: baseline; gap: var(--sp-2); margin-bottom: var(--sp-3); flex-wrap: wrap; }
+.quest__track {
+  font-size: var(--step--2); font-weight: 600;
+  padding: 1px 7px; border-radius: 999px; white-space: nowrap;
+}
+.quest__track--A { background: var(--jade-wash); color: var(--jade); }
+.quest__track--B { background: var(--violet-wash); color: var(--violet); }
 .quest__est { font-size: var(--step--2); color: var(--ink-3); margin-left: auto; }
 .quest__count { font-size: var(--step--1); color: var(--ink-3); }
 

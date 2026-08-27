@@ -225,6 +225,7 @@ await page.route('**/generativelanguage.googleapis.com/**', async route => {
   })
 })
 
+const checks = []
 const shots = []
 async function shot (name) {
   await page.waitForTimeout(650)
@@ -295,10 +296,23 @@ await page.locator('.quest').first().waitFor({ state: 'visible', timeout: 8000 }
 await page.waitForTimeout(500)
 await shot('05-dashboard')
 
+// The four taught phases alternate day to day, so the quest is five steps, not
+// seven, and carries exactly one of the two pairs.
+const stepLabels = (await page.locator('.step__label, .step__title, .step h3, .step').allInnerTexts().catch(() => []))
+  .join(' ').replace(/\s+/g, ' ')
+const trackA = /文法/.test(stepLabels) && /閱讀/.test(stepLabels)
+const trackB = /基礎知識/.test(stepLabels) && /造句/.test(stepLabels)
+checks.push([
+  'the day runs one track, not both',
+  trackA !== trackB,
+  `A=${trackA} B=${trackB} · ${stepLabels.slice(0, 120)}`
+])
+const stepCount = await page.locator('.steps > li').count().catch(() => 0)
+checks.push(['the quest is five steps, not seven', stepCount === 5, `${stepCount} steps`])
+
 // Changing the daily new-word count before answering anything must re-plan
 // today. Reproducing the real bug needs the learn screen to be opened first —
 // that is what used to freeze the list — and then abandoned without answering.
-const checks = []
 await page.goto(URL_BASE + '#/learn', { waitUntil: 'networkidle' })
 await page.waitForTimeout(1500)          // let lockNewIds() run
 await page.goto(URL_BASE + '#/', { waitUntil: 'networkidle' })

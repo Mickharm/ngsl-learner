@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
 import GRAMMAR, { GRAMMAR_BY_ID } from '@/data/grammar'
-import { newCard, schedule, GRADE, STATE, isMastered } from '@/lib/srs'
+import { newCard, schedule, GRADE, STATE, isMastered, gradeFromRatio } from '@/lib/srs'
 import { useAuth } from './auth'
 import { useProgress } from './progress'
 
@@ -112,11 +112,7 @@ export const useGrammar = defineStore('grammar', () => {
     const g = GRAMMAR_BY_ID[grammarId]
     if (!g) return null
 
-    const ratio = total ? correct / total : 0
-    const grade =
-      ratio >= 0.95 ? GRADE.EASY :
-      ratio >= 0.75 ? GRADE.GOOD :
-      ratio >= 0.5 ? GRADE.HARD : GRADE.AGAIN
+    const grade = gradeFromRatio(correct, total)
 
     const base = rows.value.get(grammarId) || { ...newCard(grammarId), grammarId, correct: 0, attempts: 0 }
     const scheduled = schedule(base, grade, Date.now())

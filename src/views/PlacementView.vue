@@ -181,9 +181,16 @@ const options = computed(() => [
 async function apply (opt) {
   applying.value = true
   try {
+    // Words the test proved unknown must never be marked known, so they are
+    // excluded BEFORE markKnown runs. Removing them afterwards only cleaned the
+    // in-memory Map: markKnown had already queued them to the outbox and
+    // written them to IndexedDB, so the next launch resurrected the very words
+    // the learner had just told us he does not know — as "review in 3-9 days".
+    const missed = new Set(answers.value.filter(a => !a.known).map(a => a.id))
+
     if (opt.prefill > 0) {
       const ids = []
-      for (let id = 1; id <= opt.prefill; id++) ids.push(id)
+      for (let id = 1; id <= opt.prefill; id++) if (!missed.has(id)) ids.push(id)
       // Stagger the verification dates so they do not all land on one day.
       const base = opt.interval ?? 3
       const spread = opt.interval ? 14 : 7
@@ -192,13 +199,6 @@ async function apply (opt) {
         const slice = ids.slice(d * chunk, (d + 1) * chunk)
         if (slice.length) progress.markKnown(slice, { intervalDays: base + d })
       }
-    }
-    // Words the test proved unknown go back in the normal queue regardless.
-    const missed = answers.value.filter(a => !a.known).map(a => a.id)
-    if (missed.length) {
-      const next = new Map(progress.cards)
-      for (const id of missed) next.delete(id)
-      progress.cards = next
     }
     localStorage.setItem('ngsl.placed', '1')
     await progress.flush()

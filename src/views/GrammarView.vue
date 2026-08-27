@@ -225,19 +225,19 @@ async function moreDrills (count = 6) {
 
 function done () {
   session.markDone('grammar')
-  router.push('/essentials')
+  router.push(session.nextRoute('grammar'))
 }
 
 function skipPhase () {
   session.markDone('grammar')
-  router.push('/essentials')
+  router.push(session.nextRoute('grammar'))
 }
 
 onMounted(() => {
   session.startClock()
   if (!point.value) {
     session.markDone('grammar')
-    router.replace('/essentials')
+    router.replace(session.nextRoute('grammar'))
   }
 })
 onUnmounted(() => session.stopClock())

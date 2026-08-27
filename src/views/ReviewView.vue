@@ -57,13 +57,48 @@ function build () {
   })
 }
 
+/**
+ * Cards whose short step has come due while this session was running.
+ *
+ * The engine schedules a new word 10 minutes out and a just-forgotten word
+ * 10 minutes out, which is the whole point of having learning steps. The queue
+ * used to be a single snapshot taken on mount, so neither ever arrived: the
+ * phase ended, the day ended, and the card resurfaced tomorrow instead. The
+ * grade buttons were promising a "10 分" review the app never delivered.
+ *
+ * Bounded per card so a run of 忘記 cannot make the phase unending.
+ */
+const REENTRY_LIMIT = 2
+const reentries = new Map()
+
+function pullNewlyDue () {
+  const now = Date.now()
+  const pending = new Set(queue.value.slice(step.value).map(q => q.id))
+  const extra = []
+  for (const c of progress.cards.values()) {
+    if (c.state !== STATE.LEARNING && c.state !== STATE.RELEARNING) continue
+    if (c.dueAt > now) continue
+    if (pending.has(c.wordId)) continue
+    if ((reentries.get(c.wordId) || 0) >= REENTRY_LIMIT) continue
+    if (!words.get(c.wordId)) continue
+    extra.push(c.wordId)
+  }
+  if (!extra.length) return 0
+  for (const id of extra) reentries.set(id, (reentries.get(id) || 0) + 1)
+  queue.value = [
+    ...queue.value,
+    ...extra.map((id, i) => ({ id, mode: 'card', order: queue.value.length + i }))
+  ]
+  return extra.length
+}
+
 function advance () {
   if (step.value + 1 <= queue.value.length) {
     step.value++
     revealed.value = false
     shownAt.value = Date.now()
   }
-  if (step.value >= queue.value.length) finish()
+  if (step.value >= queue.value.length && !pullNewlyDue()) finish()
 }
 
 function grade (g) {
@@ -92,12 +127,12 @@ function finish () {
   const total = stats.value.right + stats.value.wrong
   const pct = total ? Math.round((stats.value.right / total) * 100) : 100
   toast.info(`複習完成 · 正確率 ${pct}%`)
-  setTimeout(() => router.push('/grammar'), 700)
+  setTimeout(() => router.push(session.nextRoute('review')), 700)
 }
 
 function skipPhase () {
   session.markDone('review')
-  router.push('/grammar')
+  router.push(session.nextRoute('review'))
 }
 
 onMounted(() => {
@@ -105,7 +140,7 @@ onMounted(() => {
   build()
   if (!queue.value.length) {
     session.markDone('review')
-    router.replace('/grammar')
+    router.replace(session.nextRoute('review'))
   }
 })
 onUnmounted(() => session.stopClock())

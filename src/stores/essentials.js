@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
 import ESSENTIALS, { ESSENTIAL_BY_ID } from '@/data/essentials'
-import { newCard, schedule, GRADE, isMastered } from '@/lib/srs'
+import { newCard, schedule, GRADE, isMastered, gradeFromRatio } from '@/lib/srs'
 import { useAuth } from './auth'
 import { useProgress } from './progress'
 
@@ -120,11 +120,7 @@ export const useEssentials = defineStore('essentials', () => {
     const unit = ESSENTIAL_BY_ID[unitId]
     if (!unit || !total) return null
 
-    const ratio = correct / total
-    const grade =
-      ratio >= 0.95 ? GRADE.EASY :
-      ratio >= 0.75 ? GRADE.GOOD :
-      ratio >= 0.5 ? GRADE.HARD : GRADE.AGAIN
+    const grade = gradeFromRatio(correct, total)
 
     const base = rows.value.get(unitId) || { ...newCard(unitId), unitId, correct: 0, attempts: 0 }
     const scheduled = schedule(base, grade, Date.now())

@@ -19,16 +19,38 @@ import { STATE } from '@/lib/srs'
 /**
  * The dashboard itself is the day's briefing, so it is not a step in its own
  * list — the quest is the things the learner actually has to do.
+ *
+ * `track` decides which days a phase runs on. Words come every day; the four
+ * taught phases alternate, because running all of them daily cost 54 minutes
+ * before a single card was reviewed, which by itself overran a 60-minute
+ * budget. Alternating halves that to 27-30 and hands the difference back to
+ * review, which is the part that actually decides whether anything sticks.
+ *
+ *   A 日：文法 + 閱讀      B 日：基礎知識 + 造句
+ *
+ * Both tracks keep a reading or production task, so no day is recognition-only.
  */
+export const TRACK = Object.freeze({ BOTH: 'both', A: 'A', B: 'B' })
+
 export const PHASES = [
-  { key: 'learn',      label: '新單字',   route: '/learn',      minutes: 15 },
-  { key: 'review',     label: '複習',     route: '/review',     minutes: 15 },
-  { key: 'grammar',    label: '文法',     route: '/grammar',    minutes: 12 },
-  { key: 'essentials', label: '基礎知識', route: '/essentials', minutes: 12 },
-  { key: 'write',      label: '造句',     route: '/write',      minutes: 12 },
-  { key: 'article',    label: '閱讀',     route: '/article',    minutes: 15 },
-  { key: 'summary',    label: '結算',     route: '/summary',    minutes: 3 }
+  { key: 'learn',      label: '新單字',   route: '/learn',      minutes: 15, track: TRACK.BOTH },
+  { key: 'review',     label: '複習',     route: '/review',     minutes: 15, track: TRACK.BOTH },
+  { key: 'grammar',    label: '文法',     route: '/grammar',    minutes: 12, track: TRACK.A },
+  { key: 'essentials', label: '基礎知識', route: '/essentials', minutes: 12, track: TRACK.B },
+  { key: 'write',      label: '造句',     route: '/write',      minutes: 12, track: TRACK.B },
+  { key: 'article',    label: '閱讀',     route: '/article',    minutes: 15, track: TRACK.A },
+  { key: 'summary',    label: '結算',     route: '/summary',    minutes: 3,  track: TRACK.BOTH }
 ]
+
+/**
+ * Which track a date falls on. Keyed off the date itself rather than a stored
+ * counter so a skipped day cannot desync the two, and so the same day always
+ * resolves the same way on both devices.
+ */
+export function trackFor (dayKey = todayKey()) {
+  const days = Math.floor(Date.parse(`${dayKey}T00:00:00Z`) / 86400000)
+  return days % 2 === 0 ? TRACK.A : TRACK.B
+}
 
 const LS_KEY = 'ngsl.session'
 
@@ -107,22 +129,33 @@ export const useSession = defineStore('session', () => {
   /** Every word the day touches — what the article is built from. */
   const dayWordIds = computed(() => [...new Set([...newIds.value, ...reviewIds.value])])
 
-  const grammarPoint = computed(() => grammar.todayPoint)
-  const essentialUnit = computed(() => essentials.todayUnit)
+  /** Today's track, and the phases that belong to it. */
+  const track = computed(() => { rollIfNewDay(); return trackFor(phase.value.day) })
+  const todayPhases = computed(() =>
+    PHASES.filter(p => p.track === TRACK.BOTH || p.track === track.value)
+  )
+  function runsToday (key) {
+    return todayPhases.value.some(p => p.key === key)
+  }
+
+  const grammarPoint = computed(() => runsToday('grammar') ? grammar.todayPoint : null)
+  const essentialUnit = computed(() => runsToday('essentials') ? essentials.todayUnit : null)
 
   const plan = computed(() => ({
     newCount: newIds.value.length,
     reviewCount: reviewCards.value.length,
     grammar: grammarPoint.value,
     essential: essentialUnit.value,
+    track: track.value,
+    // Per-item costs are deliberately higher than the first pass used. 0.35 min
+    // per review card assumed a reader who can take in an English example
+    // sentence at a glance; this learner reads one in 10-20 seconds.
     estimatedMinutes: Math.round(
-      newIds.value.length * 0.9 +
-      reviewCards.value.length * 0.35 +
-      (grammarPoint.value ? 12 : 0) +
-      (essentialUnit.value ? 12 : 0) +
-      12 +   // production
-      15 +   // reading
-      3      // wrap-up
+      newIds.value.length * 1.4 +
+      reviewCards.value.length * 0.7 +
+      todayPhases.value
+        .filter(p => p.key !== 'learn' && p.key !== 'review')
+        .reduce((a, p) => a + p.minutes, 0)
     )
   }))
 
@@ -172,7 +205,7 @@ export const useSession = defineStore('session', () => {
     let chainOpen = true
     let currentTaken = false
 
-    return PHASES.map(p => {
+    return todayPhases.value.map(p => {
       const done = !!phase.value.done[p.key]
       const unlocked = chainOpen
       // An empty phase (nothing due, no grammar left) counts as satisfied and
@@ -187,6 +220,18 @@ export const useSession = defineStore('session', () => {
   })
 
   const currentPhase = computed(() => phaseStatus.value.find(p => p.current) || phaseStatus.value.at(-1))
+
+  /**
+   * Where a phase hands off to. Views used to hardcode the next route, which
+   * meant the chain had to be edited in six files whenever the day's shape
+   * changed — and silently broke the moment a phase stopped running daily.
+   */
+  function nextRoute (key) {
+    const list = todayPhases.value
+    const i = list.findIndex(p => p.key === key)
+    if (i < 0 || i === list.length - 1) return '/'
+    return list[i + 1].route
+  }
 
   const completedCount = computed(() => phaseStatus.value.filter(p => p.done).length)
   const allDone = computed(() => phaseStatus.value.every(p => p.done))
@@ -227,8 +272,8 @@ export const useSession = defineStore('session', () => {
   }
 
   return {
-    PHASES, phase, newIds, reviewCards, reviewIds, dayWordIds, grammarPoint, essentialUnit, plan,
-    learnStarted, newCountLocked,
+    PHASES, TRACK, phase, newIds, reviewCards, reviewIds, dayWordIds, grammarPoint, essentialUnit, plan,
+    learnStarted, newCountLocked, track, todayPhases, runsToday, nextRoute,
     phaseStatus, currentPhase, completedCount, allDone, minutesToday,
     isDone, markDone, lockNewIds, startClock, stopClock, prepareData, resetToday, rollIfNewDay
   }

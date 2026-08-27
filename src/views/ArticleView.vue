@@ -213,12 +213,12 @@ function finishQuiz () {
 
 function done () {
   session.markDone('article')
-  router.push('/summary')
+  router.push(session.nextRoute('article'))
 }
 
 function skipPhase () {
   session.markDone('article')
-  router.push('/summary')
+  router.push(session.nextRoute('article'))
 }
 
 const KIND_LABEL = { vocab: '單字語境', detail: '細節理解', grammar: '文法應用', inference: '情境推論' }

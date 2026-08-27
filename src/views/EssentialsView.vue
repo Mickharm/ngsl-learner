@@ -76,14 +76,14 @@ function onDone ({ correct, total }) {
 
 function finish () {
   session.markDone('essentials')
-  router.push('/write')
+  router.push(session.nextRoute('essentials'))
 }
 
 onMounted(() => {
   session.startClock()
   if (!unit.value) {
     session.markDone('essentials')
-    router.replace('/write')
+    router.replace(session.nextRoute('essentials'))
   }
 })
 onUnmounted(() => session.stopClock())

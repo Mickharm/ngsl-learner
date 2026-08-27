@@ -145,12 +145,12 @@ function finishPhase () {
 
 function finish () {
   session.markDone('write')
-  router.push('/article')
+  router.push(session.nextRoute('write'))
 }
 
 function skipPhase () {
   session.markDone('write')
-  router.push('/article')
+  router.push(session.nextRoute('write'))
 }
 
 const avgScore = computed(() => {
@@ -164,7 +164,7 @@ onMounted(async () => {
   session.startClock()
   if (!picked.value.length) {
     session.markDone('write')
-    router.replace('/article')
+    router.replace(session.nextRoute('write'))
     return
   }
   await loadTask()
