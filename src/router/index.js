@@ -47,4 +47,34 @@ router.beforeEach(async to => {
   return true
 })
 
+/**
+ * A lazy route chunk that fails to load aborts the navigation and leaves the
+ * screen exactly as it was — the learner taps and nothing happens, with the
+ * error only in the console.
+ *
+ * It is not hypothetical: every deploy force-pushes a new `dist/` over
+ * gh-pages, so the previous build's hashed chunks stop existing, and the new
+ * service worker takes over the open page immediately (skipWaiting +
+ * clientsClaim + cleanupOutdatedCaches). Any route the page had not already
+ * imported is then gone from both the cache and the server. The routes used
+ * every day survive because their modules are already in memory; the one route
+ * nobody had opened since the deploy — /setup — is the one that dies silently.
+ *
+ * Reload once, on the route that was asked for: a fresh index.html carries the
+ * new chunk names. The timestamp guard stops a genuinely missing chunk from
+ * turning into a reload loop.
+ */
+const CHUNK_FAIL = /dynamically imported module|Importing a module script failed|error loading dynamically imported module|Failed to fetch/i
+const RELOAD_KEY = 'ngsl.chunkReload'
+
+router.onError((err, to) => {
+  if (!CHUNK_FAIL.test(err?.message || '')) return
+  let last = 0
+  try { last = Number(sessionStorage.getItem(RELOAD_KEY) || 0) } catch { /* private mode */ }
+  if (Date.now() - last < 10_000) return
+  try { sessionStorage.setItem(RELOAD_KEY, String(Date.now())) } catch { /* ignore */ }
+  window.location.hash = '#' + (to?.fullPath || '/')
+  window.location.reload()
+})
+
 export default router

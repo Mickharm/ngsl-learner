@@ -139,8 +139,16 @@ page.on('console', m => { if (m.type() === 'error') errors.push(m.text()) })
 page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message))
 if (process.env.TRACE_FAIL) page.on('requestfailed', r => console.log('  REQFAIL', r.failure()?.errorText, r.url().slice(0, 120)))
 
+// --- no service worker ---
+// The precache answers from disk, so with a service worker in the way no
+// asset request reaches the network and nothing here can decide what a
+// request returns. The smoke never asserted anything about the worker; it
+// does assert what happens when a chunk fails to arrive.
+await ctx.route('**/registerSW.js', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }))
+await ctx.route('**/sw.js', route => route.fulfill({ status: 404, contentType: 'text/plain', body: '' }))
+
 // --- stub Supabase ---
-await page.route('**/hlwmqtbgpconoclmxwll.supabase.co/**', async route => {
+await ctx.route('**/hlwmqtbgpconoclmxwll.supabase.co/**', async route => {
   const req = route.request()
   const url = new URL(req.url())
   const path = url.pathname
@@ -177,7 +185,7 @@ await page.route('**/hlwmqtbgpconoclmxwll.supabase.co/**', async route => {
 })
 
 // --- stub Gemini ---
-await page.route('**/generativelanguage.googleapis.com/**', async route => {
+await ctx.route('**/generativelanguage.googleapis.com/**', async route => {
   const req = route.request()
   let payload
   const body = req.postData() || ''
@@ -264,6 +272,36 @@ console.log('  signed in:', signedIn, '→', page.url().split('#')[1] || '/')
 if (!signedIn) {
   await shot('01b-login-failed')
   throw new Error('sign-in stub did not take effect')
+}
+
+/* --- a route whose chunk vanished under the open page must recover --- */
+// Every deploy force-pushes a new dist over gh-pages and the incoming service
+// worker bins the old precache on the spot (skipWaiting + cleanupOutdatedCaches),
+// so the first request for a chunk the open page had never imported can 404.
+// Vue Router aborts that navigation and leaves the screen untouched: the tap
+// does nothing at all and the only trace is a console line. The routes used
+// daily survive because their modules are already in memory — the casualty is
+// whichever route nobody has opened since the deploy, which is how 設定 →
+// 重做分級測驗 became a dead button. Verified red by removing router.onError.
+{
+  let served = 0
+  const fresh = await ctx.newPage()
+  await fresh.route('**/assets/PlacementView-*.js', r =>
+    served++ ? r.continue() : r.fulfill({ status: 404, contentType: 'text/plain', body: 'gone' }))
+  await fresh.goto(URL_BASE + '#/settings', { waitUntil: 'networkidle' })
+  await fresh.waitForTimeout(700)
+  const retake = fresh.locator('a:has-text("重做分級測驗")').first()
+  await retake.scrollIntoViewIfNeeded()
+  await retake.click({ timeout: 6000 }).catch(() => {})
+  await fresh.waitForTimeout(4000)
+  const landed = fresh.url().includes('#/setup')
+  const intro = await fresh.locator('text=先測一下你的起點').count()
+  checks.push([
+    'a route whose chunk 404s reloads instead of leaving a dead button',
+    landed && intro > 0,
+    `ended on ${fresh.url().split('#')[1] || '/'}${intro ? '' : ', placement intro never rendered'}`
+  ])
+  await fresh.close()
 }
 
 await page.goto(URL_BASE + '#/setup', { waitUntil: 'networkidle' })
