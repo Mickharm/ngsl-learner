@@ -143,16 +143,33 @@ async function quiesce (maxWait = 500) {
  * down instead of racing it.
  *
  * @param {string} text
- * @param {{rate?:number, voiceURI?:string, pitch?:number}} opts
+ * @param {{rate?:number, voiceURI?:string, pitch?:number, volume?:number}} opts
  */
-export function speak (text, { rate = 0.9, voiceURI = '', pitch = 1 } = {}) {
+export function speak (text, { rate = 0.9, voiceURI = '', pitch = 1, volume = 1 } = {}) {
   if (!synth || !text) return Promise.resolve(false)
 
   const run = async () => {
     // Voices decide both the voice and the lang tag; starting before the list
     // exists silently drops the user's chosen voice on the first play.
     await whenVoicesReady()
+    
+    const wasIdle = engineIdle()
     await quiesce()
+
+    // Chromium often clips the first syllable when waking from idle.
+    // A silent warmup utterance forces the TTS engine to spin up completely.
+    const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+    if (wasIdle && !isSafari) {
+      await new Promise(resolve => {
+        const warmup = new SpeechSynthesisUtterance('a')
+        warmup.volume = 0
+        warmup.rate = 2
+        warmup.onend = resolve
+        warmup.onerror = resolve
+        setTimeout(resolve, 250)
+        synth.speak(warmup)
+      })
+    }
 
     return new Promise(resolve => {
       let keepalive = null
@@ -171,6 +188,7 @@ export function speak (text, { rate = 0.9, voiceURI = '', pitch = 1 } = {}) {
         else u.lang = 'en-US'
         u.rate = Math.min(2, Math.max(0.5, rate))
         u.pitch = pitch
+        u.volume = volume
 
         u.onend = () => finish(true)
         u.onerror = () => finish(false)
