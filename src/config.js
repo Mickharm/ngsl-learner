@@ -78,7 +78,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   theme: 'system',
   articleTopics: ['daily', 'travel', 'work'],
   geminiKey: '',
-  geminiModel: 'gemini-3.5-flash',
+  geminiModel: 'gemini-1.5-flash',
   showIntervalHints: true,
   grammarPerDay: 1,
   dailyMinutes: DEFAULT_DAILY_MINUTES,

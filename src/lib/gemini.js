@@ -10,7 +10,7 @@
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models'
 
 /** Current at time of writing; resolveModel() takes over if it ever 404s. */
-export const DEFAULT_MODEL = 'gemini-3.5-flash'
+export const DEFAULT_MODEL = 'gemini-1.5-flash'
 
 export class GeminiError extends Error {
   constructor (message, { status = 0, retryable = false } = {}) {

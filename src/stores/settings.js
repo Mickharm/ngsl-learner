@@ -10,7 +10,10 @@ const LOCAL_KEY = 'ngsl.settings'
 function readLocal () {
   try {
     const raw = localStorage.getItem(LOCAL_KEY)
-    return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : { ...DEFAULT_SETTINGS }
+    const obj = raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : { ...DEFAULT_SETTINGS }
+    // Migrate away from non-existent 3.5-flash which causes slow 404 fallbacks
+    if (obj.geminiModel === 'gemini-3.5-flash') obj.geminiModel = 'gemini-1.5-flash'
+    return obj
   } catch {
     return { ...DEFAULT_SETTINGS }
   }
@@ -48,6 +51,7 @@ export const useSettings = defineStore('settings', () => {
     if (!error && data?.payload) {
       // Remote wins on load; local is only the offline mirror.
       state.value = { ...DEFAULT_SETTINGS, ...data.payload }
+      if (state.value.geminiModel === 'gemini-3.5-flash') state.value.geminiModel = 'gemini-1.5-flash'
       writeLocal(state.value)
       applyTheme()
     } else if (!error && !data) {
