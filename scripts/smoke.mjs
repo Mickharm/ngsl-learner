@@ -110,6 +110,7 @@ const ARTICLE = {
     q: `Question ${i + 1}: what does the passage say?`,
     q_zh: `第 ${i + 1} 題：文章說了什麼？`,
     options: ['The right answer', 'A wrong one', 'Another wrong one', 'Also wrong'],
+    options_zh: ['正確的答案', '錯的選項', '另一個錯的', '也是錯的'],
     answer: 0,
     explain_zh: '正解在第二段可以找到，其他選項與文章描述不符。'
   }))
@@ -505,9 +506,32 @@ if (tappableCount) {
   checks.push(['tapping a word in the article opens its card', false, 'no tappable words rendered'])
 }
 
+// Every alphabetic token must be tappable, not only the ones with an NGSL id.
+// "arrived", "waited", "twenty" and the proper noun "Mia" are exactly the words
+// a beginner stops on, and they used to render as inert spans.
+{
+  const firstPara = await page.locator('.art__body .para').first().innerText().catch(() => '')
+  const wordCount = (firstPara.match(/[A-Za-z]+(?:['’-][A-Za-z]+)*/g) || []).length
+  const btnCount = await page.locator('.art__body .para').first().locator('.tt__w').count().catch(() => 0)
+  checks.push([
+    'every word in the article is tappable, not just NGSL headwords',
+    wordCount > 0 && btnCount === wordCount,
+    `${btnCount} tappable / ${wordCount} words`
+  ])
+}
+
 if (await page.locator('button:has-text("開始作答")').first().isVisible().catch(() => false)) {
   await tap('button:has-text("開始作答")')
   await shot('16-article-quiz')
+
+  // The article has to stay on the page while answering — a comprehension
+  // question answered from memory is a memory test.
+  const readerVisible = await page.locator('.reader__body .tt__w').first().isVisible().catch(() => false)
+  checks.push(['the article stays on screen during the quiz', readerVisible])
+
+  // and the options carry their Chinese, because the learner cannot read them yet
+  const optZh = await page.locator('.opt__zh').first().innerText().catch(() => '')
+  checks.push(['options show their Chinese translation', optZh.includes('正確的答案'), `zh="${optZh}"`])
 
   // answering, leaving to re-read, and coming back must keep the answers
   await page.locator('.opt').first().click().catch(() => {})
@@ -517,7 +541,7 @@ if (await page.locator('button:has-text("開始作答")').first().isVisible().ca
   await page.locator('.opt').first().click().catch(() => {})
   await page.waitForTimeout(700)
 
-  await page.locator('button:has-text("回去看文章")').first().click().catch(() => {})
+  await page.locator('button:has-text("回到閱讀模式")').first().click().catch(() => {})
   await page.waitForTimeout(600)
   const resumeLabel = await page.locator('button:has-text("繼續作答")').first().innerText().catch(() => '')
   checks.push([

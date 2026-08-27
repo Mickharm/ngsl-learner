@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
 import GRAMMAR, { GRAMMAR_BY_ID } from '@/data/grammar'
-import { newCard, schedule, GRADE, STATE, isMastered, gradeFromRatio } from '@/lib/srs'
+import { newCard, schedule, GRADE, STATE, isMastered, gradeFromRatio, CONCEPT_SRS } from '@/lib/srs'
 import { useAuth } from './auth'
 import { useProgress } from './progress'
 
@@ -81,17 +81,30 @@ export const useGrammar = defineStore('grammar', () => {
 
   const dueList = computed(() => {
     const now = Date.now()
-    return available.value.filter(g => {
-      const r = rows.value.get(g.id)
-      return r && r.dueAt <= now
-    })
+    return available.value
+      .filter(g => {
+        const r = rows.value.get(g.id)
+        return r && r.dueAt <= now
+      })
+      .sort((a, b) => rows.value.get(a.id).dueAt - rows.value.get(b.id).dueAt)
   })
 
   /** The next unseen point in study order. */
   const nextNew = computed(() => available.value.find(g => !rows.value.has(g.id)) || null)
 
-  /** What today's grammar slot should be: a due review, else a new point. */
-  const todayPoint = computed(() => dueList.value[0] || nextNew.value || null)
+  /**
+   * What today's grammar slot should be.
+   *
+   * There is exactly one slot and it runs every other day, so "due reviews
+   * always win" starves the syllabus: point 1 comes back, wins the slot, gets
+   * rescheduled, comes back again — and points 2-30 never open. A single due
+   * point therefore yields to a new one; the backlog takes the slot only once
+   * two or more points are actually waiting, which is when it is real.
+   */
+  const todayPoint = computed(() => {
+    if (nextNew.value && dueList.value.length < 2) return nextNew.value
+    return dueList.value[0] || nextNew.value || null
+  })
 
   const stats = computed(() => {
     let started = 0, mastered = 0, correct = 0, attempts = 0
@@ -115,7 +128,7 @@ export const useGrammar = defineStore('grammar', () => {
     const grade = gradeFromRatio(correct, total)
 
     const base = rows.value.get(grammarId) || { ...newCard(grammarId), grammarId, correct: 0, attempts: 0 }
-    const scheduled = schedule(base, grade, Date.now())
+    const scheduled = schedule(base, grade, Date.now(), CONCEPT_SRS)
     const rec = {
       ...scheduled,
       grammarId,

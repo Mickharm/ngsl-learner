@@ -3,11 +3,18 @@ import { computed } from 'vue'
 import { useWords } from '@/stores/words'
 
 /**
- * Renders running English text with every NGSL word turned into a tap target.
+ * Renders running English text with every word turned into a tap target.
  *
  * The glossary used to live in a strip below the article, which meant reading
  * a sentence, losing your place, scrolling down, scrolling back. Tapping the
  * word itself keeps the eye where the meaning is needed.
+ *
+ * Every alphabetic token is tappable, including words that resolve to no NGSL
+ * id. Only offering the words already in the list inverted the point of the
+ * feature: the words a beginner cannot read are precisely the ones off the
+ * list, and those were the ones that did nothing when tapped. Unresolved words
+ * emit with `id: null` and the sentence they sit in, so the caller can look
+ * them up on demand.
  */
 
 const props = defineProps({
@@ -32,17 +39,35 @@ const tokens = computed(() => {
   while ((m = re.exec(props.text)) !== null) {
     if (m.index > last) out.push({ t: props.text.slice(last, m.index), w: false })
     const id = words.lookup(m[0])
-    out.push({ t: m[0], w: !!id, id })
+    out.push({ t: m[0], w: true, id, at: m.index })
     last = m.index + m[0].length
   }
   if (last < props.text.length) out.push({ t: props.text.slice(last), w: false })
   return out
 })
 
+/** The sentence a token sits in — context for glossing an unlisted word. */
+function sentenceAt (index) {
+  const text = props.text
+  let start = 0
+  for (let i = index; i > 0; i--) {
+    if (/[.!?]/.test(text[i - 1]) && /\s/.test(text[i] || ' ')) { start = i; break }
+  }
+  let end = text.length
+  for (let i = index; i < text.length; i++) {
+    if (/[.!?]/.test(text[i])) { end = i + 1; break }
+  }
+  return text.slice(start, end).trim()
+}
+
 function tap (tok, ev) {
-  if (!tok.id) return
   const r = ev.currentTarget.getBoundingClientRect()
-  emit('word', { id: tok.id, rect: { top: r.top, bottom: r.bottom, left: r.left, right: r.right } })
+  emit('word', {
+    id: tok.id || null,
+    surface: tok.t,
+    context: tok.id ? '' : sentenceAt(tok.at),
+    rect: { top: r.top, bottom: r.bottom, left: r.left, right: r.right }
+  })
 }
 </script>
 

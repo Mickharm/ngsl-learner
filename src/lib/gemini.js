@@ -321,10 +321,15 @@ const ARTICLE_SCHEMA = {
           q: { type: 'STRING' },
           q_zh: { type: 'STRING' },
           options: { type: 'ARRAY', items: { type: 'STRING' } },
+          options_zh: {
+            type: 'ARRAY',
+            items: { type: 'STRING' },
+            description: 'Traditional Chinese translation of each option, same order, same length'
+          },
           answer: { type: 'INTEGER', description: '0-based index into options' },
           explain_zh: { type: 'STRING' }
         },
-        required: ['kind', 'q', 'options', 'answer', 'explain_zh']
+        required: ['kind', 'q', 'q_zh', 'options', 'options_zh', 'answer', 'explain_zh']
       }
     }
   },
@@ -359,6 +364,8 @@ ${wordList}
 - used_words 列出你實際用到的上列單字（原形）。
 - 出 6 題選擇題，每題 4 個選項：2 題 vocab（考文中單字的語境意思）、2 題 detail（考細節理解）、1 題 grammar、1 題 inference（推論或情境判斷）。
 - 題目本身用英文（q），另附繁體中文翻譯（q_zh）；解析（explain_zh）一律繁體中文，說明為什麼對、為什麼其他選項錯。
+- 選項（options）用英文，並且一定要附 options_zh：每個選項的繁體中文翻譯，順序與數量必須完全對應。學習者字彙量只有 400-500 字，看不懂選項時要能對照中文。
+- 選項的英文用字也限制在最高頻 1000 字以內（文中出現過的字除外）。
 - explain_zh 提到選項時一律用字母（選項 A / 選項 B / 選項 C / 選項 D），**不要用數字**，因為畫面上標的是 A B C D。
 - 選項不要有明顯的長度或格式線索。${grammarLine}`
 
@@ -371,11 +378,88 @@ ${wordList}
   }))
 
   const article = parseJson(text)
-  article.questions = (article.questions || []).filter(
-    q => Array.isArray(q.options) && q.options.length >= 2 &&
-         Number.isInteger(q.answer) && q.answer >= 0 && q.answer < q.options.length
-  )
+  article.questions = (article.questions || [])
+    .filter(
+      q => Array.isArray(q.options) && q.options.length >= 2 &&
+           Number.isInteger(q.answer) && q.answer >= 0 && q.answer < q.options.length
+    )
+    // A missing or short options_zh must not silently misalign the Chinese with
+    // the wrong option — pad instead, so index i always describes option i.
+    .map(q => ({
+      ...q,
+      options_zh: q.options.map((_, i) => (Array.isArray(q.options_zh) ? q.options_zh[i] : '') || '')
+    }))
   return article
+}
+
+/* ------------------------------------------------------------------ *
+ * 2b. Ad-hoc word lookup
+ *
+ * A generated article is not confined to the 2,801 NGSL headwords: it contains
+ * irregular forms, proper nouns and the occasional word past the list. Those
+ * words had no card to open, so tapping them did nothing at all — the reader
+ * hit a dead end on exactly the words they most needed explained.
+ * ------------------------------------------------------------------ */
+
+const GLOSS_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    headword: { type: 'STRING', description: 'the surface form as it was tapped' },
+    base: { type: 'STRING', description: 'dictionary/base form, empty if identical' },
+    ipa: { type: 'STRING', description: 'General American IPA of the surface form, in slashes' },
+    form_zh: {
+      type: 'STRING',
+      description: 'Traditional Chinese, one short line: what form this is (past tense, plural, comparative...). Empty when the word is already the base form.'
+    },
+    meanings: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          pos: { type: 'STRING' },
+          zh: { type: 'STRING', description: 'Traditional Chinese gloss' }
+        },
+        required: ['pos', 'zh']
+      }
+    },
+    examples: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: { en: { type: 'STRING' }, zh: { type: 'STRING' } },
+        required: ['en', 'zh']
+      }
+    }
+  },
+  required: ['headword', 'ipa', 'meanings', 'examples']
+}
+
+/**
+ * Explain one word the learner tapped, in the sentence they tapped it in.
+ *
+ * @param {string} surface  the word exactly as it appears in the text
+ * @param {string} context  the sentence around it, so a form like "left" is
+ *                          glossed the way it is actually used
+ */
+export async function lookupWord (surface, { context = '', key, model = DEFAULT_MODEL, signal } = {}) {
+  const line = context ? `\n\n它出現在這個句子裡：「${context}」，請依這個句子裡的用法解釋。` : ''
+  const prompt = `學習者在閱讀時點了英文單字「${surface}」，他不認識這個字。${line}
+
+要求：
+- headword 就是 ${surface}（原樣輸出）。
+- base 給字典原形；如果 ${surface} 本身就是原形，base 給空字串。
+- form_zh 用一句繁體中文說明這是什麼形態（過去式／複數／比較級／現在分詞…）；本來就是原形就給空字串。
+- meanings 最多 2 個，依這個句子裡的用法排序。
+- examples 給 1 句 CEFR A2 的實用例句與繁體中文翻譯。`
+
+  const text = await withRetry(() => callGemini({
+    key, model, signal,
+    systemInstruction: WORD_SYSTEM,
+    prompt,
+    schema: GLOSS_SCHEMA,
+    temperature: 0.3
+  }))
+  return parseJson(text)
 }
 
 /* ------------------------------------------------------------------ *

@@ -13,7 +13,9 @@ import AudioButton from './AudioButton.vue'
 const props = defineProps({
   word: { type: Object, default: null },
   rect: { type: Object, default: null },
-  loading: { type: Boolean, default: false }
+  loading: { type: Boolean, default: false },
+  /** Why a lookup produced nothing, in Traditional Chinese. */
+  error: { type: String, default: '' }
 })
 defineEmits(['close'])
 
@@ -53,7 +55,17 @@ const style = computed(() => {
 
           <p v-if="word.ipa" class="pop__ipa num">{{ word.ipa }}</p>
 
-          <p v-if="loading" class="pop__wait zh">正在產生這個字的資料…</p>
+          <!-- A word that is not an NGSL headword is glossed on demand and is
+               deliberately not a study card; say so, so the learner does not
+               expect it in tomorrow's review. -->
+          <p v-if="word.adhoc && (word.base || word.formZh)" class="pop__form zh">
+            <template v-if="word.base">原形 <strong>{{ word.base }}</strong></template>
+            <template v-if="word.base && word.formZh"> · </template>
+            <template v-if="word.formZh">{{ word.formZh }}</template>
+          </p>
+
+          <p v-if="loading" class="pop__wait zh">正在查這個字…</p>
+          <p v-else-if="error" class="pop__err zh">{{ error }}</p>
 
           <template v-else>
             <ul v-if="word.meanings?.length" class="pop__means">
@@ -71,6 +83,8 @@ const style = computed(() => {
               </div>
               <p class="pop__exzh zh">{{ word.examples[0].zh }}</p>
             </div>
+
+            <p v-if="word.adhoc" class="pop__note zh">不在 NGSL 2801 字表內，只提供解釋，不會進入複習卡。</p>
 
             <p v-if="word.confusables?.length" class="pop__conf zh">
               易混：<strong>{{ word.confusables[0].word }}</strong> — {{ word.confusables[0].diff }}
@@ -105,6 +119,13 @@ const style = computed(() => {
 
 .pop__ipa { font-size: var(--step--2); color: var(--ink-2); margin-top: -4px; }
 .pop__wait { font-size: var(--step--2); color: var(--ink-3); }
+.pop__err {
+  font-size: var(--step--2); color: var(--rose); line-height: 1.6;
+  background: var(--rose-wash); border-radius: var(--radius-sm); padding: var(--sp-2);
+}
+.pop__form { font-size: var(--step--2); color: var(--ink-2); margin-top: -2px; }
+.pop__form strong { font-family: var(--font-word); color: var(--ink); }
+.pop__note { font-size: 10px; color: var(--ink-3); line-height: 1.6; }
 
 .pop__means { display: flex; flex-direction: column; gap: 4px; }
 .pop__mean { display: flex; align-items: baseline; gap: var(--sp-2); font-size: var(--step--1); }

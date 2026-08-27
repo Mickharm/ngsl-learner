@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabase'
 import { generateArticle } from '@/lib/gemini'
@@ -53,6 +53,24 @@ const settled = ref(false)
 const popWord = ref(null)
 const popRect = ref(null)
 const popLoading = ref(false)
+const popError = ref('')
+
+/** Keep the article on screen while answering. Collapsible, not a separate page. */
+const articleOpen = ref(true)
+/**
+ * Beginners need the options in Chinese too.
+ *
+ * Keeping the options English-only is right for TOEIC and wrong for right now:
+ * with a 400-500 word base, an unreadable option turns a comprehension
+ * question into a coin flip and teaches nothing. English stays primary, the
+ * Chinese sits under it, and the toggle is remembered so the crutch can be
+ * dropped when it is no longer needed.
+ */
+const OPT_ZH_KEY = 'ngsl.optionZh'
+const showOptionZh = ref(localStorage.getItem(OPT_ZH_KEY) !== '0')
+watch(showOptionZh, v => {
+  try { localStorage.setItem(OPT_ZH_KEY, v ? '1' : '0') } catch { /* ignore */ }
+})
 
 const cacheKey = computed(() => `${todayKey()}:${topic.value}`)
 const dayWords = computed(() => words.getMany(session.dayWordIds).filter(w => w.enriched))
@@ -145,17 +163,50 @@ async function generate (force = false) {
   }
 }
 
-/** Tapping a word in the article opens its card, enriching it if needed. */
-async function openWord ({ id, rect }) {
+/**
+ * Tapping a word opens its card.
+ *
+ * Two paths, because an article is not restricted to the 2,801 headwords:
+ * a word with an NGSL id shows its study card (enriched on demand); a word
+ * without one — an irregular form, a proper noun, anything past the list — is
+ * glossed on the spot from the sentence it appeared in. Before this the second
+ * kind was not even tappable, so the words the learner could not read were the
+ * ones the feature refused to explain.
+ */
+async function openWord ({ id, surface, context, rect }) {
   popRect.value = rect
-  popWord.value = words.get(id)
-  if (popWord.value?.enriched || !settings.hasGeminiKey) return
+  popError.value = ''
+
+  if (id) {
+    popWord.value = words.get(id)
+    if (popWord.value?.enriched || !settings.hasGeminiKey) return
+    popLoading.value = true
+    try {
+      await words.ensureEnriched([id])
+      popWord.value = words.get(id)
+    } catch { /* the card already says the data is missing */ }
+    finally { popLoading.value = false }
+    return
+  }
+
+  const cached = words.glossOf(surface)
+  if (cached) { popWord.value = cached; return }
+
+  popWord.value = { headword: surface, meanings: [], examples: [], adhoc: true }
   popLoading.value = true
   try {
-    await words.ensureEnriched([id])
-    popWord.value = words.get(id)
-  } catch { /* the card already says the data is missing */ }
-  finally { popLoading.value = false }
+    const entry = await words.gloss(surface, context)
+    if (entry) popWord.value = entry
+  } catch (e) {
+    popError.value = e?.message || '查不到這個字'
+  } finally {
+    popLoading.value = false
+  }
+}
+
+function closePop () {
+  popWord.value = null
+  popError.value = ''
 }
 
 /**
@@ -169,6 +220,12 @@ function startQuiz () {
   settled.value = picks.value[qIndex.value] !== undefined
   state.value = 'quiz'
 }
+
+/** The Chinese for one option, when the model supplied it. */
+function optionZh (q, i) {
+  return q?.options_zh?.[i] || ''
+}
+const hasOptionZh = computed(() => questions.value.some(q => q?.options_zh?.some(Boolean)))
 
 /** Answered so far, for the resume label. */
 const answeredCount = computed(() => questions.value.filter((_, i) => picks.value[i] !== undefined).length)
@@ -281,7 +338,7 @@ onUnmounted(() => session.stopClock())
         </div>
       </header>
 
-      <p class="art__tip zh">點任何一個字看翻譯、音標和例句</p>
+      <p class="art__tip zh">點任何一個字看翻譯、音標和例句（不在字表內的字也可以點）</p>
 
       <article class="art__body">
         <div v-for="(p, i) in paragraphs" :key="i" class="para">
@@ -298,15 +355,39 @@ onUnmounted(() => session.stopClock())
       <button class="btn btn--quiet btn--sm art__skip zh" @click="skipPhase">跳過這個階段</button>
     </main>
 
-    <!-- quiz -->
+    <!-- quiz — the article stays on the page. Answering a comprehension
+         question from memory tests memory, not comprehension; and a beginner
+         who has to leave the text to see the question simply guesses. -->
     <main v-else-if="state === 'quiz' && question" class="shell art">
+      <section class="reader" :class="{ 'reader--closed': !articleOpen }">
+        <button class="reader__bar zh" @click="articleOpen = !articleOpen">
+          <span class="reader__title">{{ article.title }}</span>
+          <svg class="reader__chev" :class="{ 'reader__chev--up': articleOpen }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+        </button>
+        <div v-if="articleOpen" class="reader__body">
+          <div v-for="(p, i) in paragraphs" :key="i" class="para">
+            <TappableText :text="p" :highlight-ids="dayWordIds" @word="openWord" />
+            <p v-if="showTranslation && paragraphsZh[i]" class="para__zh zh">{{ paragraphsZh[i] }}</p>
+          </div>
+          <div class="reader__tools">
+            <button class="btn btn--quiet btn--sm zh" @click="showTranslation = !showTranslation">
+              {{ showTranslation ? '隱藏中譯' : '顯示中譯' }}
+            </button>
+            <AudioButton :text="article.body" size="sm" label="朗讀全文" />
+          </div>
+        </div>
+      </section>
+
       <div class="phase-tag">
         <span class="chip chip--violet">{{ KIND_LABEL[question.kind] || '理解題' }}</span>
+        <button v-if="hasOptionZh" class="btn btn--quiet btn--sm zh" @click="showOptionZh = !showOptionZh">
+          {{ showOptionZh ? '隱藏選項中譯' : '顯示選項中譯' }}
+        </button>
         <span class="tally num">{{ correctCount }} / {{ picks.filter(p => p !== undefined).length }}</span>
       </div>
 
       <div class="qbox">
-        <p class="qbox__q">{{ question.q }}</p>
+        <TappableText class="qbox__q" :text="question.q" @word="openWord" />
         <p v-if="question.q_zh" class="qbox__zh zh">{{ question.q_zh }}</p>
       </div>
 
@@ -323,7 +404,10 @@ onUnmounted(() => session.stopClock())
           @click="pick(i)"
         >
           <span class="opt__key num">{{ 'ABCD'[i] }}</span>
-          <span class="opt__text">{{ o }}</span>
+          <span class="opt__body">
+            <span class="opt__text">{{ o }}</span>
+            <span v-if="showOptionZh && optionZh(question, i)" class="opt__zh zh">{{ optionZh(question, i) }}</span>
+          </span>
         </button>
       </div>
 
@@ -337,7 +421,7 @@ onUnmounted(() => session.stopClock())
         </div>
       </Transition>
 
-      <button class="btn btn--quiet btn--sm art__skip zh" @click="state = 'reading'">回去看文章</button>
+      <button class="btn btn--quiet btn--sm art__skip zh" @click="state = 'reading'">回到閱讀模式</button>
     </main>
 
     <!-- result -->
@@ -361,6 +445,7 @@ onUnmounted(() => session.stopClock())
           </div>
           <p class="rq__ans zh">
             正解：<strong>{{ 'ABCD'[q.answer] }}. {{ q.options[q.answer] }}</strong>
+            <template v-if="optionZh(q, q.answer)">（{{ optionZh(q, q.answer) }}）</template>
             <template v-if="picks[i] !== q.answer && picks[i] !== undefined">
               · 你選了 {{ 'ABCD'[picks[i]] }}. {{ q.options[picks[i]] }}
             </template>
@@ -377,7 +462,8 @@ onUnmounted(() => session.stopClock())
       :word="popWord"
       :rect="popRect"
       :loading="popLoading"
-      @close="popWord = null"
+      :error="popError"
+      @close="closePop"
     />
   </div>
 </template>
@@ -388,6 +474,43 @@ onUnmounted(() => session.stopClock())
   display: flex; flex-direction: column; gap: var(--sp-4);
   padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-6));
 }
+
+/* the article, kept above the question while answering */
+.reader {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+.reader__bar {
+  width: 100%;
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-3);
+  text-align: left;
+  background: var(--surface-2);
+}
+.reader__title {
+  flex: 1;
+  font-family: var(--font-word);
+  font-size: var(--step--1);
+  font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.reader__chev { width: 18px; height: 18px; color: var(--ink-3); transition: transform 0.16s; }
+.reader__chev--up { transform: rotate(180deg); }
+.reader__body {
+  padding: var(--sp-3);
+  max-height: 38dvh;
+  overflow-y: auto;
+  display: flex; flex-direction: column; gap: var(--sp-3);
+  -webkit-overflow-scrolling: touch;
+}
+.reader__body :deep(.tt) { font-size: var(--step-0); line-height: 1.85; }
+.reader__tools { display: flex; align-items: center; gap: var(--sp-2); }
+
+.qbox :deep(.tt) { font-size: var(--step-1); line-height: 1.7; }
+.opt__body { display: flex; flex-direction: column; gap: 2px; padding: var(--sp-2) 0; }
+.opt__zh { font-size: var(--step--2); color: var(--ink-3); line-height: 1.5; }
 
 .gate {
   display: flex; flex-direction: column; align-items: center; justify-content: center;

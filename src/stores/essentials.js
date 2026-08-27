@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
 import ESSENTIALS, { ESSENTIAL_BY_ID } from '@/data/essentials'
-import { newCard, schedule, GRADE, isMastered, gradeFromRatio } from '@/lib/srs'
+import { newCard, schedule, GRADE, isMastered, gradeFromRatio, CONCEPT_SRS } from '@/lib/srs'
 import { useAuth } from './auth'
 import { useProgress } from './progress'
 
@@ -92,7 +92,11 @@ export const useEssentials = defineStore('essentials', () => {
   const nextNew = computed(() => ESSENTIALS.find(u => !rows.value.has(u.id)) || null)
 
   /** Today's unit: a due review first, otherwise the next unseen one. */
-  const todayUnit = computed(() => dueList.value[0] || nextNew.value || null)
+  const todayUnit = computed(() => {
+    // Same rule as grammar: one due unit does not get to block the syllabus.
+    if (nextNew.value && dueList.value.length < 2) return nextNew.value
+    return dueList.value[0] || nextNew.value || null
+  })
 
   const stats = computed(() => {
     let started = 0, mastered = 0, correct = 0, attempts = 0
@@ -123,7 +127,7 @@ export const useEssentials = defineStore('essentials', () => {
     const grade = gradeFromRatio(correct, total)
 
     const base = rows.value.get(unitId) || { ...newCard(unitId), unitId, correct: 0, attempts: 0 }
-    const scheduled = schedule(base, grade, Date.now())
+    const scheduled = schedule(base, grade, Date.now(), CONCEPT_SRS)
     const rec = {
       ...scheduled,
       unitId,

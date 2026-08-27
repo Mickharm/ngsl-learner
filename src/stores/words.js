@@ -2,8 +2,8 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import base from '@/data/words.base.json'
 import { supabase } from '@/lib/supabase'
-import { idbGetAll, idbPutMany, STORE } from '@/lib/idb'
-import { enrichWords } from '@/lib/gemini'
+import { idbGet, idbGetAll, idbPut, idbPutMany, STORE } from '@/lib/idb'
+import { enrichWords, lookupWord } from '@/lib/gemini'
 import { useSettings } from './settings'
 
 /**
@@ -19,6 +19,50 @@ import { useSettings } from './settings'
  */
 
 const BATCH = 20
+
+/**
+ * Irregular surface forms the NGSL family lists and the suffix rules both miss.
+ *
+ * The suffix stripper handles -s/-ed/-ing/-ies; it cannot handle "went",
+ * "children" or "better". Those are among the most frequent words in any
+ * article, so before this table a beginner tapping the commonest words in the
+ * text got nothing back at all.
+ */
+const IRREGULAR = Object.freeze({
+  am: 'be', is: 'be', are: 'be', was: 'be', were: 'be', been: 'be', being: 'be',
+  has: 'have', had: 'have', having: 'have',
+  does: 'do', did: 'do', done: 'do', doing: 'do',
+  went: 'go', gone: 'go', goes: 'go',
+  said: 'say', made: 'make', took: 'take', taken: 'take',
+  came: 'come', saw: 'see', seen: 'see', knew: 'know', known: 'know',
+  got: 'get', gotten: 'get', gave: 'give', given: 'give',
+  found: 'find', thought: 'think', told: 'tell', became: 'become',
+  left: 'leave', felt: 'feel', put: 'put', brought: 'bring',
+  began: 'begin', begun: 'begin', kept: 'keep', held: 'hold',
+  wrote: 'write', written: 'write', stood: 'stand', heard: 'hear',
+  let: 'let', meant: 'mean', met: 'meet', ran: 'run', paid: 'pay',
+  sat: 'sit', spoke: 'speak', spoken: 'speak', lay: 'lie', led: 'lead',
+  grew: 'grow', grown: 'grow', lost: 'lose', fell: 'fall', fallen: 'fall',
+  sent: 'send', built: 'build', understood: 'understand',
+  drew: 'draw', drawn: 'draw', broke: 'break', broken: 'break',
+  spent: 'spend', cut: 'cut', rose: 'rise', risen: 'rise',
+  driven: 'drive', drove: 'drive', bought: 'buy', wore: 'wear', worn: 'wear',
+  chose: 'choose', chosen: 'choose', ate: 'eat', eaten: 'eat',
+  sold: 'sell', taught: 'teach', caught: 'catch', flew: 'fly', flown: 'fly',
+  fought: 'fight', threw: 'throw', thrown: 'throw', slept: 'sleep',
+  won: 'win', laid: 'lay', read: 'read', hit: 'hit', set: 'set', cost: 'cost',
+  children: 'child', men: 'man', women: 'woman', people: 'person',
+  feet: 'foot', teeth: 'tooth', lives: 'life', wives: 'wife',
+  knives: 'knife', leaves: 'leaf', halves: 'half', selves: 'self',
+  better: 'good', best: 'good', worse: 'bad', worst: 'bad',
+  more: 'much', most: 'much', less: 'little', least: 'little',
+  further: 'far', furthest: 'far', farther: 'far', farthest: 'far',
+  an: 'a', its: 'it', his: 'he', him: 'he', her: 'she', hers: 'she',
+  them: 'they', their: 'they', theirs: 'they', us: 'we', our: 'we', ours: 'we',
+  me: 'i', my: 'i', mine: 'i', your: 'you', yours: 'you',
+  'won\'t': 'will', 'can\'t': 'can', 'don\'t': 'do', 'didn\'t': 'do',
+  'doesn\'t': 'do', 'isn\'t': 'be', 'aren\'t': 'be', 'wasn\'t': 'be'
+})
 
 export const useWords = defineStore('words', () => {
   const settings = useSettings()
@@ -55,6 +99,8 @@ export const useWords = defineStore('words', () => {
     const k = String(surface).toLowerCase().replace(/[^a-z'-]/g, '')
     if (!k) return null
     if (idBySurface.has(k)) return idBySurface.get(k)
+    const irr = IRREGULAR[k]
+    if (irr && idBySurface.has(irr)) return idBySurface.get(irr)
     // cheap morphology for forms the family list misses
     for (const strip of ['s', 'es', 'ed', 'ing', "'s"]) {
       if (k.endsWith(strip)) {
@@ -241,6 +287,61 @@ export const useWords = defineStore('words', () => {
     return added
   }
 
+  /* ---------------- ad-hoc glossary ---------------- *
+   *
+   * Words an article uses that are not NGSL headwords — proper nouns, forms no
+   * rule resolves, anything past rank 2801. They are not study cards and never
+   * enter the SRS; they exist so that tapping any word in the text produces an
+   * answer instead of nothing. Cached in IndexedDB by surface form, because
+   * the same handful recur across articles.
+   */
+  const glosses = ref(new Map())
+
+  function glossOf (surface) {
+    return glosses.value.get(String(surface).toLowerCase()) || null
+  }
+
+  async function gloss (surface, context = '') {
+    const k = String(surface || '').toLowerCase().trim()
+    if (!k) return null
+    if (glosses.value.has(k)) return glosses.value.get(k)
+
+    const cacheKey = `gloss:${k}`
+    const cached = await idbGet(STORE.META, cacheKey)
+    if (cached?.meanings?.length) {
+      glosses.value = new Map(glosses.value).set(k, cached)
+      return cached
+    }
+
+    const key = settings.state.geminiKey?.trim()
+    if (!key) {
+      const err = new Error('這個字不在 NGSL 2801 字表內，需要 Gemini API Key 才能即時查詢。')
+      err.code = 'NO_KEY'
+      throw err
+    }
+
+    const raw = await lookupWord(surface, {
+      context,
+      key,
+      model: settings.state.geminiModel
+    })
+
+    const entry = {
+      headword: raw?.headword || surface,
+      base: raw?.base || '',
+      formZh: raw?.form_zh || '',
+      ipa: raw?.ipa || '',
+      meanings: Array.isArray(raw?.meanings) ? raw.meanings.slice(0, 2) : [],
+      examples: Array.isArray(raw?.examples) ? raw.examples.slice(0, 1) : [],
+      confusables: [],
+      adhoc: true,
+      enriched: true
+    }
+    glosses.value = new Map(glosses.value).set(k, entry)
+    idbPut(STORE.META, entry, cacheKey)
+    return entry
+  }
+
   const bandCounts = computed(() => {
     const acc = {}
     for (const w of base) acc[w.b] = (acc[w.b] || 0) + 1
@@ -249,6 +350,7 @@ export const useWords = defineStore('words', () => {
 
   return {
     total, enriched, enrichedCount, hydrating, enriching, enrichProgress, bandCounts,
-    get, getMany, range, search, baseOf, lookup, hydrate, ensureEnriched, missing, allBase: base
+    get, getMany, range, search, baseOf, lookup, hydrate, ensureEnriched, missing, allBase: base,
+    glosses, gloss, glossOf
   }
 })

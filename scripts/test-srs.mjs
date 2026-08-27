@@ -11,7 +11,7 @@
  */
 import {
   schedule, newCard, gradeFromRatio, isMastered,
-  GRADE, STATE, START_EASE
+  GRADE, STATE, START_EASE, CONCEPT_SRS
 } from '../src/lib/srs.js'
 
 let pass = 0
@@ -192,6 +192,47 @@ for (const [correct, total, want] of [
   const c = play(newCard(30), [gradeFromRatio(4, 6), gradeFromRatio(4, 6)])
   ok('two 4/6 scores graduate a grammar point', c.state === STATE.REVIEW,
     `state=${c.state}`)
+}
+
+/* ------------------------------------------------------------------ *
+ * 6. Concept cards run on a day scale
+ *
+ * The reported symptom was "day 1 and day 2 were identical". The cause was
+ * vocabulary's minute-scale learning steps applied to a grammar point: a pass
+ * left the point in LEARNING, due ten minutes later, so the next morning it
+ * was the most-due item and took the one daily grammar slot again — with the
+ * same explanation page and the same six questions.
+ * ------------------------------------------------------------------ */
+console.log('\n— concept (grammar / essentials) scheduling —')
+
+{
+  const first = schedule(newCard('g01', T0), gradeFromRatio(4, 6), T0, CONCEPT_SRS)
+  ok('a passed grammar point graduates immediately',
+    first.state === STATE.REVIEW, `state=${first.state}`)
+  ok('and does not come back the next day',
+    first.dueAt - T0 > 1.5 * DAY, `${((first.dueAt - T0) / DAY).toFixed(2)}d`)
+
+  const failed = schedule(newCard('g02', T0), gradeFromRatio(2, 6), T0, CONCEPT_SRS)
+  ok('a failed grammar point retries on a day scale, not in ten minutes',
+    failed.dueAt - T0 >= DAY, `${((failed.dueAt - T0) / DAY).toFixed(2)}d`)
+
+  // Under the old constants this was the bug: still LEARNING, due in minutes.
+  const vocabStyle = schedule(newCard('g03', T0), gradeFromRatio(4, 6), T0)
+  ok('(regression) vocabulary steps would have left it due within the hour',
+    vocabStyle.state === STATE.LEARNING && vocabStyle.dueAt - T0 < 3600000,
+    `state=${vocabStyle.state}`)
+
+  // Three consecutive passes must keep pushing the point further out, so the
+  // slot frees up for the next one instead of being re-spent on the same rule.
+  const third = play(newCard('g04', T0), [GRADE.GOOD, GRADE.GOOD, GRADE.GOOD], T0)
+  const conceptThird = (() => {
+    let c = newCard('g05', T0)
+    let t = T0
+    for (let i = 0; i < 3; i++) { t = Math.max(t, c.dueAt); c = schedule(c, GRADE.GOOD, t, CONCEPT_SRS) }
+    return c
+  })()
+  ok('three passes push a concept past a week',
+    conceptThird.intervalDays > 7, `${conceptThird.intervalDays.toFixed(1)}d vs vocab ${third.intervalDays.toFixed(1)}d`)
 }
 
 Math.random = realRandom

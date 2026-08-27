@@ -7,6 +7,7 @@ import { useToast } from '@/stores/toast'
 import SessionHeader from '@/components/SessionHeader.vue'
 import AudioButton from '@/components/AudioButton.vue'
 import { inlineMd } from '@/lib/format'
+import { variedDrills } from '@/lib/variate'
 import { matchesAnswer, worthJudging } from '@/lib/answer'
 import { judgeSentence, generateDrills } from '@/lib/gemini'
 import { useSettings } from '@/stores/settings'
@@ -43,9 +44,21 @@ const verdict = ref(null)      // { correct, source: 'local'|'ai'|'revealed', ex
 const judging = ref(false)
 
 const generated = ref(null)
-const drills = computed(() => generated.value || point.value?.drills || [])
-const drill = computed(() => drills.value[drillIndex.value] || null)
 const isNew = computed(() => point.value && !grammar.recOf(point.value.id))
+
+/**
+ * A review must not be a replay. Same point, same six questions, same order,
+ * same correct slot is what made day 2 indistinguishable from day 1 — so on
+ * every repeat the bank is reshuffled and each option list is permuted, seeded
+ * by how many times this point has been drilled.
+ */
+const variantSeed = computed(() => {
+  const rec = point.value && grammar.recOf(point.value.id)
+  return rec ? (rec.reps || 0) + 1 : 0
+})
+const baseDrills = computed(() => variedDrills(point.value?.drills || [], variantSeed.value))
+const drills = computed(() => generated.value || baseDrills.value)
+const drill = computed(() => drills.value[drillIndex.value] || null)
 
 const correctCount = computed(() => answers.value.filter(a => a.correct).length)
 
@@ -238,7 +251,12 @@ onMounted(() => {
   if (!point.value) {
     session.markDone('grammar')
     router.replace(session.nextRoute('grammar'))
+    return
   }
+  // A point already taught goes straight to the drills. Re-reading the same
+  // explanation page before every review is the part that felt like a replay;
+  // the "看說明" button is still there for when it is actually wanted.
+  if (!isNew.value) startDrills()
 })
 onUnmounted(() => session.stopClock())
 </script>
@@ -295,7 +313,7 @@ onUnmounted(() => session.stopClock())
         </section>
 
         <button class="btn btn--primary btn--block zh" @click="startDrills">
-          開始練習（{{ drills.length }} 題）
+          {{ isNew ? `開始練習（${drills.length} 題）` : `開始複習（${drills.length} 題，題序與選項已重排）` }}
         </button>
         <button class="btn btn--quiet btn--sm gram__skip zh" @click="skipPhase">跳過這個階段</button>
       </template>
@@ -306,6 +324,7 @@ onUnmounted(() => session.stopClock())
           <span class="chip chip--plain">
             {{ drill.type === 'choice' ? '選擇題' : drill.type === 'order' ? '句子重組' : '找出錯誤' }}
           </span>
+          <button class="btn btn--quiet btn--sm zh" @click="stage = 'teach'">看說明</button>
           <span class="tally num">{{ correctCount }} / {{ answers.length }}</span>
         </div>
 
@@ -428,10 +447,10 @@ onUnmounted(() => session.stopClock())
           </p>
           <p class="res__note zh">
             <template v-if="correctCount / drills.length >= 0.75">
-              這個文法點會在幾天後再出現一次確認。
+              這個文法點兩天後再出現一次確認，下一個新文法點會接著開。
             </template>
             <template v-else>
-              正確率偏低，這個文法點明天就會再出現。答錯的題目已進錯題本。
+              正確率偏低，這個文法點明天就會再出現（題序與選項會重排）。答錯的題目已進錯題本。
             </template>
           </p>
         </div>

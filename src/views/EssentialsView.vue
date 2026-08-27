@@ -7,6 +7,7 @@ import { useSettings } from '@/stores/settings'
 import { useToast } from '@/stores/toast'
 import { generateDrills } from '@/lib/gemini'
 import { inlineMd } from '@/lib/format'
+import { variedDrills } from '@/lib/variate'
 import SessionHeader from '@/components/SessionHeader.vue'
 import DrillRunner from '@/components/DrillRunner.vue'
 import AudioButton from '@/components/AudioButton.vue'
@@ -35,7 +36,10 @@ const rec = computed(() => unit.value ? essentials.recOf(unit.value.id) : null)
 const isNew = computed(() => !rec.value)
 
 function startSeed () {
-  drills.value = unit.value.drills
+  // Same rule as grammar: a repeat reshuffles the bank and the option lists so
+  // a review is not a replay of the first sitting.
+  const seed = rec.value ? (rec.value.reps || 0) + 1 : 0
+  drills.value = variedDrills(unit.value.drills, seed)
   stage.value = 'drill'
 }
 

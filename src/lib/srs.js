@@ -110,7 +110,15 @@ function clampInterval (d) {
  * Apply a grade to a card and return the NEXT card state.
  * Pure function — never mutates the input.
  */
-export function schedule (card, grade, now = Date.now()) {
+export function schedule (card, grade, now = Date.now(), opts = {}) {
+  const {
+    learningSteps = LEARNING_STEPS_MIN,
+    relearnSteps = RELEARN_STEPS_MIN,
+    graduateDays = GRADUATE_DAYS,
+    easyGraduateDays = EASY_GRADUATE_DAYS,
+    /** Delay after AGAIN when a track has no sub-day steps, in days. */
+    againDays = 1
+  } = opts
   const c = { ...card }
   c.reps += 1
   c.lastGrade = grade
@@ -123,13 +131,14 @@ export function schedule (card, grade, now = Date.now()) {
   const inRelearn = c.state === STATE.RELEARNING
 
   if (inLearning || inRelearn) {
-    const steps = inRelearn ? RELEARN_STEPS_MIN : LEARNING_STEPS_MIN
+    const steps = inRelearn ? relearnSteps : learningSteps
 
     if (grade === GRADE.AGAIN) {
       c.state = inRelearn ? STATE.RELEARNING : STATE.LEARNING
       c.stepIndex = 0
       c.ease = clampEase(c.ease - AGAIN_EASE_COST)
-      c.dueAt = now + steps[0] * MIN
+      // A track with no sub-day steps (grammar) retries on a day scale instead.
+      c.dueAt = now + (steps.length ? steps[0] * MIN : againDays * DAY)
       return c
     }
 
@@ -139,7 +148,7 @@ export function schedule (card, grade, now = Date.now()) {
       c.stepIndex = 0
       c.ease = clampEase(c.ease + 0.15)
       c.intervalDays = clampInterval(
-        inRelearn ? Math.max(GRADUATE_DAYS, c.intervalDays) : EASY_GRADUATE_DAYS
+        inRelearn ? Math.max(graduateDays, c.intervalDays) : easyGraduateDays
       )
       c.dueAt = now + fuzz(c.intervalDays) * DAY
       return c
@@ -170,7 +179,7 @@ export function schedule (card, grade, now = Date.now()) {
     c.state = STATE.REVIEW
     c.stepIndex = 0
     c.intervalDays = clampInterval(
-      inRelearn ? Math.max(GRADUATE_DAYS, c.intervalDays) : GRADUATE_DAYS
+      inRelearn ? Math.max(graduateDays, c.intervalDays) : graduateDays
     )
     c.dueAt = now + fuzz(c.intervalDays) * DAY
     return c
@@ -259,6 +268,29 @@ export function gradeFromRatio (correct, total) {
   if (ratio >= 0.45) return GRADE.HARD   // 3/6
   return GRADE.AGAIN                     // 2/6 and below
 }
+
+/**
+ * Scheduling overrides for a *concept* card (grammar point, essentials unit).
+ *
+ * Vocabulary uses 1-minute and 10-minute learning steps because a word can be
+ * shown again inside the same sitting. A grammar point cannot: its "review" is
+ * a six-question drill set plus a page of explanation, and the phase only runs
+ * once a day. With minute-scale steps the point was still in LEARNING when the
+ * app reopened the next morning, so it came back as the day's grammar slot —
+ * same explanation, same six questions — and the next point stayed locked.
+ * That is exactly what day 1 and day 2 looked like.
+ *
+ * So a concept graduates on its first passing drill set, and comes back on a
+ * day scale: 2 days after a pass (which is one A-track cycle), 1 day after a
+ * failure.
+ */
+export const CONCEPT_SRS = Object.freeze({
+  learningSteps: [],
+  relearnSteps: [],
+  graduateDays: 2,
+  easyGraduateDays: 4,
+  againDays: 1
+})
 
 export function isMastered (card) {
   return card.state === STATE.REVIEW &&
