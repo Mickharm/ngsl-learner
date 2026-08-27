@@ -199,6 +199,26 @@ const enrichedPct = computed(() => (words.enrichedCount / TOTAL_WORDS) * 100)
 
       <div class="field">
         <div class="row between">
+          <label class="label" for="mins">每日目標分鐘</label>
+          <span class="num val">{{ s.dailyMinutes }}</span>
+        </div>
+        <input
+          id="mins" class="slider" type="range" min="20" max="120" step="5"
+          :value="s.dailyMinutes" @input="settings.set({ dailyMinutes: +$event.target.value })"
+        >
+        <p class="note zh">
+          其他關卡的長度由單字量決定，聽力關卡則補滿剩下的時間——所以剛開始複習量少的時候會多練聽力，
+          幾個月後複習量長上來，聽力就自動縮短。這樣每天的總長度才會穩定。
+        </p>
+        <p class="effect effect--budget effect--now zh">
+          今天：固定關卡約 <strong class="num">{{ Math.round(session.fixedMinutes) }}</strong> 分鐘，
+          聽力補 <strong class="num">{{ session.listenMinutes }}</strong> 分鐘（{{ session.listenCount }} 題），
+          合計約 <strong class="num">{{ session.plan.estimatedMinutes }}</strong> 分鐘。
+        </p>
+      </div>
+
+      <div class="field">
+        <div class="row between">
           <label class="label" for="new">每日新單字</label>
           <span class="num val">{{ s.newPerDay }}</span>
         </div>
@@ -213,7 +233,7 @@ const enrichedPct = computed(() => (words.enrichedCount / TOTAL_WORDS) * 100)
         </p>
 
         <!-- say plainly whether this takes effect today, and what today will be -->
-        <p class="effect zh" :class="session.newCountLocked ? 'effect--later' : 'effect--now'">
+        <p class="effect effect--newcount zh" :class="session.newCountLocked ? 'effect--later' : 'effect--now'">
           <template v-if="session.newCountLocked">
             今天的新字已經開始了，清單不會中途變動——這個設定<strong>明天生效</strong>。
           </template>

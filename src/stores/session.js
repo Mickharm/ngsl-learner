@@ -39,8 +39,18 @@ export const PHASES = [
   { key: 'essentials', label: '基礎知識', route: '/essentials', minutes: 12, track: TRACK.B },
   { key: 'write',      label: '造句',     route: '/write',      minutes: 12, track: TRACK.B },
   { key: 'article',    label: '閱讀',     route: '/article',    minutes: 15, track: TRACK.A },
+  // Listening runs every day and is the phase that flexes: it takes whatever
+  // minutes the rest of the day did not use, so a light day is not a short
+  // day and a heavy one does not overrun. Half a TOEIC score is listening and
+  // the app had none of it.
+  { key: 'listen',     label: '聽力',     route: '/listen',     minutes: 10, track: TRACK.BOTH, elastic: true },
   { key: 'summary',    label: '結算',     route: '/summary',    minutes: 3,  track: TRACK.BOTH }
 ]
+
+/** Minutes one listening item costs a beginner: play twice, answer, read the fix. */
+const LISTEN_ITEM_MINUTES = 0.6
+const LISTEN_MIN_MINUTES = 6
+const LISTEN_MAX_MINUTES = 20
 
 /**
  * Which track a date falls on. Keyed off the date itself rather than a stored
@@ -141,22 +151,48 @@ export const useSession = defineStore('session', () => {
   const grammarPoint = computed(() => runsToday('grammar') ? grammar.todayPoint : null)
   const essentialUnit = computed(() => runsToday('essentials') ? essentials.todayUnit : null)
 
+  /**
+   * Everything except the elastic phase.
+   *
+   * Per-item costs are deliberately higher than the first pass used. 0.35 min
+   * per review card assumed a reader who can take in an English example
+   * sentence at a glance; this learner reads one in 10-20 seconds.
+   */
+  const fixedMinutes = computed(() =>
+    newIds.value.length * 1.4 +
+    reviewCards.value.length * 0.7 +
+    todayPhases.value
+      .filter(p => p.key !== 'learn' && p.key !== 'review' && !p.elastic)
+      .reduce((a, p) => a + p.minutes, 0)
+  )
+
+  /**
+   * The listening phase absorbs the shortfall against the daily target.
+   *
+   * Early on the deck is empty, so the fixed phases finish in half the time
+   * the learner set aside; months later the review queue alone fills an hour.
+   * A fixed phase list cannot be right at both ends, so one phase flexes and
+   * the rest stay predictable.
+   */
+  const listenMinutes = computed(() => {
+    if (!runsToday('listen')) return 0
+    const target = settings.state.dailyMinutes || 60
+    const spare = target - fixedMinutes.value
+    return Math.max(LISTEN_MIN_MINUTES, Math.min(LISTEN_MAX_MINUTES, Math.round(spare)))
+  })
+
+  const listenCount = computed(() =>
+    Math.max(8, Math.min(30, Math.round(listenMinutes.value / LISTEN_ITEM_MINUTES)))
+  )
+
   const plan = computed(() => ({
     newCount: newIds.value.length,
     reviewCount: reviewCards.value.length,
     grammar: grammarPoint.value,
     essential: essentialUnit.value,
+    listenCount: listenCount.value,
     track: track.value,
-    // Per-item costs are deliberately higher than the first pass used. 0.35 min
-    // per review card assumed a reader who can take in an English example
-    // sentence at a glance; this learner reads one in 10-20 seconds.
-    estimatedMinutes: Math.round(
-      newIds.value.length * 1.4 +
-      reviewCards.value.length * 0.7 +
-      todayPhases.value
-        .filter(p => p.key !== 'learn' && p.key !== 'review')
-        .reduce((a, p) => a + p.minutes, 0)
-    )
+    estimatedMinutes: Math.round(fixedMinutes.value + listenMinutes.value)
   }))
 
   /* ---------------- phase gating ---------------- */
@@ -197,6 +233,7 @@ export const useSession = defineStore('session', () => {
       review: reviewCards.value.length === 0,
       grammar: !grammarPoint.value,
       essentials: !essentialUnit.value,
+      listen: dayWordIds.value.length === 0,
       write: false,
       article: false,
       summary: false
@@ -258,6 +295,21 @@ export const useSession = defineStore('session', () => {
 
   const minutesToday = computed(() => Math.round((phase.value.seconds || 0) / 60))
 
+  /**
+   * Today's listening score.
+   *
+   * Kept in the local phase state rather than daily_log: that table has no
+   * listen columns yet, and a failed upsert would take the whole day's row
+   * down with it. Wrong answers still reach the error book, which is where
+   * they are actually acted on.
+   */
+  function setListenResult (r) {
+    rollIfNewDay()
+    phase.value = { ...phase.value, listen: r }
+    save()
+  }
+  const listenResult = computed(() => { rollIfNewDay(); return phase.value.listen || null })
+
   /** Make sure every word the day needs has translations/examples ready. */
   async function prepareData (onProgress) {
     const ids = dayWordIds.value
@@ -275,6 +327,7 @@ export const useSession = defineStore('session', () => {
     PHASES, TRACK, phase, newIds, reviewCards, reviewIds, dayWordIds, grammarPoint, essentialUnit, plan,
     learnStarted, newCountLocked, track, todayPhases, runsToday, nextRoute,
     phaseStatus, currentPhase, completedCount, allDone, minutesToday,
+    fixedMinutes, listenMinutes, listenCount, listenResult, setListenResult,
     isDone, markDone, lockNewIds, startClock, stopClock, prepareData, resetToday, rollIfNewDay
   }
 })

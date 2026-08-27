@@ -8,15 +8,17 @@
     "build": "vite build",
     "preview": "vite preview",
     "build:base": "node scripts/build-base.mjs",
+    "build:affix": "node scripts/build-affix.mjs",
     "gen:words": "node scripts/generate-words.mjs",
     "smoke": "npm run build && node scripts/smoke.mjs",
     "deploy": "node scripts/deploy-pages.mjs",
     "test:models": "node scripts/test-model-resolution.mjs",
     "test:answer": "node scripts/test-answer.mjs",
     "test:format": "node scripts/test-format.mjs",
-    "test": "npm run test:srs && npm run test:models && npm run test:answer && npm run test:format && npm run test:drills",
+    "test": "npm run test:srs && npm run test:models && npm run test:answer && npm run test:format && npm run test:drills && npm run test:affix",
     "test:drills": "node scripts/test-drills.mjs",
-    "test:srs": "node scripts/test-srs.mjs"
+    "test:srs": "node scripts/test-srs.mjs",
+    "test:affix": "node scripts/test-affix.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

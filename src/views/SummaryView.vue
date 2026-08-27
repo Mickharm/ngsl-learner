@@ -26,6 +26,7 @@ const rows = computed(() => [
   { label: '單字正確率', value: accuracy.value === null ? '—' : Math.round(accuracy.value * 100) + '%', tone: accuracy.value >= 0.8 ? 'jade' : accuracy.value >= 0.6 ? 'amber' : 'rose' },
   { label: '文法正確率', value: grammarAcc.value === null ? '—' : Math.round(grammarAcc.value * 100) + '%', tone: 'violet' },
   { label: '閱讀理解', value: articleAcc.value === null ? '—' : `${t.value.article_correct}/${t.value.article_total}`, tone: 'plain' },
+  { label: '聽力', value: session.listenResult ? `${session.listenResult.correct}/${session.listenResult.total}` : '—', tone: 'violet' },
   { label: '學習時間', value: session.minutesToday, unit: '分鐘', tone: 'plain' }
 ])
 
@@ -35,7 +36,9 @@ const verdict = computed(() => {
   const mins = session.minutesToday
   if (t.value.total_count === 0) return '今天還沒開始，回去完成關卡吧。'
   if (a !== null && a < 0.6) return '正確率偏低。答錯的字明天會優先出現，不要調高每日新字數。'
-  if (mins < 30) return '時間偏短。這個階段每天 60 分鐘以上，進度才穩得住。'
+  if (mins < settings.state.dailyMinutes * 0.6) {
+    return `今天 ${mins} 分鐘，低於你設定的 ${settings.state.dailyMinutes} 分鐘目標。時間不夠時，複習比新字重要。`
+  }
   if (a !== null && a >= 0.9 && t.value.new_count >= 10) return '狀態很好。如果連續一週都這樣，可以考慮把每日新字數調高。'
   return '穩定推進中。明天的複習量已經排好了。'
 })

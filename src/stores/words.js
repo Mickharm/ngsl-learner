@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import base from '@/data/words.base.json'
+import AFFIX from '@/data/affix.json'
 import { supabase } from '@/lib/supabase'
 import { idbGet, idbGetAll, idbPut, idbPutMany, STORE } from '@/lib/idb'
 import { enrichWords, lookupWord } from '@/lib/gemini'
@@ -287,6 +288,42 @@ export const useWords = defineStore('words', () => {
     return added
   }
 
+  /* ---------------- word formation ---------------- *
+   *
+   * The derivational graph built by scripts/build-affix.mjs: which word a word
+   * was built from, and which words are built on it. `family` in the base data
+   * is an inflection list (achieve/achieves/achieved) and says nothing about
+   * achievement, which is the link that carries the Part 5 marks.
+   */
+  function derivation (id) {
+    const d = AFFIX.links[id]
+    if (!d) return null
+    const b = baseById.get(d.base)
+    if (!b) return null
+    return { baseId: d.base, base: b.h, affix: d.affix, kind: d.kind, pos: d.pos, zh: d.zh }
+  }
+
+  /** Words built on this one, as { id, headword, affix, pos }. */
+  function derivedFrom (id) {
+    return (AFFIX.families[id] || []).map(childId => {
+      const c = baseById.get(childId)
+      const d = AFFIX.links[childId]
+      return c && d ? { id: childId, headword: c.h, affix: d.affix, pos: d.pos } : null
+    }).filter(Boolean)
+  }
+
+  /** Everything sharing a stem with this word, the word itself included. */
+  function wordFamily (id) {
+    const d = AFFIX.links[id]
+    const rootId = d ? d.base : id
+    const root = baseById.get(rootId)
+    if (!root) return []
+    return [
+      { id: rootId, headword: root.h, affix: '', pos: '', root: true },
+      ...derivedFrom(rootId)
+    ]
+  }
+
   /* ---------------- ad-hoc glossary ---------------- *
    *
    * Words an article uses that are not NGSL headwords — proper nouns, forms no
@@ -351,6 +388,6 @@ export const useWords = defineStore('words', () => {
   return {
     total, enriched, enrichedCount, hydrating, enriching, enrichProgress, bandCounts,
     get, getMany, range, search, baseOf, lookup, hydrate, ensureEnriched, missing, allBase: base,
-    glosses, gloss, glossOf
+    glosses, gloss, glossOf, derivation, derivedFrom, wordFamily
   }
 })

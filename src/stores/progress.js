@@ -6,6 +6,8 @@ import {
   newCard, schedule, GRADE, STATE, isMastered, sortReviewQueue, retrievability
 } from '@/lib/srs'
 import { STAGE_SIZE, STAGE_UNLOCK_RATIO } from '@/config'
+import AFFIX from '@/data/affix.json'
+const AFFIX_FAMILIES = AFFIX.families
 import { useAuth } from './auth'
 import { useSettings } from './settings'
 
@@ -275,13 +277,53 @@ export const useProgress = defineStore('progress', () => {
    * already seen, and refuses to run more than one stage ahead of what the
    * learner has actually consolidated.
    */
+  /**
+   * Today's new words: the rank spine, plus words built on stems the learner
+   * already holds.
+   *
+   * Pure rank order put achieve (#745) and achievement (#1998) 1,253 ranks —
+   * about 125 days — apart, so the second one arrived as an unrelated word to
+   * be memorised from scratch. A derived word whose stem is already known is
+   * nearly free to learn and is the single biggest scoring block in TOEIC
+   * Part 5, so it is worth taking out of rank order. Capped at a third of the
+   * day, because the rank list is still what sets the pace.
+   */
   function newCandidates (n, maxRank = 2801) {
-    const limit = Math.min(2801, maxRank, (unlockedStage.value + 1) * STAGE_SIZE + STAGE_SIZE)
-    const out = []
-    for (let id = 1; id <= limit && out.length < n; id++) {
-      if (!cards.value.has(id)) out.push(id)
+    if (n <= 0) return []
+    const hardCap = Math.min(2801, maxRank || 2801)
+    const limit = Math.min(hardCap, (unlockedStage.value + 1) * STAGE_SIZE + STAGE_SIZE)
+
+    const seen = new Set()
+    const eligible = id => id <= hardCap && !cards.value.has(id) && !seen.has(id)
+
+    const derivedCap = Math.min(n, Math.max(1, Math.floor(n / 3)))
+
+    const spine = []
+    for (let id = 1; id <= limit && spine.length < n - derivedCap; id++) {
+      if (!eligible(id)) continue
+      seen.add(id); spine.push(id)
     }
-    return out
+
+    // Stems already held, plus the ones about to be introduced today.
+    const stems = [...new Set([...cards.value.keys(), ...spine])].sort((a, b) => a - b)
+    const derived = []
+    for (const stem of stems) {
+      if (derived.length >= derivedCap) break
+      for (const id of AFFIX_FAMILIES[stem] || []) {
+        if (derived.length >= derivedCap) break
+        if (!eligible(id)) continue
+        seen.add(id); derived.push(id)
+      }
+    }
+
+    const out = [...spine, ...derived]
+    // Derivations ran short (early days, or the stems have none) — top up from
+    // the rank list so the learner never gets a short day.
+    for (let id = 1; id <= limit && out.length < n; id++) {
+      if (!eligible(id)) continue
+      seen.add(id); out.push(id)
+    }
+    return out.slice(0, n).sort((a, b) => a - b)
   }
 
   /**

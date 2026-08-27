@@ -16,6 +16,7 @@ const routes = [
   { path: '/grammar', name: 'grammar', component: () => import('@/views/GrammarView.vue'), meta: { chrome: false } },
   { path: '/essentials', name: 'essentials', component: () => import('@/views/EssentialsView.vue'), meta: { chrome: false } },
   { path: '/write', name: 'write', component: () => import('@/views/WriteView.vue'), meta: { chrome: false } },
+  { path: '/listen', name: 'listen', component: () => import('@/views/ListenView.vue'), meta: { chrome: false } },
   { path: '/article', name: 'article', component: () => import('@/views/ArticleView.vue'), meta: { chrome: false } },
   { path: '/summary', name: 'summary', component: () => import('@/views/SummaryView.vue'), meta: { chrome: false } },
   { path: '/errors', name: 'errors', component: () => import('@/views/ErrorsView.vue') },

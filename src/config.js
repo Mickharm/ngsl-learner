@@ -51,6 +51,17 @@ export const STAGE_UNLOCK_RATIO = 0.8
  */
 export const WORDS_PER_PHASE = 1500
 
+/**
+ * How long a day should take, in minutes.
+ *
+ * The five fixed phases converge on roughly an hour once the review queue
+ * fills, but on day 2 — with an empty deck — the same five phases took 24
+ * minutes, less than half the time the learner had set aside. A fixed phase
+ * list cannot be right at both ends. The listening phase therefore sizes
+ * itself to whatever the rest of the day did not use.
+ */
+export const DEFAULT_DAILY_MINUTES = 60
+
 export const DEFAULT_SETTINGS = Object.freeze({
   // 8/day finishes 1,500 words in about six months and keeps the review queue
   // convergent. 20/day - what both learners had set - does not.
@@ -66,6 +77,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   geminiModel: 'gemini-3.5-flash',
   showIntervalHints: true,
   grammarPerDay: 1,
+  dailyMinutes: DEFAULT_DAILY_MINUTES,
   // Highest NGSL rank this phase covers. 0 means "no ceiling", which is what
   // an account that has not been placed yet gets.
   targetWords: 0

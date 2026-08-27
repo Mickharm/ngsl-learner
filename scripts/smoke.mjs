@@ -337,8 +337,9 @@ checks.push([
   `scope="${scope}" → ${scopeTo}, targetWords=${placed.targetWords}`
 ])
 
-// The four taught phases alternate day to day, so the quest is five steps, not
-// seven, and carries exactly one of the two pairs.
+// The four taught phases alternate day to day, so the quest is six steps
+// (words, review, one taught pair, listening, summary) and carries exactly one
+// of the two pairs.
 const stepLabels = (await page.locator('.step__label, .step__title, .step h3, .step').allInnerTexts().catch(() => []))
   .join(' ').replace(/\s+/g, ' ')
 const trackA = /文法/.test(stepLabels) && /閱讀/.test(stepLabels)
@@ -349,7 +350,8 @@ checks.push([
   `A=${trackA} B=${trackB} · ${stepLabels.slice(0, 120)}`
 ])
 const stepCount = await page.locator('.steps > li').count().catch(() => 0)
-checks.push(['the quest is five steps, not seven', stepCount === 5, `${stepCount} steps`])
+checks.push(['the quest is six steps, not eight', stepCount === 6, `${stepCount} steps`])
+checks.push(['listening is on the day, every day', /聽力/.test(stepLabels), stepLabels.slice(0, 120)])
 
 // Changing the daily new-word count before answering anything must re-plan
 // today. Reproducing the real bug needs the learn screen to be opened first —
@@ -368,7 +370,7 @@ await page.locator('#new').evaluate(el => {
 await page.waitForTimeout(500)
 await shot('05b-settings-daily-count')
 
-const effect = await page.locator('.effect').first().innerText().catch(() => '')
+const effect = await page.locator('.effect--newcount').first().innerText().catch(() => '')
 checks.push([
   'settings names the count that will actually be used',
   /今天就會套用[^0-9]*20|今天只排得出[^0-9]*20/.test(effect),
@@ -550,6 +552,79 @@ if (await page.locator('button:has-text("開始作答")').first().isVisible().ca
     `button="${resumeLabel.replace(/\s+/g, ' ')}"`
   ])
   await shot('16b-article-resume')
+}
+
+/* ------------------------------------------------------------------ *
+ * listening — the phase that flexes, and the only one that hides the text
+ * ------------------------------------------------------------------ */
+await page.goto(URL_BASE + '#/listen', { waitUntil: 'networkidle' })
+await page.waitForTimeout(900)
+await shot('16c-listen-intro')
+
+{
+  const introText = await page.locator('.lis__desc').first().innerText().catch(() => '')
+  const claimed = Number((introText.match(/出\s*(\d+)\s*題/) || [])[1] || 0)
+  checks.push(['the listening round is sized, not fixed', claimed >= 8 && claimed <= 30, `${claimed} items`])
+
+  await page.locator('button:has-text("開始")').first().click().catch(() => {})
+  await page.waitForTimeout(900)
+  await shot('16d-listen-item')
+
+  const playerVisible = await page.locator('.player__big').isVisible().catch(() => false)
+  checks.push(['a listening item plays audio instead of showing the word', playerVisible])
+
+  // The English must not be on screen before the answer — that is the whole
+  // point of the phase. Every other screen prints the word next to a play
+  // button, which trains reading with an audio garnish.
+  const beforeText = await page.locator('.lis').innerText().catch(() => '')
+  const revealed = await page.locator('.fb__answer').count().catch(() => 0)
+  checks.push([
+    'the English is hidden until the item is answered',
+    revealed === 0 && !/[A-Za-z]{4,}/.test(beforeText.replace(/[A-D]\b/g, '')),
+    `revealed=${revealed}`
+  ])
+
+  await page.locator('.opt').first().click().catch(() => {})
+  await page.waitForTimeout(600)
+  const after = await page.locator('.fb__answer').first().innerText().catch(() => '')
+  checks.push(['answering reveals what was said', after.trim().length > 0, `"${after.trim().slice(0, 40)}"`])
+  await shot('16e-listen-feedback')
+}
+
+// the elastic phase has to react to the target, or it is not elastic
+{
+  const readCount = async () => {
+    // leave and come back, so the view remounts at its intro stage
+    await page.goto(URL_BASE + '#/', { waitUntil: 'networkidle' })
+    await page.waitForTimeout(300)
+    await page.goto(URL_BASE + '#/listen', { waitUntil: 'networkidle' })
+    // a cold reload has to finish hydrating before the round can be sized
+    await page.waitForFunction(
+      () => /出\s*\d+\s*題/.test(document.querySelector('.lis__desc')?.textContent || ''),
+      null, { timeout: 12000 }
+    ).catch(() => {})
+    const t = await page.locator('.lis__desc').first().innerText().catch(() => '')
+    return Number((t.match(/出\s*(\d+)\s*題/) || [])[1] || 0)
+  }
+  const setTarget = async minutes => {
+    await page.goto(URL_BASE + '#/settings', { waitUntil: 'networkidle' })
+    await page.waitForTimeout(700)
+    await page.locator('#mins').evaluate((el, m) => {
+      el.value = String(m)
+      el.dispatchEvent(new Event('input', { bubbles: true }))
+    }, minutes)
+    await page.waitForTimeout(500)
+  }
+
+  const before = await readCount()
+  await setTarget(115)
+  await shot('16f-settings-daily-budget')
+  const after = await readCount()
+  checks.push([
+    'raising the daily target lengthens the listening round',
+    after > before, `${before} → ${after} items`
+  ])
+  await setTarget(60)
 }
 
 // remaining screens
