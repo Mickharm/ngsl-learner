@@ -192,12 +192,7 @@ async function quiesce (maxWait = 500) {
  * lands on the disposable echo instead of the real content or a blip.
  */
 export function padded (text, leadIn = 2) {
-  const n = Math.max(0, Math.min(4, Math.round(leadIn)))
-  if (!n) return String(text)
-  const str = String(text)
-  const firstWord = str.trim().match(/^\S+/)
-  const echo = firstWord ? firstWord[0] + LEAD_UNIT : ''
-  return echo + LEAD_UNIT.repeat(n) + str
+  return String(text)
 }
 
 /** Queue one utterance and resolve when it finishes. Never awaits first. */
@@ -235,6 +230,14 @@ function utter (text, { rate, voiceURI, pitch, volume, leadIn }) {
           if (!synth.speaking) return
           try { synth.pause(); synth.resume() } catch { /* ignore */ }
         }, 10000)
+      }
+
+      const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+      if (engineIdle() && !isSafari) {
+        const warmup = new SpeechSynthesisUtterance('a')
+        warmup.volume = 0
+        warmup.rate = 2
+        synth.speak(warmup)
       }
 
       synth.speak(u)
