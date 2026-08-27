@@ -112,9 +112,19 @@ onMounted(async () => {
   voices.value = englishVoices()
 })
 
+/**
+ * The lead-in has to be tuned by ear on the actual device — how much of the
+ * opening the audio stream eats is a property of the phone, not the code.
+ * The test phrase starts on a hard consonant on purpose: "Ted" losing its T
+ * is obvious, where a word starting on a vowel just sounds slightly short.
+ */
+const TEST_PHRASE = 'Ted took the ten o\'clock train to the airport.'
+
 function previewVoice () {
-  speak('The train to the airport leaves at seven.', {
-    rate: s.value.ttsRate, voiceURI: s.value.ttsVoiceURI
+  speak(TEST_PHRASE, {
+    rate: s.value.ttsRate,
+    voiceURI: s.value.ttsVoiceURI,
+    leadIn: s.value.ttsLeadIn
   })
 }
 
@@ -375,6 +385,22 @@ const enrichedPct = computed(() => (words.enrichedCount / TOTAL_WORDS) * 100)
           </select>
         </div>
 
+        <div class="field">
+          <div class="row between">
+            <label class="label zh" for="lead">發音前置留白</label>
+            <span class="num val">{{ s.ttsLeadIn }}</span>
+          </div>
+          <input
+            id="lead" class="slider" type="range" min="0" max="4" step="1"
+            :value="s.ttsLeadIn" @input="settings.set({ ttsLeadIn: +$event.target.value })"
+          >
+          <p class="note zh">
+            手機開啟音訊輸出的那 0.1–0.3 秒會吃掉句子的開頭，所以每句話前面塞一小段
+            靜音，讓它吃掉靜音而不是第一個音節。數字越大留白越長。
+            <strong>用下面的試聽調</strong>：聽得到 “Ted” 的 T 就夠了，還是被吃掉就加一格。
+          </p>
+        </div>
+
         <div class="row between">
           <label class="label zh" for="auto">字卡自動發音</label>
           <button
@@ -384,7 +410,7 @@ const enrichedPct = computed(() => (words.enrichedCount / TOTAL_WORDS) * 100)
           />
         </div>
 
-        <button class="btn btn--ghost btn--sm zh" @click="previewVoice">試聽</button>
+        <button class="btn btn--ghost btn--sm zh" @click="previewVoice">試聽（Ted took the ten o'clock train…）</button>
       </template>
     </section>
 

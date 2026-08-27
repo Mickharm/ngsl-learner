@@ -69,6 +69,10 @@ export const DEFAULT_SETTINGS = Object.freeze({
   reviewCap: 60,
   ttsRate: 0.9,
   ttsVoiceURI: '',
+  // Units of leading silence inside each utterance. The OS audio stream loses
+  // its first 100-300 ms while it opens, so without this the ramp eats the
+  // first syllable instead of a pause. Device-dependent, hence a setting.
+  ttsLeadIn: 2,
   autoPlayAudio: true,
   clozeRatio: 0.35,
   theme: 'system',

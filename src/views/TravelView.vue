@@ -109,7 +109,7 @@ async function playAll () {
   playing.value = true
   for (const line of dialogue.value.lines) {
     if (!playing.value) break
-    await speak(line.en, { rate: settings.state.ttsRate, voiceURI: settings.state.ttsVoiceURI })
+    await speak(line.en, { rate: settings.state.ttsRate, voiceURI: settings.state.ttsVoiceURI, leadIn: settings.state.ttsLeadIn })
     await new Promise(r => setTimeout(r, 260))
   }
   playing.value = false

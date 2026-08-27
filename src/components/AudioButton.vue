@@ -18,7 +18,8 @@ async function play () {
   playing.value = true
   await speak(props.text, {
     rate: props.rate ?? settings.state.ttsRate,
-    voiceURI: settings.state.ttsVoiceURI
+    voiceURI: settings.state.ttsVoiceURI,
+    leadIn: settings.state.ttsLeadIn
   })
   playing.value = false
 }

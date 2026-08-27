@@ -133,6 +133,60 @@ const ctx = await browser.newContext({
   userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
 })
 
+/* --- record what the speech engine is actually handed ---
+ *
+ * The clipping bug is inaudible to a headless browser, so the only way to
+ * regression-test it is to stub the engine and inspect the utterance. Two
+ * things have to hold: the text carries its leading silence, and nothing
+ * cancels an already-idle engine before speaking (an async cancel is what
+ * swallowed the first syllable in the first place).
+ */
+await ctx.addInitScript(() => {
+  const log = { spoken: [], cancels: 0 }
+  window.__tts = log
+
+  const voice = { voiceURI: 'stub-en-US', name: 'Stub Samantha', lang: 'en-US', localService: true, default: true }
+
+  class StubUtterance {
+    constructor (text) {
+      this.text = text
+      this.lang = ''
+      this.rate = 1
+      this.pitch = 1
+      this.volume = 1
+      this.voice = null
+      this.onend = null
+      this.onerror = null
+      this.onstart = null
+    }
+  }
+
+  const synth = {
+    speaking: false,
+    pending: false,
+    paused: false,
+    getVoices: () => [voice],
+    addEventListener () {},
+    removeEventListener () {},
+    speak (u) {
+      // cancelsAtSpeak is the point of the whole record: an utterance handed
+      // over while a cancel is still unwinding is the one that loses its head.
+      log.spoken.push({
+        text: u.text, rate: u.rate, volume: u.volume,
+        voiceURI: u.voice?.voiceURI || '', cancelsAtSpeak: log.cancels
+      })
+      synth.speaking = true
+      setTimeout(() => { synth.speaking = false; u.onend?.({}) }, 60)
+    },
+    cancel () { log.cancels++; synth.speaking = false; synth.pending = false },
+    pause () {},
+    resume () {}
+  }
+
+  Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true })
+  Object.defineProperty(window, 'SpeechSynthesisUtterance', { value: StubUtterance, configurable: true })
+})
+
 const errors = []
 const page = await ctx.newPage()
 page.on('console', m => { if (m.type() === 'error') errors.push(m.text()) })
@@ -663,6 +717,66 @@ await shot('16c-listen-intro')
     after > before, `${before} → ${after} items`
   ])
   await setTarget(60)
+}
+
+/* ------------------------------------------------------------------ *
+ * pronunciation — what the engine is actually handed
+ * ------------------------------------------------------------------ */
+{
+  const tts = await ctx.newPage()
+  await tts.goto(URL_BASE + '#/settings', { waitUntil: 'networkidle' })
+  await tts.waitForTimeout(900)
+
+  // A tap also fires the one-time WebKit unlock utterance, so prime the engine
+  // first and only then start recording — otherwise the unlock is the entry
+  // being measured instead of the phrase.
+  await tts.locator('button:has-text("試聽")').first().click().catch(() => {})
+  await tts.waitForTimeout(1200)
+  await tts.evaluate(() => { window.__tts.spoken = []; window.__tts.cancels = 0 })
+  await tts.locator('button:has-text("試聽")').first().click().catch(() => {})
+  await tts.waitForTimeout(1200)
+
+  const log = await tts.evaluate(() => window.__tts)
+  const first = log.spoken.find(u => /Ted took/.test(u.text)) || { text: '', cancelsAtSpeak: -1 }
+
+  // The lead-in must be inside the utterance. A separate silent warm-up does
+  // not work: the engine goes idle again the moment it ends, so the real
+  // utterance pays the audio-stream ramp a second time and still loses its
+  // first syllable.
+  checks.push([
+    'the spoken text carries its leading silence',
+    /^(,\s)+Ted took/.test(first.text),
+    JSON.stringify(first.text.slice(0, 28))
+  ])
+
+  // Cancelling an idle engine is the other half of the bug: cancel() is async
+  // in Chromium, so speaking on the next line hands the engine an utterance
+  // while it is still tearing down.
+  checks.push([
+    'nothing cancels an idle engine before speaking',
+    first.cancelsAtSpeak === 0,
+    `cancels pending when the phrase was handed over = ${first.cancelsAtSpeak}`
+  ])
+
+  // Turning the lead-in off has to actually turn it off, or the setting is a
+  // decoration and cannot be used to tune the device.
+  await tts.locator('#lead').evaluate(el => {
+    el.value = '0'
+    el.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+  await tts.waitForTimeout(400)
+  await tts.evaluate(() => { window.__tts.spoken = [] })
+  await tts.locator('button:has-text("試聽")').first().click().catch(() => {})
+  await tts.waitForTimeout(1200)
+  const bare = await tts.evaluate(() => window.__tts.spoken.find(u => /Ted took/.test(u.text))?.text || '')
+  checks.push([
+    'the lead-in setting reaches the utterance',
+    bare.startsWith('Ted took'),
+    JSON.stringify(bare.slice(0, 20))
+  ])
+
+  await shot('21b-tts-settings')
+  await tts.close()
 }
 
 // remaining screens

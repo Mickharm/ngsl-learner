@@ -62,7 +62,8 @@ async function play (slow = false) {
   plays.value++
   await speak(item.value.audio, {
     rate: slow ? 0.62 : settings.state.ttsRate,
-    voiceURI: settings.state.ttsVoiceURI
+    voiceURI: settings.state.ttsVoiceURI,
+    leadIn: settings.state.ttsLeadIn
   })
 }
 

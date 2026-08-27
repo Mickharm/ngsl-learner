@@ -1,21 +1,36 @@
 /**
  * Web Speech synthesis wrapper.
  *
- * iOS Safari specifics this works around:
- *  - getVoices() is empty until the `voiceschanged` event fires;
- *  - the very first utterance must originate from a user gesture, so we prime
- *    the engine with a silent utterance on the first tap anywhere.
+ * ── Why the start of every phrase kept getting cut off ──────────────────────
  *
- * Chromium specifics this works around:
- *  - `cancel()` is ASYNCHRONOUS. Calling speak() on the very next line —
- *    which this file used to do on every single play — hands the engine a new
- *    utterance while it is still tearing the old one down, and the engine
- *    swallows the first syllable or two. That is the "開頭被切掉" bug: it
- *    fires on every button because every button cancelled first.
- *    Fix: only cancel when something is actually queued, then wait for the
- *    engine to report idle before speaking, plus a short settle margin.
- *  - speech stops dead at ~15 s unless resume() is pumped. Long text (a whole
- *    article) needs a keepalive.
+ * Three separate causes, and fixing only some of them still sounds broken:
+ *
+ *  1. `cancel()` is asynchronous in Chromium. Speaking on the next line hands
+ *     the engine an utterance while it is still tearing the old one down, and
+ *     the opening syllable is swallowed. Fixed by cancelling only when
+ *     something is actually queued, then waiting for the engine to go idle.
+ *
+ *  2. The OS audio stream is opened when speech begins, and the first
+ *     100-300 ms are lost while it ramps up. This one is not about cancel at
+ *     all: it happens on a completely idle engine, which is why "just don't
+ *     cancel" did not fix it either. A *separate* silent warm-up utterance
+ *     does not fix it either — the engine goes idle again the moment the
+ *     warm-up ends, so the real utterance pays the ramp a second time.
+ *
+ *     What does fix it: put the padding INSIDE the same utterance. A few
+ *     leading commas render as a pause, so the ramp eats silence instead of
+ *     the first syllable. One utterance, one audio stream, no gap to lose —
+ *     and commas are silent in every English voice, so it cannot be heard
+ *     even if an engine ignores `volume`.
+ *
+ *  3. WebKit only reliably starts speech from inside the user gesture that
+ *     asked for it. Every `await` before `synth.speak()` leaves that gesture.
+ *     So when the engine is already idle and the voice list is loaded —
+ *     the common case, a tap on a quiet page — `speak()` calls through
+ *     synchronously and awaits nothing.
+ *
+ * Chromium also halts synthesis at ~15 s unless resume() is pumped, which
+ * matters for the "read the whole article" button.
  */
 
 const synth = typeof window !== 'undefined' ? window.speechSynthesis : null
@@ -23,15 +38,27 @@ const synth = typeof window !== 'undefined' ? window.speechSynthesis : null
 let voices = []
 let primed = false
 let voicesReady = null
-/** Serialises overlapping play() taps so they cannot cancel each other mid-start. */
+/** Serialises overlapping taps so they cannot cancel each other mid-start. */
 let chain = Promise.resolve()
+let queued = 0
 
 /** Engine settle margin after a cancel, in ms. Below ~60 ms Chromium still clips. */
 const SETTLE_MS = 150
 
+/**
+ * One unit of lead-in silence, prepended to the utterance text.
+ *
+ * A comma is rendered as a pause and voiced as nothing, so this is inaudible
+ * by construction rather than by relying on `volume = 0`.
+ */
+const LEAD_UNIT = ', '
+
 export const ttsSupported = !!synth
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
+
+const isSafari = typeof navigator !== 'undefined' &&
+  /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
 
 function loadVoices () {
   if (!synth) return []
@@ -88,15 +115,17 @@ function pickVoice (voiceURI) {
   return englishVoices()[0] || null
 }
 
+/**
+ * Unlock the engine on the first user gesture.
+ *
+ * WebKit will not speak at all until one utterance has been issued from a
+ * real gesture. Chromium needs no such unlock and stutters if one is queued
+ * and then cancelled, so it is skipped there.
+ */
 export function primeAudio () {
   if (!synth || primed) return
   primed = true
-  
-  // Only Safari needs this silent prime because our actual speak() is async.
-  // Chromium stutters if we queue this and immediately cancel it.
-  const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
   if (!isSafari) return
-
   try {
     const u = new SpeechSynthesisUtterance(' ')
     u.volume = 0
@@ -119,11 +148,6 @@ function engineIdle () {
 /**
  * Bring the engine to a known-idle state before handing it a new utterance.
  * Returns only once the engine says it is idle, or after `maxWait`.
- *
- * The unconditional cancel() this replaces is the whole reason playback lost
- * its opening syllable: cancel() returns immediately but the engine keeps
- * unwinding for tens of milliseconds, and audio started inside that window is
- * cut at the front.
  */
 async function quiesce (maxWait = 500) {
   if (engineIdle()) return false
@@ -138,83 +162,93 @@ async function quiesce (maxWait = 500) {
 }
 
 /**
- * Speak a phrase. Resolves when speech ends (or immediately if unsupported).
- * Calls are serialised: a second tap waits for the first to be cleanly torn
- * down instead of racing it.
+ * Build the text actually handed to the engine.
  *
- * @param {string} text
- * @param {{rate?:number, voiceURI?:string, pitch?:number, volume?:number}} opts
+ * Exported so the smoke test can assert the lead-in is really there: it is
+ * the part of this file that cannot be checked by listening to a headless
+ * browser.
  */
-export function speak (text, { rate = 0.9, voiceURI = '', pitch = 1, volume = 1 } = {}) {
-  if (!synth || !text) return Promise.resolve(false)
+export function padded (text, leadIn = 2) {
+  const n = Math.max(0, Math.min(4, Math.round(leadIn)))
+  return LEAD_UNIT.repeat(n) + String(text)
+}
 
-  const run = async () => {
-    // Voices decide both the voice and the lang tag; starting before the list
-    // exists silently drops the user's chosen voice on the first play.
-    await whenVoicesReady()
-    
-    const wasIdle = engineIdle()
-    await quiesce()
-
-    // Chromium often clips the first syllable when waking from idle.
-    // A silent warmup utterance forces the TTS engine to spin up completely.
-    const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-    if (wasIdle && !isSafari) {
-      await new Promise(resolve => {
-        const warmup = new SpeechSynthesisUtterance('a')
-        warmup.volume = 0
-        warmup.rate = 2
-        warmup.onend = resolve
-        warmup.onerror = resolve
-        setTimeout(resolve, 250)
-        synth.speak(warmup)
-      })
+/** Queue one utterance and resolve when it finishes. Never awaits first. */
+function utter (text, { rate, voiceURI, pitch, volume, leadIn }) {
+  return new Promise(resolve => {
+    let keepalive = null
+    let settled = false
+    const finish = ok => {
+      if (settled) return
+      settled = true
+      if (keepalive) clearInterval(keepalive)
+      resolve(ok)
     }
 
-    return new Promise(resolve => {
-      let keepalive = null
-      let settled = false
-      const finish = ok => {
-        if (settled) return
-        settled = true
-        if (keepalive) clearInterval(keepalive)
-        resolve(ok)
+    try {
+      const u = new SpeechSynthesisUtterance(padded(text, leadIn))
+      const v = pickVoice(voiceURI)
+      if (v) { u.voice = v; u.lang = v.lang }
+      else u.lang = 'en-US'
+      u.rate = Math.min(2, Math.max(0.5, rate))
+      u.pitch = pitch
+      u.volume = volume
+
+      u.onend = () => finish(true)
+      u.onerror = () => finish(false)
+
+      // Safari occasionally drops onend; bound the wait by a length estimate.
+      const budget = 1600 + (String(text).length / Math.max(0.5, rate)) * 90
+      setTimeout(() => finish(true), budget)
+
+      // Chromium halts synthesis at ~15 s. Pumping pause/resume keeps a long
+      // passage (the "朗讀全文" button) running to the end.
+      if (String(text).length > 180) {
+        keepalive = setInterval(() => {
+          if (!synth.speaking) return
+          try { synth.pause(); synth.resume() } catch { /* ignore */ }
+        }, 10000)
       }
 
-      try {
-        const u = new SpeechSynthesisUtterance(String(text))
-        const v = pickVoice(voiceURI)
-        if (v) { u.voice = v; u.lang = v.lang }
-        else u.lang = 'en-US'
-        u.rate = Math.min(2, Math.max(0.5, rate))
-        u.pitch = pitch
-        u.volume = volume
+      synth.speak(u)
+    } catch {
+      finish(false)
+    }
+  })
+}
 
-        u.onend = () => finish(true)
-        u.onerror = () => finish(false)
+/**
+ * Speak a phrase. Resolves when speech ends (or immediately if unsupported).
+ *
+ * @param {string} text
+ * @param {{rate?:number, voiceURI?:string, pitch?:number, volume?:number, leadIn?:number}} opts
+ */
+export function speak (text, opts = {}) {
+  if (!synth || !text) return Promise.resolve(false)
 
-        // Safari occasionally drops onend; bound the wait by a length estimate.
-        const budget = 1600 + (String(text).length / Math.max(0.5, rate)) * 90
-        setTimeout(() => finish(true), budget)
-
-        // Chromium halts synthesis at ~15 s. Pumping pause/resume keeps a long
-        // passage (the "朗讀全文" button) running to the end.
-        if (String(text).length > 180) {
-          keepalive = setInterval(() => {
-            if (!synth.speaking) return
-            try { synth.pause(); synth.resume() } catch { /* ignore */ }
-          }, 10000)
-        }
-
-        synth.speak(u)
-      } catch {
-        finish(false)
-      }
-    })
+  const settings = {
+    rate: opts.rate ?? 0.9,
+    voiceURI: opts.voiceURI ?? '',
+    pitch: opts.pitch ?? 1,
+    volume: opts.volume ?? 1,
+    leadIn: opts.leadIn ?? 2
   }
 
-  // Serialise, but never let one failed play poison the chain.
-  const result = chain.then(run, run)
+  // Fast path — the common one. Nothing is queued and the voice list is
+  // loaded, so speak inside the gesture that asked for it. WebKit needs that;
+  // every await below would leave the gesture behind.
+  if (!queued && voices.length && engineIdle()) {
+    return utter(text, settings)
+  }
+
+  queued++
+  const run = async () => {
+    await whenVoicesReady()
+    await quiesce()
+    return utter(text, settings)
+  }
+  const result = chain.then(run, run).finally(() => { queued-- })
+  // Never let one failed play poison the chain.
   chain = result.then(() => {}, () => {})
   return result
 }
