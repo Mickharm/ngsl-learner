@@ -27,7 +27,7 @@ let voicesReady = null
 let chain = Promise.resolve()
 
 /** Engine settle margin after a cancel, in ms. Below ~60 ms Chromium still clips. */
-const SETTLE_MS = 90
+const SETTLE_MS = 150
 
 export const ttsSupported = !!synth
 
@@ -88,14 +88,19 @@ function pickVoice (voiceURI) {
   return englishVoices()[0] || null
 }
 
-/** Unlock the engine on the first user gesture (iOS requirement). */
 export function primeAudio () {
   if (!synth || primed) return
+  primed = true
+  
+  // Only Safari needs this silent prime because our actual speak() is async.
+  // Chromium stutters if we queue this and immediately cancel it.
+  const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+  if (!isSafari) return
+
   try {
     const u = new SpeechSynthesisUtterance(' ')
     u.volume = 0
     synth.speak(u)
-    primed = true
   } catch { /* non-fatal */ }
 }
 
