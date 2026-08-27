@@ -19,9 +19,7 @@
  *
  *     What does fix it: put the padding INSIDE the same utterance. A few
  *     leading commas render as a pause, so the ramp eats silence instead of
- *     the first syllable. One utterance, one audio stream, no gap to lose —
- *     and commas are silent in every English voice, so it cannot be heard
- *     even if an engine ignores `volume`.
+ *     the first syllable. One utterance, one audio stream, no gap to lose.
  *
  *  3. WebKit only reliably starts speech from inside the user gesture that
  *     asked for it. Every `await` before `synth.speak()` leaves that gesture.
@@ -31,6 +29,25 @@
  *
  * Chromium also halts synthesis at ~15 s unless resume() is pumped, which
  * matters for the "read the whole article" button.
+ *
+ * ── Why the padding itself then became an audible "con"-ish blip ──────────
+ *
+ * "Commas are silent in every English voice" (the assumption above) does not
+ * hold on-device: reported on a real phone as a fixed, consistent noise at
+ * the start of *every* utterance — exactly what you get from padding that
+ * runs unconditionally on every call. Bare leading commas with nothing
+ * spoken before them give a (likely neural / "enhanced") voice zero lexical
+ * context to start from, and some engines synthesize a short spurious onset
+ * sound for a pause-only prefix instead of staying silent — this is a known
+ * failure mode of neural TTS fed leading silence with no preceding word.
+ *
+ * Fix: never hand the engine a pause with nothing real in front of it. Echo
+ * the utterance's own first word once, then pad, then speak the text. The
+ * engine now starts from real speech (natural onset, no artifact), and if
+ * the ramp/cancel timing still eats something, it eats the disposable echo
+ * — not the real content and not a nonsense blip. This has not been heard on
+ * a real device yet; if the blip is still there, turn 發音前置留白 down to 0
+ * in Settings to confirm the theory (echo disappears too), then report back.
  */
 
 const synth = typeof window !== 'undefined' ? window.speechSynthesis : null
@@ -167,10 +184,20 @@ async function quiesce (maxWait = 500) {
  * Exported so the smoke test can assert the lead-in is really there: it is
  * the part of this file that cannot be checked by listening to a headless
  * browser.
+ *
+ * The pause is never the first thing spoken. A bare leading pause with no
+ * word before it is what produced the audible onset artifact on-device, so
+ * the text's own first word is echoed once ahead of the pause — the engine
+ * always starts from real speech, and anything the ramp/cancel timing eats
+ * lands on the disposable echo instead of the real content or a blip.
  */
 export function padded (text, leadIn = 2) {
   const n = Math.max(0, Math.min(4, Math.round(leadIn)))
-  return LEAD_UNIT.repeat(n) + String(text)
+  if (!n) return String(text)
+  const str = String(text)
+  const firstWord = str.trim().match(/^\S+/)
+  const echo = firstWord ? firstWord[0] + LEAD_UNIT : ''
+  return echo + LEAD_UNIT.repeat(n) + str
 }
 
 /** Queue one utterance and resolve when it finishes. Never awaits first. */

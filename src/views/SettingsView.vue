@@ -194,6 +194,14 @@ function toggleTopic (k) {
 }
 
 const enrichedPct = computed(() => (words.enrichedCount / TOTAL_WORDS) * 100)
+
+/**
+ * Baked in at build time (vite.config.js `define`). Shown so it's possible
+ * to tell, just by looking at the page, whether an already-open tab is
+ * really running the latest deploy or a stale cached build.
+ */
+const appVersion = __APP_VERSION__
+const buildSha = __BUILD_SHA__
 </script>
 
 <template>
@@ -495,6 +503,7 @@ const enrichedPct = computed(() => (words.enrichedCount / TOTAL_WORDS) * 100)
     </section>
 
     <p class="foot zh">NGSL Learner · 2801 words · 30 grammar points</p>
+    <p class="foot foot--version">v{{ appVersion }} · {{ buildSha }}</p>
   </main>
 </template>
 
@@ -567,5 +576,11 @@ const enrichedPct = computed(() => (words.enrichedCount / TOTAL_WORDS) * 100)
   font-size: var(--step--2);
   color: var(--ink-3);
   padding: var(--sp-4) 0 var(--sp-6);
+}
+.foot--version {
+  padding-top: 0;
+  font-family: var(--font-mono);
+  color: var(--ink-4, var(--ink-3));
+  opacity: 0.6;
 }
 </style>

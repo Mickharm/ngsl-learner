@@ -743,9 +743,13 @@ await shot('16c-listen-intro')
   // not work: the engine goes idle again the moment it ends, so the real
   // utterance pays the audio-stream ramp a second time and still loses its
   // first syllable.
+  //
+  // The pause itself must never be the first thing spoken — a bare leading
+  // pause with nothing before it is what produced the audible on-device
+  // artifact, so the utterance's own first word is echoed once ahead of it.
   checks.push([
-    'the spoken text carries its leading silence',
-    /^(,\s)+Ted took/.test(first.text),
+    'the spoken text echoes the first word before the leading silence',
+    /^Ted,\s(,\s)+Ted took/.test(first.text),
     JSON.stringify(first.text.slice(0, 28))
   ])
 

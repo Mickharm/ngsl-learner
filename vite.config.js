@@ -2,9 +2,29 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath, URL } from 'node:url'
+import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+
+const pkg = JSON.parse(readFileSync(fileURLToPath(new URL('./package.json', import.meta.url)), 'utf8'))
+
+/**
+ * Baked in at build time so the running page can say exactly which commit it
+ * is — Settings shows this. The alternative (checking whether "it feels
+ * updated") is exactly the ambiguity that cost a redeploy cycle before: an
+ * already-open tab can silently keep serving the previous build.
+ */
+let buildSha = 'unknown'
+try {
+  buildSha = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim()
+} catch { /* no git available at build time — keep 'unknown' rather than fail the build */ }
 
 export default defineConfig({
   base: '/ngsl-learner/',
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __BUILD_SHA__: JSON.stringify(buildSha),
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString())
+  },
   plugins: [
     vue(),
     VitePWA({
