@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import { useToast } from '@/stores/toast'
@@ -13,6 +13,11 @@ import { DRILL_COUNT } from '@/data/grammar'
  *
  * The manual form stays available behind a link: it is what the first-run
  * registration uses, and the escape hatch if a third account is ever added.
+ *
+ * The device also remembers who used it last, so a returning learner lands on
+ * their own password box rather than the chooser — and with "記住我" left on,
+ * on nothing at all, because the auth store signs them back in before this
+ * screen is ever reached.
  */
 
 const auth = useAuth()
@@ -25,8 +30,16 @@ const manual = ref(false)
 const mode = ref('signin')        // signin | signup
 const email = ref('')
 const password = ref('')
+const remember = ref(true)
 const err = ref('')
 const pwField = ref(null)
+
+onMounted(() => {
+  const last = auth.lastEmail
+  const known = PROFILES.find(p => p.email === last)
+  if (known) choose(known, { focus: false })
+  else if (last) { manual.value = true; email.value = last }
+})
 
 const activeEmail = computed(() =>
   manual.value ? email.value.trim() : (picked.value?.email || '')
@@ -39,13 +52,13 @@ const canSubmit = computed(() =>
   /.+@.+\..+/.test(activeEmail.value) && password.value.length >= 6 && !auth.busy
 )
 
-async function choose (p) {
+async function choose (p, { focus = true } = {}) {
   picked.value = p
   manual.value = false
   err.value = ''
   password.value = ''
   await nextTick()
-  pwField.value?.focus()
+  if (focus) pwField.value?.focus()
 }
 
 function back () {
@@ -65,7 +78,7 @@ async function submit () {
   err.value = ''
   try {
     if (mode.value === 'signup') {
-      const res = await auth.signUp(activeEmail.value, password.value, activeName.value)
+      const res = await auth.signUp(activeEmail.value, password.value, activeName.value, { remember: remember.value })
       if (!res.session) {
         toast.info('帳號已建立，請重新登入')
         mode.value = 'signin'
@@ -73,7 +86,10 @@ async function submit () {
       }
       router.push('/setup')
     } else {
-      await auth.signIn(activeEmail.value, password.value)
+      await auth.signIn(activeEmail.value, password.value, { remember: remember.value })
+      if (remember.value && !auth.canRemember) {
+        toast.info('這個瀏覽器無法安全保存密碼，下次仍需輸入')
+      }
       router.push(route.query.next || '/')
     }
   } catch (e) {
@@ -84,7 +100,12 @@ async function submit () {
 
 <template>
   <main class="login">
-    <div class="login__inner">
+    <div v-if="auth.restoring" class="resume">
+      <div class="resume__dot" />
+      <p class="resume__t zh">正在幫你登入…</p>
+    </div>
+
+    <div v-else class="login__inner">
       <section class="brand">
         <div class="brand__mark">
           <span class="brand__n">N</span>
@@ -155,6 +176,22 @@ async function submit () {
             placeholder="至少 6 個字元" required minlength="6"
           >
         </div>
+
+        <label class="remember" :class="{ 'remember--off': !auth.canRemember }">
+          <button
+            type="button" class="toggle" :data-on="String(remember && auth.canRemember)"
+            :aria-pressed="remember" :disabled="!auth.canRemember"
+            @click="remember = !remember"
+          />
+          <span class="remember__txt">
+            <span class="remember__t zh">在這台裝置記住我</span>
+            <span class="remember__d zh">
+              {{ auth.canRemember
+                ? '下次打開直接進入，不用再輸入密碼。密碼加密後存在這台裝置。'
+                : '這個瀏覽器不支援安全保存（無痕模式？），每次仍需輸入密碼。' }}
+            </span>
+          </span>
+        </label>
 
         <p v-if="err" class="err zh">{{ err }}</p>
 
@@ -281,6 +318,28 @@ async function submit () {
   font-family: var(--font-mono); font-size: var(--step--2); color: var(--ink-3);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+
+/* ---- remember ---- */
+.remember {
+  display: flex; align-items: flex-start; gap: var(--sp-3);
+  padding: var(--sp-3);
+  background: var(--surface-2);
+  border-radius: var(--radius);
+}
+.remember--off { opacity: 0.6; }
+.remember__txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.remember__t { font-size: var(--step--1); font-weight: 600; }
+.remember__d { font-size: var(--step--2); color: var(--ink-3); line-height: 1.5; }
+
+/* ---- silent re-login ---- */
+.resume { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); }
+.resume__dot {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 3px solid var(--rule); border-top-color: var(--jade);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.resume__t { font-size: var(--step--1); color: var(--ink-2); }
 
 .err {
   font-size: var(--step--1);

@@ -140,9 +140,30 @@ async function hardReset () {
   if (!confirm('再確認一次：真的要清空全部進度？')) return
   await progress.resetAll()
   session.resetToday()
+  await auth.wipeDevice()
   localStorage.removeItem('ngsl.placed')
   toast.info('進度已清空')
   router.push('/setup')
+}
+
+async function forget () {
+  await auth.forgetDevice()
+  toast.info('已忘記這台裝置，下次需要重新輸入密碼')
+}
+
+const rememberOpen = ref(false)
+const rememberPw = ref('')
+
+async function rememberHere () {
+  if (!rememberOpen.value) { rememberOpen.value = true; return }
+  if (rememberPw.value.length < 6) return
+  try {
+    await auth.signIn(auth.user.email, rememberPw.value, { remember: true })
+    toast.info(auth.remembered ? '已記住這台裝置' : '無法保存，請確認不是無痕模式')
+    rememberOpen.value = false
+  } catch (e) {
+    toast.info(e.message)
+  } finally { rememberPw.value = '' }
 }
 
 async function signOut () {
@@ -394,6 +415,26 @@ const enrichedPct = computed(() => (words.enrichedCount / TOTAL_WORDS) * 100)
         <span class="label zh">待同步</span>
         <span class="kv__v num">{{ progress.syncing ? '同步中…' : '已同步' }}</span>
       </div>
+      <div class="kv">
+        <span class="label zh">這台裝置</span>
+        <span class="kv__v zh">{{ auth.remembered ? '已記住登入' : '每次需輸入密碼' }}</span>
+      </div>
+      <p v-if="auth.remembered" class="note zh">
+        密碼已加密存在這台裝置，打開就直接進入。共用或借出這支手機前請先「忘記這台裝置」。
+      </p>
+      <button v-if="auth.remembered" class="btn btn--ghost btn--sm zh" @click="forget">
+        忘記這台裝置（保持登入）
+      </button>
+      <template v-else-if="auth.canRemember">
+        <input
+          v-if="rememberOpen" v-model="rememberPw" class="input" type="password"
+          autocomplete="current-password" placeholder="再輸入一次密碼" minlength="6"
+          @keyup.enter="rememberHere"
+        >
+        <button class="btn btn--ghost btn--sm zh" @click="rememberHere">
+          {{ rememberOpen ? '確認並記住' : '記住這台裝置' }}
+        </button>
+      </template>
 
       <div class="row row-2 wrap">
         <button class="btn btn--ghost btn--sm zh" @click="exportJson">匯出備份 JSON</button>

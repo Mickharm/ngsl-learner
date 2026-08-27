@@ -35,7 +35,13 @@ const router = createRouter({
 router.beforeEach(async to => {
   const auth = useAuth()
   if (!auth.ready) await auth.init()
-  if (!to.meta.public && !auth.signedIn) return { name: 'login', query: { next: to.fullPath } }
+  if (!to.meta.public && !auth.signedIn) {
+    // A session can lapse mid-use — an expired token, storage swept by the
+    // browser. Replay the remembered credentials before showing a form the
+    // learner has already filled in on this device.
+    if (await auth.restore()) return true
+    return { name: 'login', query: { next: to.fullPath } }
+  }
   if (to.name === 'login' && auth.signedIn) return { name: 'dashboard' }
   return true
 })

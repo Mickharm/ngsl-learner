@@ -1,11 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_URL, SUPABASE_KEY } from '@/config'
+import { authStorage } from './authStorage'
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true,
+    // Nothing here signs in through a URL — no OAuth, no magic links. Leaving
+    // it on only gives the client a reason to inspect (and rewrite) the hash
+    // that vue-router owns.
+    detectSessionInUrl: false,
+    flowType: 'implicit',
+    storage: authStorage,
     storageKey: 'ngsl.auth'
   }
 })

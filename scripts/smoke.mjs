@@ -136,6 +136,7 @@ const errors = []
 const page = await ctx.newPage()
 page.on('console', m => { if (m.type() === 'error') errors.push(m.text()) })
 page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message))
+if (process.env.TRACE_FAIL) page.on('requestfailed', r => console.log('  REQFAIL', r.failure()?.errorText, r.url().slice(0, 120)))
 
 // --- stub Supabase ---
 await page.route('**/hlwmqtbgpconoclmxwll.supabase.co/**', async route => {
@@ -505,6 +506,98 @@ const overflow = await page.evaluate(() => {
   return { scrollW: d.scrollWidth, clientW: d.clientWidth }
 })
 
+/* ------------------------------------------------------------------ *
+ * "remember me": losing the Supabase session must not show a password box
+ * ------------------------------------------------------------------ */
+async function dropStoredSession () {
+  await page.evaluate(async () => {
+    try { localStorage.removeItem('ngsl.auth') } catch { /* ignore */ }
+    await new Promise(res => {
+      const req = indexedDB.open('ngsl-learner')
+      req.onsuccess = () => {
+        const db = req.result
+        const t = db.transaction('meta', 'readwrite')
+        t.objectStore('meta').delete('auth.mirror:ngsl.auth')
+        t.oncomplete = () => res()
+        t.onerror = () => res()
+      }
+      req.onerror = () => res()
+    })
+  })
+}
+
+const vaultSaved = await page.evaluate(async () => {
+  return await new Promise(res => {
+    const req = indexedDB.open('ngsl-learner')
+    req.onsuccess = () => {
+      const g = req.result.transaction('meta', 'readonly').objectStore('meta').get('auth.remembered')
+      g.onsuccess = () => res(!!g.result?.data)
+      g.onerror = () => res(false)
+    }
+    req.onerror = () => res(false)
+  })
+})
+checks.push(['signing in stores an encrypted credential on the device', vaultSaved, 'nothing in the vault'])
+
+const vaultPlain = await page.evaluate(async () => {
+  return await new Promise(res => {
+    const req = indexedDB.open('ngsl-learner')
+    req.onsuccess = () => {
+      const g = req.result.transaction('meta', 'readonly').objectStore('meta').get('auth.remembered')
+      g.onsuccess = () => {
+        const row = g.result
+        if (!row) return res('missing')
+        const bytes = new Uint8Array(row.data || new ArrayBuffer(0))
+        res(new TextDecoder().decode(bytes))
+      }
+      g.onerror = () => res('err')
+    }
+    req.onerror = () => res('err')
+  })
+})
+checks.push([
+  'the stored blob is not the password in the clear',
+  !/stub-password/.test(vaultPlain),
+  'plaintext password found in IndexedDB'
+])
+
+await dropStoredSession()
+await page.goto(URL_BASE, { waitUntil: 'domcontentloaded' })
+await page.waitForTimeout(3500)
+const backIn = !page.url().includes('#/login')
+checks.push([
+  'a lost session is restored without asking for the password again',
+  backIn,
+  `landed on ${page.url().split('#')[1] || '/'}`
+])
+await shot('23-remembered-relaunch')
+
+// and "forget this device" must genuinely put the password box back
+await page.goto(URL_BASE + '#/settings', { waitUntil: 'domcontentloaded' })
+await page.waitForTimeout(900)
+const forgetBtn = page.locator('button:has-text("忘記這台裝置")').first()
+if (await forgetBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+  await forgetBtn.click().catch(() => {})
+  await page.waitForTimeout(600)
+  await dropStoredSession()
+  await page.goto(URL_BASE, { waitUntil: 'domcontentloaded' })
+  await page.waitForTimeout(3000)
+  checks.push([
+    'forgetting the device brings the password box back',
+    page.url().includes('#/login'),
+    `landed on ${page.url().split('#')[1] || '/'}`
+  ])
+  const preset = await page.locator('.who__mail').first().innerText().catch(() => '')
+  checks.push([
+    'the login screen still opens on the last person used',
+    /@/.test(preset),
+    `header showed "${preset}"`
+  ])
+  await shot('24-after-forget')
+} else {
+  checks.push(['forgetting the device brings the password box back', false, 'no 忘記這台裝置 button in settings'])
+}
+
 console.log('\n--- results ---')
 console.log('screens captured:', shots.length)
 let checkFail = 0
@@ -513,7 +606,10 @@ for (const [label, ok, detail] of checks) {
   console.log(`${ok ? 'ok  ' : 'FAIL'} ${label}${ok ? '' : `  → ${detail}`}`)
 }
 console.log('body overflow  :', overflow.scrollW > overflow.clientW + 1 ? `FAIL (${overflow.scrollW} > ${overflow.clientW})` : 'ok')
-const real = errors.filter(e => !/favicon|manifest|sw\.js|workbox|TUNNEL_CONNECTION_FAILED|fonts\.(googleapis|gstatic)|Failed to load resource.*404/i.test(e))
+// The sandbox has no egress, so the Google Fonts stylesheet always fails and
+// Chrome reports it as a bare "Failed to load resource" with no URL attached.
+const NOISE = /favicon|manifest|sw\.js|workbox|TUNNEL_CONNECTION_FAILED|fonts\.(googleapis|gstatic)|Failed to load resource.*(404|net::ERR_(FAILED|ABORTED|TUNNEL))/i
+const real = errors.filter(e => !NOISE.test(e))
 console.log('console errors :', real.length ? 'FAIL' : 'none')
 for (const e of real.slice(0, 12)) console.log('   !', e.slice(0, 220))
 
