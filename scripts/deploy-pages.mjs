@@ -28,10 +28,6 @@ const tokenFile = join(homedir(), '.ghtok')
 const token = process.env.GITHUB_TOKEN
   || (existsSync(tokenFile) ? readFileSync(tokenFile, 'utf8').trim() : '')
 
-if (!token) {
-  console.error('✗ No token. Set GITHUB_TOKEN, or put one in ~/.ghtok (needs Contents: write).')
-  process.exit(1)
-}
 
 const remote = execFileSync('git', ['remote', 'get-url', 'origin'], { cwd: ROOT, encoding: 'utf8' }).trim()
 const match = remote.match(/github\.com[/:]([^/]+)\/(.+?)(?:\.git)?$/)
@@ -57,8 +53,9 @@ try {
   const sha = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim()
   run(['commit', '-q', '-m', `Deploy ${sha}`])
 
-  // The token stays in this throwaway clone's config, never in the real repo.
-  run(['remote', 'add', 'origin', `https://x-access-token:${token}@github.com/${owner}/${repo}.git`])
+  // Use the standard remote URL so Git Credential Manager handles authentication
+  const pushUrl = token ? `https://x-access-token:${token}@github.com/${owner}/${repo}.git` : `https://github.com/${owner}/${repo}.git`
+  run(['remote', 'add', 'origin', pushUrl])
 
   process.stdout.write(`pushing dist/ → ${owner}/${repo}@gh-pages … `)
   run(['push', '-f', 'origin', 'gh-pages'])
