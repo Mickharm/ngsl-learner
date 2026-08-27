@@ -91,7 +91,7 @@ function wordData (ids) {
 const db = {
   card_progress: [],
   daily_log: [],
-  user_settings: [{ user_id: USER_ID, payload: { geminiKey: 'stub-key', newPerDay: 6, reviewCap: 40 } }],
+  user_settings: [{ user_id: USER_ID, payload: { geminiKey: 'stub-key', newPerDay: 20, reviewCap: 40 } }],
   grammar_progress: [],
   error_log: [],
   articles: [],
@@ -271,17 +271,34 @@ await shot('02-placement-intro')
 await tap('button:has-text("開始測驗")')
 await shot('03-placement-test')
 
-// answer 48 probes: claim, see the answer, then confirm
+// The placement asks a real question now, so the smoke has to answer one.
+const optCount = await page.locator('.quiz__opt').count().catch(() => 0)
+checks.push([
+  'the placement probe offers four meanings to choose from',
+  optCount === 4,
+  `${optCount} options rendered`
+])
+
+// answer 48 probes: pick a meaning (or 不知道), then advance
 let revealShot = false
 for (let i = 0; i < 60; i++) {
-  const claimBtn = page.locator(i % 3 === 2 ? '.probe__no' : '.probe__yes').first()
-  if (!(await claimBtn.isVisible({ timeout: 2000 }).catch(() => false))) break
-  await claimBtn.click().catch(() => {})
+  const opts = page.locator('.quiz__opt')
+  const n = await opts.count().catch(() => 0)
+  if (!n) {
+    // no options: fall back to the 不知道 escape so the run still terminates
+    const dunno = page.locator('.quiz button:has-text("不知道")').first()
+    if (!(await dunno.isVisible({ timeout: 1500 }).catch(() => false))) break
+    await dunno.click().catch(() => {})
+  } else if (i % 4 === 3) {
+    await page.locator('.quiz button:has-text("不知道")').first().click().catch(() => {})
+  } else {
+    await opts.nth(i % n).click().catch(() => {})
+  }
   await page.waitForTimeout(140)
   if (!revealShot) { await shot('03b-placement-answer-shown'); revealShot = true }
-  const confirm = page.locator('.probe__confirm .btn--primary').first()
-  if (await confirm.isVisible({ timeout: 2500 }).catch(() => false)) {
-    await confirm.click().catch(() => {})
+  const nextBtn = page.locator('.probe__confirm .btn--primary').first()
+  if (await nextBtn.isVisible({ timeout: 2500 }).catch(() => false)) {
+    await nextBtn.click().catch(() => {})
     await page.waitForTimeout(120)
   }
   if (await page.locator('.opt-card').first().isVisible({ timeout: 300 }).catch(() => false)) break
@@ -295,6 +312,29 @@ await page.waitForTimeout(1200)
 await page.locator('.quest').first().waitFor({ state: 'visible', timeout: 8000 }).catch(() => {})
 await page.waitForTimeout(500)
 await shot('05-dashboard')
+
+// Placement now sets a per-learner ceiling instead of pointing everyone at all
+// 2,801 words. The dashboard shows the scope it actually settled on.
+const placed = await page.evaluate(() => {
+  try { return JSON.parse(localStorage.getItem('ngsl.settings') || '{}') } catch { return {} }
+})
+checks.push([
+  'placement stores a phase target instead of pointing at all 2801 words',
+  Number(placed.targetWords) > 0,
+  `targetWords=${placed.targetWords}`
+])
+checks.push([
+  'placement derives the daily pace rather than keeping whatever was set',
+  Number(placed.newPerDay) >= 5 && Number(placed.newPerDay) <= 12,
+  `newPerDay=${placed.newPerDay} (fixture stores 20, which is what both learners had)`
+])
+const scope = await page.locator('.prog__scope').first().innerText().catch(() => '')
+const scopeTo = Number((scope.replace(/\s/g, '').match(/(\d+)$/) || [])[1] || 0)
+checks.push([
+  'the dashboard shows that phase, not the whole list',
+  scopeTo === Number(placed.targetWords) && scopeTo > 0,
+  `scope="${scope}" → ${scopeTo}, targetWords=${placed.targetWords}`
+])
 
 // The four taught phases alternate day to day, so the quest is five steps, not
 // seven, and carries exactly one of the two pairs.

@@ -2,12 +2,14 @@
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProgress } from '@/stores/progress'
+import { useSettings } from '@/stores/settings'
 import { useSession } from '@/stores/session'
 import { useWords } from '@/stores/words'
 import { TOTAL_WORDS } from '@/config'
 import SessionHeader from '@/components/SessionHeader.vue'
 
 const progress = useProgress()
+const settings = useSettings()
 const session = useSession()
 const words = useWords()
 const router = useRouter()
@@ -38,7 +40,7 @@ const verdict = computed(() => {
   return '穩定推進中。明天的複習量已經排好了。'
 })
 
-const coverage = computed(() => (progress.stats.seen / TOTAL_WORDS) * 100)
+const coverage = computed(() => (progress.stats.seen / settings.target) * 100)
 
 const weakWords = computed(() =>
   progress.troubleWords.slice(0, 6).map(c => words.get(c.wordId)).filter(Boolean)

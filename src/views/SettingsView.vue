@@ -208,7 +208,7 @@ const enrichedPct = computed(() => (words.enrichedCount / TOTAL_WORDS) * 100)
         >
         <p class="note zh">
           以你的目標推算：每天 {{ s.newPerDay }} 個字，走完 2801 字需要
-          <strong class="num">{{ Math.ceil(TOTAL_WORDS / s.newPerDay / 30) }}</strong> 個月。
+          <strong class="num">{{ Math.ceil(Math.max(0, settings.target - progress.stats.seen) / s.newPerDay / 30) }}</strong> 個月。
           新字越多，之後每天的複習量也越大。
         </p>
 

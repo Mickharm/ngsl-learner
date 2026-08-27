@@ -6,6 +6,7 @@ import { useProgress } from '@/stores/progress'
 import { useSettings } from '@/stores/settings'
 import { useToast } from '@/stores/toast'
 import { testConnection } from '@/lib/gemini'
+import { WORDS_PER_PHASE, TOTAL_WORDS } from '@/config'
 import AudioButton from '@/components/AudioButton.vue'
 
 /**
@@ -15,11 +16,17 @@ import AudioButton from '@/components/AudioButton.vue'
  * knows ~450 words at rank 1 wastes weeks. This binary-searches the frequency
  * list for the point where recognition falls off, in six rounds of eight words.
  *
- * Every answer is followed by the Chinese meaning. Self-assessment without
- * feedback is worthless here — a learner who *thinks* they know a word and is
- * wrong would push the estimated frontier too high and skip words they need.
- * Seeing the answer lets them correct themselves, and the correction is the
- * one that counts.
+ * The probe is a real question, not a self-assessment. The first version asked
+ * 「你認識這個字嗎」 and trusted the answer; the database showed what that is
+ * worth. One learner marked hear / system / every / question / always as
+ * unknown during the test and then rated every one of them 「簡單」 minutes
+ * later — the placement had stopped 200 words short of where he actually was.
+ * The other learner's estimate came out 4.5× higher for a comparable level.
+ *
+ * So now the learner picks the meaning out of four, with an explicit 不知道 so
+ * nobody is forced to guess, and the round score is corrected for the guessing
+ * that happens anyway. Everything after the answer — the meaning, the example,
+ * the audio — stays: the test is also the first thing they learn from.
  */
 
 const ROUNDS = 6
@@ -38,10 +45,10 @@ const lo = ref(1)
 const hi = ref(2801)
 const queue = ref([])
 const index = ref(0)
-const answers = ref([])          // { id, known, corrected }
+const answers = ref([])          // { id, known, attempted }
 const applying = ref(false)
 const revealed = ref(false)
-const claimed = ref(null)        // what they pressed before seeing the answer
+const picked = ref(null)         // index into choices, or -1 for 不知道
 const loadingRound = ref(false)
 const roundError = ref('')
 
@@ -57,6 +64,42 @@ const totalPlanned = ROUNDS * PER_ROUND
 
 const meaning = computed(() => current.value?.meanings?.[0]?.zh || '')
 const example = computed(() => current.value?.examples?.[0] || null)
+
+/**
+ * Four meanings, one of them right. Distractors come from words at nearby
+ * ranks, so they are the same kind of word rather than obviously absurd —
+ * a distractor nobody would pick tests nothing.
+ */
+const choices = ref([])
+const answerIndex = ref(0)
+
+function buildChoices (w) {
+  const right = w?.meanings?.[0]?.zh?.trim()
+  if (!right) { choices.value = []; answerIndex.value = 0; return }
+
+  const taken = new Set([right])
+  const pool = []
+  let guard = 0
+  while (pool.length < 3 && guard++ < 300) {
+    const id = 1 + Math.floor(Math.random() * 2801)
+    if (id === w.id) continue
+    const zh = words.get(id)?.meanings?.[0]?.zh?.trim()
+    if (!zh || taken.has(zh)) continue
+    // Near-duplicate glosses make the question unanswerable rather than hard.
+    if ([...taken].some(t => t.includes(zh) || zh.includes(t))) continue
+    taken.add(zh)
+    pool.push(zh)
+  }
+  const all = [right, ...pool]
+  for (let i = all.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[all[i], all[j]] = [all[j], all[i]]
+  }
+  choices.value = all
+  answerIndex.value = all.indexOf(right)
+}
+
+const wasRight = computed(() => picked.value === answerIndex.value)
 
 async function saveKey () {
   keyBusy.value = true
@@ -76,16 +119,16 @@ function sampleAround (center, n) {
   const span = 140
   const from = Math.max(1, center - span)
   const to = Math.min(2801, center + span)
-  const picked = new Set()
+  const seen = new Set()
   const out = []
   let guard = 0
   while (out.length < n && guard++ < 400) {
     const id = from + Math.floor(Math.random() * (to - from + 1))
-    if (picked.has(id)) continue
+    if (seen.has(id)) continue
     const w = words.get(id)
     // Function words are recognised by everyone and tell us nothing.
     if (!w || w.headword.length < 3) continue
-    picked.add(id)
+    seen.add(id)
     out.push(w)
   }
   return out
@@ -107,7 +150,8 @@ async function beginRound () {
     queue.value = picks.map(w => words.get(w.id))
     index.value = 0
     revealed.value = false
-    claimed.value = null
+    picked.value = null
+    buildChoices(queue.value[0])
     loadingRound.value = false
   }
 }
@@ -121,28 +165,40 @@ async function start () {
   await beginRound()
 }
 
-/** First tap: record the claim, then show the meaning. */
-function claim (known) {
+/** Answer the probe. -1 means 不知道, which is not scored as a guess. */
+function answer (i) {
   if (revealed.value) return
-  claimed.value = known
+  picked.value = i
   revealed.value = true
 }
 
-/** Second tap: commit, optionally overriding the claim after seeing the answer. */
-async function commit (known = claimed.value) {
+/**
+ * Score the round and move the binary search.
+ *
+ * Four choices means a pure guess lands 1 in 4, which would drag the frontier
+ * upward over 48 probes. The classic formula-scoring correction takes it back
+ * out: each wrong answer implies about a third of a lucky one alongside it.
+ * 不知道 is excluded from the correction — declining to guess is information,
+ * not a wrong guess.
+ */
+async function next () {
   const w = current.value
   if (!w) return
-  answers.value.push({ id: w.id, known, corrected: known !== claimed.value })
+  answers.value.push({ id: w.id, known: wasRight.value, attempted: picked.value >= 0 })
 
   if (index.value + 1 < queue.value.length) {
     index.value++
     revealed.value = false
-    claimed.value = null
+    picked.value = null
+    buildChoices(current.value)
     return
   }
 
   const roundAnswers = answers.value.slice(-PER_ROUND)
-  const ratio = roundAnswers.filter(a => a.known).length / roundAnswers.length
+  const right = roundAnswers.filter(a => a.known).length
+  const wrong = roundAnswers.filter(a => a.attempted && !a.known).length
+  const ratio = Math.max(0, right - wrong / 3) / roundAnswers.length
+
   if (ratio >= KNOWN_THRESHOLD) lo.value = probe.value
   else hi.value = probe.value
 
@@ -153,7 +209,7 @@ async function commit (known = claimed.value) {
 
 const frontier = computed(() => Math.max(50, Math.min(2600, lo.value)))
 const knownCount = computed(() => answers.value.filter(a => a.known).length)
-const correctedCount = computed(() => answers.value.filter(a => a.corrected).length)
+const skippedCount = computed(() => answers.value.filter(a => !a.attempted).length)
 
 const options = computed(() => [
   {
@@ -165,7 +221,8 @@ const options = computed(() => [
   {
     key: 'balanced',
     title: `從第 ${frontier.value} 個字開始，前面排入快速驗證`,
-    desc: `第 1-${frontier.value} 字直接標記為已學，但會在未來 3-10 天內陸續出現一次做確認。忘記的會自動掉回正常複習。`,
+    desc: `第 1-${frontier.value} 字直接標記為已學，會在未來 3-10 天內陸續出現一次做確認，忘記的自動掉回正常複習。`
+      + `接下來要學第 ${frontier.value + 1}-${target.value} 名，每天 ${pace.value} 個字、約 ${monthsToTarget.value} 個月，之後再開下一階段。`,
     prefill: frontier.value,
     recommended: true
   },
@@ -178,9 +235,37 @@ const options = computed(() => [
   }
 ])
 
+/**
+ * What this phase covers: the frontier plus a fixed budget of new words.
+ *
+ * Not the whole 2801. Simulating the scheduler shows the review queue only
+ * converges up to roughly 1,500 words in active rotation; past that the
+ * backlog grows for ever. Words below the frontier are nearly free, so the
+ * budget is spent on what comes after it, and the rest of the list waits for
+ * the next phase.
+ */
+const target = computed(() => Math.min(TOTAL_WORDS, frontier.value + WORDS_PER_PHASE))
+/**
+ * Words per day, derived rather than asked for: enough to finish the phase in
+ * about six months, inside the range the review queue can absorb. Both
+ * learners had this at 20, which introduces words four times faster than they
+ * can be consolidated.
+ */
+const pace = computed(() =>
+  Math.max(5, Math.min(12, Math.round((target.value - frontier.value) / 180)))
+)
+const monthsToTarget = computed(() =>
+  ((target.value - frontier.value) / pace.value / 30).toFixed(1)
+)
+
 async function apply (opt) {
   applying.value = true
   try {
+    // Re-taking the test must be able to move the frontier DOWN as well as up.
+    // markKnown skips ids it already has, so without clearing the untouched
+    // prefill first, a second placement could only ever add words.
+    progress.clearUntouchedPrefill()
+
     // Words the test proved unknown must never be marked known, so they are
     // excluded BEFORE markKnown runs. Removing them afterwards only cleaned the
     // in-memory Map: markKnown had already queued them to the outbox and
@@ -200,9 +285,13 @@ async function apply (opt) {
         if (slice.length) progress.markKnown(slice, { intervalDays: base + d })
       }
     }
+    settings.set({
+      targetWords: opt.prefill > 0 ? target.value : TOTAL_WORDS,
+      newPerDay: pace.value
+    })
     localStorage.setItem('ngsl.placed', '1')
     await progress.flush()
-    toast.info('分級完成，開始今天的第一關')
+    toast.info(`分級完成 · 這一階段的目標是第 ${opt.prefill > 0 ? target.value : TOTAL_WORDS} 名以內`)
     router.push('/')
   } finally {
     applying.value = false
@@ -219,7 +308,7 @@ onMounted(() => {
   keyInput.value = settings.state.geminiKey || ''
 })
 
-watch(() => current.value?.id, () => { revealed.value = false; claimed.value = null })
+watch(() => current.value?.id, () => { revealed.value = false; picked.value = null })
 </script>
 
 <template>
@@ -233,15 +322,14 @@ watch(() => current.value?.id, () => { revealed.value = false; claimed.value = n
         直接從第 1 個開始複習，等於前兩週都在浪費時間。
       </p>
       <p class="lead zh">
-        接下來會出現 <strong>48 個字</strong>。每個字先回答「認識 / 不認識」，
-        <strong>然後立刻顯示中文答案</strong>——如果你答了認識但其實記錯，可以當場改掉。
-        大約 5 分鐘。
+        接下來會出現 <strong>48 個字</strong>，每個字從四個中文意思裡選一個，
+        <strong>選完立刻顯示正確答案與例句</strong>。大約 5 分鐘。
       </p>
 
       <div class="rule-note card card--pad zh">
-        <strong>「認識」的標準</strong>：看到這個字，你能立刻說出中文意思。
-        不確定、要想很久、或只是「看起來眼熟」——都算不認識。
-        測驗會顯示答案讓你核對，誠實作答的結果才有用。
+        <strong>不要猜</strong>：每題都有「不知道」，按它不會扣分，而且比猜對更有用——
+        猜對會讓系統以為你會，然後跳過你其實需要的字。
+        這個測驗不問你覺得自己會不會，它直接考你。
       </div>
 
       <!-- key setup, inline so the flow is not interrupted -->
@@ -291,7 +379,7 @@ watch(() => current.value?.id, () => { revealed.value = false; claimed.value = n
       </div>
 
       <template v-else-if="current">
-        <div class="probe__card" :class="revealed ? (claimed ? 'probe__card--claimed' : 'probe__card--unknown') : ''">
+        <div class="probe__card" :class="revealed ? (wasRight ? 'probe__card--claimed' : 'probe__card--unknown') : ''">
           <span class="chip chip--plain">#{{ current.id }}</span>
           <h2 class="probe__word">{{ current.headword }}</h2>
           <AudioButton :text="current.headword" size="md" />
@@ -300,9 +388,7 @@ watch(() => current.value?.id, () => { revealed.value = false; claimed.value = n
             <div v-if="revealed" class="answer">
               <div class="hr" />
               <p v-if="meaning" class="answer__zh zh">{{ meaning }}</p>
-              <p v-else class="answer__none zh">
-                {{ settings.hasGeminiKey ? '這個字的中文還沒產生出來' : '未設定 API Key，無法顯示中文' }}
-              </p>
+              <p v-else class="answer__none zh">這個字的中文還沒產生出來</p>
               <p v-if="current.ipa" class="answer__ipa num">{{ current.ipa }}</p>
               <div v-if="example" class="answer__ex">
                 <p class="answer__en">{{ example.en }}</p>
@@ -312,30 +398,29 @@ watch(() => current.value?.id, () => { revealed.value = false; claimed.value = n
           </Transition>
         </div>
 
-        <!-- before the reveal -->
-        <div v-if="!revealed" class="probe__actions">
-          <button class="btn btn--ghost probe__no zh" @click="claim(false)">不認識</button>
-          <button class="btn btn--primary probe__yes zh" @click="claim(true)">認識</button>
+        <!-- the question -->
+        <div v-if="!revealed" class="quiz">
+          <p class="quiz__q zh">這個字是什麼意思？</p>
+          <button
+            v-for="(c, i) in choices" :key="i"
+            class="quiz__opt zh" @click="answer(i)"
+          >
+            <span class="quiz__k num">{{ 'ABCD'[i] }}</span>
+            <span class="quiz__t">{{ c }}</span>
+          </button>
+          <button class="btn btn--quiet btn--sm btn--block zh" @click="answer(-1)">
+            不知道 — 不要猜
+          </button>
         </div>
 
-        <!-- after the reveal: confirm, or take it back -->
+        <!-- the verdict -->
         <div v-else class="probe__confirm">
-          <p class="probe__verdict zh" :class="claimed ? 'probe__verdict--yes' : 'probe__verdict--no'">
-            {{ claimed ? '你說認識 — 對照一下，真的記對了嗎？' : '你說不認識 — 這個字會排進學習清單' }}
+          <p class="probe__verdict zh" :class="wasRight ? 'probe__verdict--yes' : 'probe__verdict--no'">
+            <template v-if="wasRight">答對了 — 這個字算你會</template>
+            <template v-else-if="picked === -1">沒關係 — 這個字會排進學習清單</template>
+            <template v-else>選錯了 — 這個字會排進學習清單</template>
           </p>
-          <button class="btn btn--primary btn--block zh" @click="commit()">
-            {{ claimed ? '對，我本來就知道' : '知道了，下一個' }}
-          </button>
-          <button
-            v-if="claimed"
-            class="btn btn--ghost btn--block zh"
-            @click="commit(false)"
-          >其實我記錯了，算不認識</button>
-          <button
-            v-else
-            class="btn btn--quiet btn--sm btn--block zh"
-            @click="commit(true)"
-          >啊，這個我其實會 — 改成認識</button>
+          <button class="btn btn--primary btn--block zh" @click="next()">下一個</button>
         </div>
 
         <p v-if="roundError" class="probe__warn zh">{{ roundError }}</p>
@@ -350,8 +435,8 @@ watch(() => current.value?.id, () => { revealed.value = false; claimed.value = n
         48 題中認得 <strong class="num">{{ knownCount }}</strong> 個。
         以 NGSL 的頻率排序來看，第 {{ frontier }} 名之後的字對你來說開始變得陌生。
       </p>
-      <p v-if="correctedCount" class="lead zh dim">
-        其中 <strong class="num">{{ correctedCount }}</strong> 題在看到中文後被你自己改掉——
+      <p v-if="skippedCount" class="lead zh dim">
+        其中 <strong class="num">{{ skippedCount }}</strong> 題你選了「不知道」——
         這正是這個測驗要抓的東西。
       </p>
 
@@ -473,8 +558,24 @@ watch(() => current.value?.id, () => { revealed.value = false; claimed.value = n
 .answer__en { font-family: var(--font-word); font-size: var(--step-0); line-height: 1.5; }
 .answer__exzh { font-size: var(--step--2); color: var(--ink-2); }
 
-.probe__actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
-.probe__no, .probe__yes { min-height: 56px; font-size: var(--step-1); }
+.quiz { display: flex; flex-direction: column; gap: var(--sp-2); }
+.quiz__q { font-size: var(--step--1); color: var(--ink-2); font-weight: 600; margin-bottom: 2px; }
+.quiz__opt {
+  display: flex; align-items: center; gap: var(--sp-3);
+  min-height: 54px; padding: var(--sp-3);
+  background: var(--surface); border: 1px solid var(--rule);
+  border-radius: var(--radius); text-align: left;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.quiz__opt:hover { border-color: var(--jade); }
+.quiz__opt:active { transform: scale(0.99); }
+.quiz__k {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--surface-3); color: var(--ink-2);
+  font-size: var(--step--2); font-weight: 600;
+}
+.quiz__t { font-size: var(--step-0); line-height: 1.5; }
 
 .probe__confirm { display: flex; flex-direction: column; gap: var(--sp-2); }
 .probe__verdict { font-size: var(--step--1); text-align: center; line-height: 1.6; }

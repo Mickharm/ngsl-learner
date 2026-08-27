@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useProgress, todayKey } from '@/stores/progress'
+import { useSettings } from '@/stores/settings'
 import { useGrammar } from '@/stores/grammar'
 import { useWords } from '@/stores/words'
 import { TOTAL_WORDS, BANDS } from '@/config'
@@ -17,6 +18,7 @@ import { STATE, isMastered } from '@/lib/srs'
  */
 
 const progress = useProgress()
+const settings = useSettings()
 const grammar = useGrammar()
 const words = useWords()
 
@@ -81,7 +83,7 @@ const composition = computed(() => {
     else if (c.state === STATE.REVIEW) review++
     else learning++
   }
-  const unseen = TOTAL_WORDS - (learning + review + mastered)
+  const unseen = Math.max(0, settings.target - (learning + review + mastered))
   return [
     { key: 'mastered', label: '熟練', n: mastered, tone: 'c3' },
     { key: 'review', label: '複習中', n: review, tone: 'c2' },
@@ -118,7 +120,7 @@ const pace = computed(() => {
   const recent = days.value.slice(-28).filter(d => d.total > 0)
   if (recent.length < 3) return null
   const newPerActiveDay = progress.stats.seen / Math.max(1, activeDays.value)
-  const remaining = TOTAL_WORDS - progress.stats.seen
+  const remaining = Math.max(0, settings.target - progress.stats.seen)
   const daysLeft = Math.ceil(remaining / Math.max(1, newPerActiveDay))
   return { newPerActiveDay, daysLeft, months: (daysLeft / 30).toFixed(1) }
 })
@@ -210,7 +212,7 @@ function showTip (payload, evt) {
     <section class="card card--pad chart">
       <div class="chart__head">
         <h2 class="chart__title zh">2801 字掌握狀態</h2>
-        <span class="chart__sub num">{{ ((progress.stats.seen / TOTAL_WORDS) * 100).toFixed(1) }}%</span>
+        <span class="chart__sub num">{{ ((progress.stats.seen / settings.target) * 100).toFixed(1) }}%</span>
       </div>
 
       <div class="stack-bar">
@@ -275,7 +277,7 @@ function showTip (payload, evt) {
 
       <div v-if="pace" class="pace">
         <p class="pace__line zh">
-          以目前的節奏，剩下的 <strong class="num">{{ TOTAL_WORDS - progress.stats.seen }}</strong> 個字
+          以目前的節奏，剩下的 <strong class="num">{{ Math.max(0, settings.target - progress.stats.seen) }}</strong> 個字
           大約還需要 <strong class="num">{{ pace.months }}</strong> 個月。
         </p>
         <p class="pace__sub zh">

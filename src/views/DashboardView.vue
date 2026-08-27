@@ -29,8 +29,8 @@ const coverage = computed(() => {
   return {
     seen: s.seen,
     mastered: s.mastered,
-    pct: (s.seen / TOTAL_WORDS) * 100,
-    masteredPct: (s.mastered / TOTAL_WORDS) * 100
+    pct: (s.seen / settings.target) * 100,
+    masteredPct: (s.mastered / settings.target) * 100
   }
 })
 
@@ -181,7 +181,8 @@ onUnmounted(() => session.stopClock())
     <!-- overall progress -->
     <section class="card card--pad prog">
       <div class="prog__head">
-        <h2 class="section-title zh">NGSL 2801 進度</h2>
+        <h2 class="section-title zh">這一階段的進度</h2>
+        <span class="prog__scope num">1–{{ settings.target }}</span>
         <span class="prog__pct num">{{ coverage.pct.toFixed(1) }}%</span>
       </div>
 
@@ -193,7 +194,7 @@ onUnmounted(() => session.stopClock())
       <div class="prog__legend">
         <span class="lg"><i class="lg__sw lg__sw--seen" /><span class="zh">已學 {{ coverage.seen }}</span></span>
         <span class="lg"><i class="lg__sw lg__sw--mastered" /><span class="zh">熟練 {{ coverage.mastered }}</span></span>
-        <span class="lg dim zh">剩 {{ TOTAL_WORDS - coverage.seen }}</span>
+        <span class="lg dim zh">剩 {{ Math.max(0, settings.target - coverage.seen) }}</span>
       </div>
 
       <div class="hr" />
@@ -283,6 +284,7 @@ onUnmounted(() => session.stopClock())
 }
 .quest__track--A { background: var(--jade-wash); color: var(--jade); }
 .quest__track--B { background: var(--violet-wash); color: var(--violet); }
+.prog__scope { font-size: var(--step--2); color: var(--ink-3); }
 .quest__est { font-size: var(--step--2); color: var(--ink-3); margin-left: auto; }
 .quest__count { font-size: var(--step--1); color: var(--ink-3); }
 

@@ -40,8 +40,21 @@ export const STAGE_SIZE = 50
 /** A stage unlocks the next one once this share of its cards has graduated. */
 export const STAGE_UNLOCK_RATIO = 0.8
 
+/**
+ * How many words past the placement frontier the learner takes on.
+ *
+ * Not a preference — a capacity ceiling. Simulating the real scheduler shows a
+ * learner who forgets a quarter of the time can hold roughly 1,200-1,500 cards
+ * in active rotation at 60 reviews a day; past that the queue accrues a
+ * backlog that never clears. Words below the frontier are cheap (they sit on
+ * long verification intervals), so the budget is spent on what comes after it.
+ */
+export const WORDS_PER_PHASE = 1500
+
 export const DEFAULT_SETTINGS = Object.freeze({
-  newPerDay: 10,
+  // 8/day finishes 1,500 words in about six months and keeps the review queue
+  // convergent. 20/day - what both learners had set - does not.
+  newPerDay: 8,
   reviewCap: 60,
   ttsRate: 0.9,
   ttsVoiceURI: '',
@@ -52,5 +65,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   geminiKey: '',
   geminiModel: 'gemini-3.5-flash',
   showIntervalHints: true,
-  grammarPerDay: 1
+  grammarPerDay: 1,
+  // Highest NGSL rank this phase covers. 0 means "no ceiling", which is what
+  // an account that has not been placed yet gets.
+  targetWords: 0
 })

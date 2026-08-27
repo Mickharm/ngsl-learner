@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
-import { idbGetAll, idbPutMany, idbPut, idbGet, STORE } from '@/lib/idb'
+import { idbGetAll, idbPutMany, idbPut, idbGet, idbDelete, STORE } from '@/lib/idb'
 import {
   newCard, schedule, GRADE, STATE, isMastered, sortReviewQueue, retrievability
 } from '@/lib/srs'
@@ -118,7 +118,10 @@ export const useProgress = defineStore('progress', () => {
       const next = new Map()
       for (const r of rows) next.set(r.word_id, rowToCard(r))
       // Anything still queued locally is newer than what the server returned.
-      for (const q of outbox) if (q.kind === 'card') next.set(q.card.wordId, q.card)
+      for (const q of outbox) {
+        if (q.kind === 'card') next.set(q.card.wordId, q.card)
+        else if (q.kind === 'card-delete') next.delete(q.wordId)
+      }
       cards.value = next
       await idbPutMany(STORE.CARDS, [...next.values()])
 
@@ -179,6 +182,13 @@ export const useProgress = defineStore('progress', () => {
       const cardRows = batch.filter(i => i.kind === 'card').map(i => cardToRow(i.card, auth.userId))
       const logRows = batch.filter(i => i.kind === 'review').map(i => ({ ...i.row, user_id: auth.userId }))
       const errRows = batch.filter(i => i.kind === 'error').map(i => ({ ...i.row, user_id: auth.userId }))
+      const deletedIds = batch.filter(i => i.kind === 'card-delete').map(i => i.wordId)
+
+      if (deletedIds.length) {
+        const { error } = await supabase.from('card_progress')
+          .delete().eq('user_id', auth.userId).in('word_id', deletedIds)
+        if (error) throw error
+      }
 
       if (cardRows.length) {
         // Keep only the latest row per word — upsert cannot take duplicates.
@@ -265,13 +275,37 @@ export const useProgress = defineStore('progress', () => {
    * already seen, and refuses to run more than one stage ahead of what the
    * learner has actually consolidated.
    */
-  function newCandidates (n) {
-    const limit = Math.min(2801, (unlockedStage.value + 1) * STAGE_SIZE + STAGE_SIZE)
+  function newCandidates (n, maxRank = 2801) {
+    const limit = Math.min(2801, maxRank, (unlockedStage.value + 1) * STAGE_SIZE + STAGE_SIZE)
     const out = []
     for (let id = 1; id <= limit && out.length < n; id++) {
       if (!cards.value.has(id)) out.push(id)
     }
     return out
+  }
+
+  /**
+   * Drop cards the placement test created but the learner never actually
+   * studied, so re-taking the test genuinely re-places them.
+   *
+   * markKnown skips ids already present, so without this a second placement
+   * could only ever add words — a frontier set too low the first time stayed
+   * too low for ever. Anything with a real review behind it is left alone.
+   */
+  function clearUntouchedPrefill () {
+    const next = new Map()
+    const gone = []
+    for (const [id, c] of cards.value) {
+      const untouched = c.reps <= 1 && c.lapses === 0 && c.streak <= 1 &&
+        c.state === STATE.REVIEW && c.lastReviewedAt === c.introducedAt
+      if (untouched) gone.push(id)
+      else next.set(id, c)
+    }
+    if (!gone.length) return 0
+    cards.value = next
+    for (const id of gone) enqueue({ kind: 'card-delete', wordId: id })
+    for (const id of gone) idbDelete(STORE.CARDS, id)
+    return gone.length
   }
 
   /* ------------------------------------------------------------------ *
@@ -476,7 +510,8 @@ export const useProgress = defineStore('progress', () => {
     seenIds, dueCards, learningCards, stats, unlockedStage, streak, dayAccuracy,
     troubleWords, troubleWordIds, questionErrors, mistakeCount, clearWordErrors,
     load, loadDay, loadHistory, loadErrors, flush,
-    cardOf, newCandidates, gradeCard, markKnown, bumpDay, setDay, logError, resolveError, resetAll,
+    cardOf, newCandidates, clearUntouchedPrefill, gradeCard, markKnown, bumpDay, setDay,
+    logError, resolveError, resetAll,
     retrievability, daysBetween
   }
 })

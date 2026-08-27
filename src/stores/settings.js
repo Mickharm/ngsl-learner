@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { supabase } from '@/lib/supabase'
-import { DEFAULT_SETTINGS } from '@/config'
+import { TOTAL_WORDS, DEFAULT_SETTINGS } from '@/config'
 import { onModelResolved } from '@/lib/gemini'
 import { useAuth } from './auth'
 
@@ -94,5 +94,12 @@ export const useSettings = defineStore('settings', () => {
 
   const hasGeminiKey = computed(() => !!state.value.geminiKey?.trim())
 
-  return { state, loaded, saving, hasGeminiKey, load, set, reset, applyTheme, persist }
+  /**
+   * Highest NGSL rank this learner is working towards. The whole list until
+   * placement sets a ceiling — every progress denominator reads this rather
+   * than TOTAL_WORDS, so "剩 400 字" means what is left of *their* phase.
+   */
+  const target = computed(() => state.value.targetWords || TOTAL_WORDS)
+
+  return { state, loaded, saving, hasGeminiKey, target, load, set, reset, applyTheme, persist }
 })

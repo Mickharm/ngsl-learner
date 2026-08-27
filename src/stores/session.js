@@ -97,7 +97,7 @@ export const useSession = defineStore('session', () => {
   const newIds = computed(() => {
     rollIfNewDay()
     if (phase.value.newIds?.length) return phase.value.newIds
-    return progress.newCandidates(settings.state.newPerDay)
+    return progress.newCandidates(settings.state.newPerDay, settings.target)
   })
 
   /** True when the setting cannot change today's plan any more. */
@@ -178,7 +178,7 @@ export const useSession = defineStore('session', () => {
   function lockNewIds () {
     rollIfNewDay()
     if (!phase.value.newIds?.length || !newCountLocked.value) {
-      phase.value = { ...phase.value, newIds: progress.newCandidates(settings.state.newPerDay) }
+      phase.value = { ...phase.value, newIds: progress.newCandidates(settings.state.newPerDay, settings.target) }
       save()
     }
     return phase.value.newIds
