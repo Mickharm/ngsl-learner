@@ -403,9 +403,11 @@ const buildSha = __BUILD_SHA__
             :value="s.ttsLeadIn" @input="settings.set({ ttsLeadIn: +$event.target.value })"
           >
           <p class="note zh">
-            手機開啟音訊輸出的那 0.1–0.3 秒會吃掉句子的開頭，所以每句話前面塞一小段
-            靜音，讓它吃掉靜音而不是第一個音節。數字越大留白越長。
-            <strong>用下面的試聽調</strong>：聽得到 “Ted” 的 T 就夠了，還是被吃掉就加一格。
+            手機開啟音訊輸出的那 0.1–0.3 秒會吃掉句子的開頭，所以隔一陣子的第一次播放
+            會先送一段聽不到的靜音去墊掉這段時間。連續播放時音訊串流還開著，不會再墊——
+            這也是為什麼只有第一次聽起來被切。數字越大留白越長。
+            <strong>用下面的試聽調</strong>：要<strong>間隔 5 秒以上</strong>再按才測得到，
+            聽得到 “Ted” 的 T 就夠了，還是被吃掉就加一格。
           </p>
         </div>
 

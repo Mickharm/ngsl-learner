@@ -19,6 +19,12 @@ const SHOTS = join(ROOT, '.shots')
 const DARK = process.argv.includes('--dark')
 const BASE = '/ngsl-learner/'
 
+// Mirrors SettingsView's preview phrase and tts.js's COLD_MS. Both are read
+// back out of the engine stub below, so they have to agree with the app.
+const TEST_PHRASE = "Ted took the ten o'clock train to the airport."
+const TTS_COLD_MS = 4000
+const TTS_LEAD_TEXT = 'a a'   // warmUpText(ttsLeadIn) at the default of 2
+
 if (!existsSync(SHOTS)) mkdirSync(SHOTS, { recursive: true })
 
 const MIME = {
@@ -727,56 +733,73 @@ await shot('16c-listen-intro')
   await tts.goto(URL_BASE + '#/settings', { waitUntil: 'networkidle' })
   await tts.waitForTimeout(900)
 
-  // A tap also fires the one-time WebKit unlock utterance, so prime the engine
-  // first and only then start recording — otherwise the unlock is the entry
-  // being measured instead of the phrase.
-  await tts.locator('button:has-text("試聽")').first().click().catch(() => {})
-  await tts.waitForTimeout(1200)
+  /* The first tap of a page's life is the one that comes out clipped on a
+   * real phone, and it is the one this block used to throw away: the WebKit
+   * unlock utterance fires on that same pointerdown, so the engine is still
+   * busy when the click handler asks it to speak. Measure that tap. */
   await tts.evaluate(() => { window.__tts.spoken = []; window.__tts.cancels = 0 })
   await tts.locator('button:has-text("試聽")').first().click().catch(() => {})
   await tts.waitForTimeout(1200)
 
-  const log = await tts.evaluate(() => window.__tts)
-  const first = log.spoken.find(u => /Ted took/.test(u.text)) || { text: '', cancelsAtSpeak: -1 }
+  const cold = await tts.evaluate(() => window.__tts)
+  const at = cold.spoken.findIndex(u => /Ted took/.test(u.text))
+  const phrase = cold.spoken[at] || { text: '', cancelsAtSpeak: -1 }
+  const lead = at > 0 ? cold.spoken[at - 1] : null
 
-  // The lead-in must be inside the utterance. A separate silent warm-up does
-  // not work: the engine goes idle again the moment it ends, so the real
-  // utterance pays the audio-stream ramp a second time and still loses its
-  // first syllable.
-  //
-  // The pause itself must never be the first thing spoken — a bare leading
-  // pause with nothing before it is what produced the audible on-device
-  // artifact, so the utterance's own first word is echoed once ahead of it.
+  // Cancelling an idle engine is half the bug: cancel() is async in Chromium,
+  // so speaking on the next line hands over an utterance mid-teardown. The
+  // unlock utterance must not be what triggers that cancel.
   checks.push([
-    'the spoken text echoes the first word before the leading silence',
-    /^Ted,\s(,\s)+Ted took/.test(first.text),
-    JSON.stringify(first.text.slice(0, 28))
+    'the first tap of the page is not handed to a cancelling engine',
+    phrase.cancelsAtSpeak === 0,
+    `cancels pending when the first phrase was handed over = ${phrase.cancelsAtSpeak}`
   ])
 
-  // Cancelling an idle engine is the other half of the bug: cancel() is async
-  // in Chromium, so speaking on the next line hands the engine an utterance
-  // while it is still tearing down.
+  // The other half is the audio-stream ramp, which has to be spent on silence
+  // queued in the same tick. The silence is its own utterance at volume 0:
+  // spliced into the phrase's text it was audible on-device twice, in two
+  // different ways (leading commas, then an echoed first word).
   checks.push([
-    'nothing cancels an idle engine before speaking',
-    first.cancelsAtSpeak === 0,
-    `cancels pending when the phrase was handed over = ${first.cancelsAtSpeak}`
+    'a cold engine gets silent lead-in queued ahead of the phrase',
+    !!lead && lead.text === TTS_LEAD_TEXT && lead.volume === 0 &&
+      lead.voiceURI === phrase.voiceURI,
+    JSON.stringify(lead && { text: lead.text, volume: lead.volume, voice: lead.voiceURI })
+  ])
+
+  checks.push([
+    'the phrase itself is handed over with nothing spliced into it',
+    phrase.text === TEST_PHRASE,
+    JSON.stringify(phrase.text.slice(0, 24))
+  ])
+
+  // Back-to-back taps are the case that already sounded right, because the
+  // stream is still open. Paying the lead-in there would just add latency.
+  await tts.evaluate(() => { window.__tts.spoken = []; window.__tts.cancels = 0 })
+  await tts.locator('button:has-text("試聽")').first().click().catch(() => {})
+  await tts.waitForTimeout(1200)
+  const warm = await tts.evaluate(() => window.__tts.spoken)
+  checks.push([
+    'a still-warm engine is not made to sit through the lead-in again',
+    warm.length === 1 && /Ted took/.test(warm[0].text),
+    `${warm.length} utterance(s): ${JSON.stringify(warm.map(u => u.text.slice(0, 10)))}`
   ])
 
   // Turning the lead-in off has to actually turn it off, or the setting is a
-  // decoration and cannot be used to tune the device.
+  // decoration and cannot be used to tune the device. Let the stream go cold
+  // first, otherwise this passes for the wrong reason.
   await tts.locator('#lead').evaluate(el => {
     el.value = '0'
     el.dispatchEvent(new Event('input', { bubbles: true }))
   })
-  await tts.waitForTimeout(400)
+  await tts.waitForTimeout(TTS_COLD_MS + 400)
   await tts.evaluate(() => { window.__tts.spoken = [] })
   await tts.locator('button:has-text("試聽")').first().click().catch(() => {})
   await tts.waitForTimeout(1200)
-  const bare = await tts.evaluate(() => window.__tts.spoken.find(u => /Ted took/.test(u.text))?.text || '')
+  const bare = await tts.evaluate(() => window.__tts.spoken)
   checks.push([
-    'the lead-in setting reaches the utterance',
-    bare.startsWith('Ted took'),
-    JSON.stringify(bare.slice(0, 20))
+    'turning the lead-in off removes it from a cold engine too',
+    bare.length === 1 && bare[0].text === TEST_PHRASE,
+    `${bare.length} utterance(s): ${JSON.stringify(bare.map(u => u.text.slice(0, 10)))}`
   ])
 
   await shot('21b-tts-settings')
