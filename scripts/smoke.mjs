@@ -224,15 +224,24 @@ await ctx.addInitScript(() => {
 
 const errors = []
 const page = await ctx.newPage()
-page.on('console', m => { if (m.type() === 'error') errors.push(m.text()) })
+const STUB_NOISE = /bad HTTP response code \(404\) was received when fetching the script/
+page.on('console', m => { if (m.type() === 'error' && !STUB_NOISE.test(m.text())) errors.push(m.text()) })
 page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message))
 if (process.env.TRACE_FAIL) page.on('requestfailed', r => console.log('  REQFAIL', r.failure()?.errorText, r.url().slice(0, 120)))
+if (process.env.TRACE_NAV) page.on('framenavigated', f => { if (f === page.mainFrame()) console.log('  NAV', f.url()) })
 
 // --- no service worker ---
 // The precache answers from disk, so with a service worker in the way no
 // asset request reaches the network and nothing here can decide what a
 // request returns. The smoke never asserted anything about the worker; it
 // does assert what happens when a chunk fails to arrive.
+//
+// Since v3.0.1 the app registers the worker itself (to reload onto a new
+// deploy), and Chromium logs the refused registration to the console. That
+// one line is the stub talking, not the app, so it is the only console error
+// this run forgives. (An inert 200 worker was tried instead: once it controls
+// the page, Chromium aborts a later page.goto, which is a harness problem, not
+// one a learner can hit.)
 await ctx.route('**/registerSW.js', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }))
 await ctx.route('**/sw.js', route => route.fulfill({ status: 404, contentType: 'text/plain', body: '' }))
 
