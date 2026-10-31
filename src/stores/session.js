@@ -5,6 +5,7 @@ import { useSettings } from './settings'
 import { useWords } from './words'
 import { useGrammar } from './grammar'
 import { useEssentials } from './essentials'
+import { useParts } from './parts'
 import { STATE } from '@/lib/srs'
 
 /**
@@ -41,6 +42,10 @@ export const TRACK = Object.freeze({ BOTH: 'both', A: 'A', B: 'B' })
 export const PHASES = [
   { key: 'review',     label: '複習挑戰',   route: '/review',          minutes: 15, track: TRACK.BOTH },
   { key: 'learn',      label: 'Word Lab',  route: '/learn',           minutes: 15, track: TRACK.BOTH },
+  // v3: word parts every day, short. US classrooms run word study as a daily
+  // strand of 10-15 minutes rather than a unit taught once; here one unit is
+  // a guess, a short teach and an 8-item game round.
+  { key: 'parts',      label: '字首字尾',   route: '/parts?phase=1',   minutes: 7,  track: TRACK.BOTH },
   { key: 'grammar',    label: 'Grammar Studio', route: '/grammar',   minutes: 14, track: TRACK.A },
   { key: 'essentials', label: '基礎知識',   route: '/essentials',      minutes: 12, track: TRACK.B },
   { key: 'write',      label: '造句',       route: '/write',           minutes: 12, track: TRACK.B },
@@ -84,6 +89,7 @@ export const useSession = defineStore('session', () => {
   const words = useWords()
   const grammar = useGrammar()
   const essentials = useEssentials()
+  const parts = useParts()
 
   const phase = ref(readPhaseState())
   const activeTimer = ref(null)
@@ -156,6 +162,7 @@ export const useSession = defineStore('session', () => {
 
   const grammarPoint = computed(() => runsToday('grammar') ? grammar.todayPoint : null)
   const essentialUnit = computed(() => runsToday('essentials') ? essentials.todayUnit : null)
+  const partsUnit = computed(() => runsToday('parts') ? parts.todayUnit : null)
 
   /**
    * Everything except the elastic phase.
@@ -196,6 +203,7 @@ export const useSession = defineStore('session', () => {
     reviewCount: reviewCards.value.length,
     grammar: grammarPoint.value,
     essential: essentialUnit.value,
+    parts: partsUnit.value,
     listenCount: listenCount.value,
     track: track.value,
     estimatedMinutes: Math.round(fixedMinutes.value + listenMinutes.value)
@@ -239,6 +247,7 @@ export const useSession = defineStore('session', () => {
       review: reviewCards.value.length === 0,
       grammar: !grammarPoint.value,
       essentials: !essentialUnit.value,
+      parts: !partsUnit.value,
       listen: dayWordIds.value.length === 0,
       write: false,
       read: false,
@@ -330,7 +339,7 @@ export const useSession = defineStore('session', () => {
   }
 
   return {
-    PHASES, TRACK, phase, newIds, reviewCards, reviewIds, dayWordIds, grammarPoint, essentialUnit, plan,
+    PHASES, TRACK, phase, newIds, reviewCards, reviewIds, dayWordIds, grammarPoint, essentialUnit, partsUnit, plan,
     learnStarted, newCountLocked, track, todayPhases, runsToday, nextRoute,
     phaseStatus, currentPhase, completedCount, allDone, minutesToday,
     fixedMinutes, listenMinutes, listenCount, listenResult, setListenResult,

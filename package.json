@@ -1,6 +1,6 @@
 {
   "name": "ngsl-learner",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,7 +15,7 @@
     "test:models": "node scripts/test-model-resolution.mjs",
     "test:answer": "node scripts/test-answer.mjs",
     "test:format": "node scripts/test-format.mjs",
-    "test": "npm run test:srs && npm run test:models && npm run test:answer && npm run test:format && npm run test:drills && npm run test:affix && npm run test:tts && npm run test:wordsrs && npm run test:pictures && npm run test:grammar && npm run test:stories",
+    "test": "npm run test:srs && npm run test:models && npm run test:answer && npm run test:format && npm run test:drills && npm run test:affix && npm run test:tts && npm run test:wordsrs && npm run test:pictures && npm run test:grammar && npm run test:stories && npm run test:morphology && npm run test:arcade",
     "test:drills": "node scripts/test-drills.mjs",
     "test:srs": "node scripts/test-srs.mjs",
     "test:affix": "node scripts/test-affix.mjs",
@@ -24,7 +24,9 @@
     "test:pictures": "node scripts/test-pictures.mjs",
     "test:grammar": "node scripts/test-grammar-studio.mjs",
     "test:stories": "node scripts/test-stories.mjs",
-    "build:chunks": "node scripts/build-chunks.mjs"
+    "build:chunks": "node scripts/build-chunks.mjs",
+    "test:morphology": "node scripts/test-morphology.mjs",
+    "test:arcade": "node scripts/test-arcade.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

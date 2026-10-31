@@ -3,6 +3,8 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import AudioButton from '@/components/AudioButton.vue'
 import PictureTile from '@/components/PictureTile.vue'
 import WordChunks from '@/components/WordChunks.vue'
+import WordAnatomy from '@/components/WordAnatomy.vue'
+import { sfx, buzz } from '@/lib/sfx'
 import { meaningOptions, wordOptions, letterTiles, glossOf, sameWord } from '@/lib/game'
 import { clozeSentence, LADDER } from '@/lib/wordsrs'
 import { speak } from '@/lib/tts'
@@ -90,6 +92,8 @@ function settle (correct, extra = {}) {
   if (settled.value) return
   settled.value = true
   result.value = { correct, hinted: !!extra.hinted }
+  sfx(correct ? 'good' : 'bad')
+  if (!correct) buzz(40)
   emit('answer', {
     correct,
     hinted: !!extra.hinted,
@@ -116,6 +120,7 @@ function pickWord (o, i) {
 /* spell */
 function place (tile) {
   if (settled.value) return
+  sfx('tap')
   const i = slots.value.indexOf(null)
   if (i < 0) return
   slots.value[i] = tile
@@ -269,13 +274,11 @@ onUnmounted(() => clearTimeout(timer))
     <Transition name="slide-up">
       <div v-if="settled" class="reveal card">
         <div class="reveal__top">
-          <PictureTile :word-id="word.id" :headword="word.headword" :size="56" />
-          <div class="reveal__word">
-            <WordChunks :word="word.headword" size="md" />
-            <span class="reveal__zh zh"><span class="wg__pos">{{ pos }}</span>{{ word.meanings?.map(m => m.zh).join('；') }}</span>
-          </div>
+          <PictureTile :word-id="word.id" :headword="word.headword" :size="48" />
+          <span class="reveal__zh zh"><span class="wg__pos">{{ pos }}</span>{{ word.meanings?.map(m => m.zh).join('；') }}</span>
           <AudioButton :text="word.headword" size="md" />
         </div>
+        <WordAnatomy :word="word.headword" size="md" :explore="false" />
         <p v-if="!result.correct && word.examples?.[0]" class="reveal__ex">{{ word.examples[0].en }}<br><span class="zh dim">{{ word.examples[0].zh }}</span></p>
         <button class="btn btn--block zh" :class="result.correct ? 'btn--ghost' : 'btn--primary'" @click="cont">繼續</button>
       </div>
@@ -294,7 +297,7 @@ onUnmounted(() => clearTimeout(timer))
   padding: var(--sp-5) var(--sp-4);
   display: flex; flex-direction: column; align-items: center; gap: var(--sp-3);
   text-align: center;
-  border-top: 3px solid var(--violet);
+  border-top: 4px solid var(--violet);
   min-height: 180px; justify-content: center;
 }
 .wg--right .wg__prompt { border-top-color: var(--jade); }
@@ -309,13 +312,13 @@ onUnmounted(() => clearTimeout(timer))
 .wg__bigplay svg { width: 44px; height: 44px; }
 .wg__hintline { font-size: var(--step--1); color: var(--ink-2); }
 .wg__gloss { font-size: var(--step-2); font-weight: 600; }
-.wg__pos { font-family: var(--font-mono); font-size: 0.7em; color: var(--ink-3); margin-right: 6px; font-weight: 400; }
+.wg__pos { font-family: var(--font-word); font-size: 0.7em; color: var(--ink-3); margin-right: 6px; font-weight: 400; }
 
 .wg__sentence { font-family: var(--font-word); font-size: var(--step-2); line-height: 1.5; }
 .wg__gap {
   display: inline-block; min-width: 4.5em;
   border-bottom: 2px solid var(--violet);
-  color: var(--violet); font-family: var(--font-mono); font-size: 0.8em; padding: 0 4px;
+  color: var(--violet); font-family: var(--font-word); font-size: 0.8em; padding: 0 4px;
 }
 .wg__gap--filled { color: var(--jade); border-color: var(--jade); font-family: var(--font-word); font-size: 1em; font-weight: 600; }
 .wg__zh { font-size: var(--step--1); color: var(--ink-2); }
@@ -351,26 +354,25 @@ onUnmounted(() => clearTimeout(timer))
 .slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 .slots--shake { animation: shake 0.35s; }
 .slot {
-  width: 38px; height: 46px;
-  border-bottom: 3px solid var(--rule-strong);
-  font-family: var(--font-mono); font-size: var(--step-2); font-weight: 600;
+  width: 40px; height: 48px;
+  border: 2px dashed var(--rule-strong); border-radius: 10px;
+  font-family: var(--font-word); font-size: var(--step-2); font-weight: 600;
   display: grid; place-items: center;
-  border-radius: 6px 6px 0 0;
 }
-.slot--on { background: var(--violet-wash); border-color: var(--violet); color: var(--ink); }
-.slot--lock { background: var(--amber-wash); border-color: var(--amber); }
-.slot--bad { background: var(--rose-wash); border-color: var(--rose); color: var(--rose); }
-.wg--right .slot--on { background: var(--jade-wash); border-color: var(--jade); }
-.wg__fix { font-family: var(--font-word); font-size: var(--step-2); color: var(--jade); font-weight: 600; }
-.tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 340px; }
+.slot--on { border-style: solid; background: var(--t-base-bg); border-color: var(--t-base-edge); box-shadow: 0 3px 0 var(--t-base-edge); color: var(--ink); }
+.slot--lock { background: var(--t-root-bg); border-color: var(--t-root-edge); box-shadow: 0 3px 0 var(--t-root-edge); }
+.slot--bad { background: var(--rose-wash); border-color: var(--rose); color: var(--rose); box-shadow: none; }
+.wg--right .slot--on { background: var(--jade-wash); border-color: var(--jade); box-shadow: 0 3px 0 var(--jade-edge); }
+.wg__fix { font-family: var(--font-word); font-size: var(--step-2); color: var(--jade); font-weight: 700; }
+.tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 8px; max-width: 360px; }
 .tile {
-  width: 46px; height: 50px;
-  background: var(--surface); border: 1.5px solid var(--rule-strong); border-radius: 10px;
-  box-shadow: 0 3px 0 var(--rule-strong);
-  font-family: var(--font-mono); font-size: var(--step-2); font-weight: 600;
-  transition: transform 0.08s;
+  width: 48px; height: 52px;
+  background: var(--t-base-bg); border: 1.5px solid var(--t-base-edge); border-radius: 10px;
+  box-shadow: 0 3px 0 var(--t-base-edge);
+  font-family: var(--font-word); font-size: var(--step-2); font-weight: 600; color: var(--ink);
+  transition: transform 0.08s, box-shadow 0.08s;
 }
-.tile:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--rule-strong); }
+.tile:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--t-base-edge); }
 .wg__hintbtn { margin-top: -4px; }
 
 /* cloze */
@@ -380,9 +382,7 @@ onUnmounted(() => clearTimeout(timer))
 /* reveal */
 .reveal { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
 .reveal__top { display: flex; align-items: center; gap: var(--sp-3); }
-.reveal__word { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.reveal__zh { font-size: var(--step--1); color: var(--ink-2); }
+.reveal__zh { flex: 1; font-size: var(--step-0); font-weight: 600; color: var(--ink); min-width: 0; }
 .reveal__ex { font-family: var(--font-word); font-size: var(--step-0); line-height: 1.5; padding: var(--sp-2) var(--sp-3); background: var(--surface-2); border-radius: var(--radius-sm); }
 
-@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 </style>

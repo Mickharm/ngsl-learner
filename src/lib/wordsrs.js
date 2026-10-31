@@ -53,7 +53,7 @@ export const LADDER_TOP = 4
 export const LADDER = Object.freeze([
   { level: 0, key: 'meaning', label: '看字選義', short: '認得' },
   { level: 1, key: 'listen', label: '聽音選義', short: '聽得懂' },
-  { level: 2, key: 'recall', label: '看圖選字', short: '想得起' },
+  { level: 2, key: 'recall', label: '看中文選字', short: '想得起' },
   { level: 3, key: 'spell', label: '拼出來', short: '拼得出' },
   { level: 4, key: 'cloze', label: '句中使用', short: '用得出' }
 ])

@@ -19,8 +19,15 @@ const routes = [
   { path: '/listen', name: 'listen', component: () => import('@/views/ListenView.vue'), meta: { chrome: false } },
   { path: '/article', name: 'article', component: () => import('@/views/ArticleView.vue'), meta: { chrome: false } },
   { path: '/story', name: 'story', component: () => import('@/views/StoryView.vue'), meta: { chrome: false } },
-  { path: '/collection', name: 'collection', component: () => import('@/views/CollectionView.vue') },
-  { path: '/arcade', name: 'arcade', component: () => import('@/views/ArcadeView.vue') },
+  { path: '/parts', name: 'parts', component: () => import('@/views/PartsView.vue'), meta: { chrome: false } },
+  { path: '/courses', name: 'courses', component: () => import('@/views/CoursesView.vue') },
+  { path: '/games', name: 'games', component: () => import('@/views/GamesView.vue') },
+  { path: '/games/:id', name: 'game', component: () => import('@/views/GameView.vue'), meta: { chrome: false } },
+  { path: '/me', name: 'me', component: () => import('@/views/MeView.vue') },
+  // v2 screens folded into v3: the arcade became the game centre, and the
+  // emoji sticker book went with the emoji.
+  { path: '/arcade', redirect: '/games' },
+  { path: '/collection', redirect: '/me' },
   { path: '/summary', name: 'summary', component: () => import('@/views/SummaryView.vue'), meta: { chrome: false } },
   { path: '/errors', name: 'errors', component: () => import('@/views/ErrorsView.vue') },
   { path: '/travel', name: 'travel', component: () => import('@/views/TravelView.vue') },

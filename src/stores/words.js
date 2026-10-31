@@ -7,6 +7,9 @@ import { idbGet, idbGetAll, idbPut, idbPutMany, STORE } from '@/lib/idb'
 import { enrichWords, lookupWord } from '@/lib/gemini'
 import { useSettings } from './settings'
 import { makeLookup } from '@/lib/lexicon'
+import CHUNKS from '@/data/chunks.json'
+import { makeAnatomy } from '@/lib/anatomy'
+import { glossOf as shortGloss } from '@/lib/game'
 
 /**
  * Word data lives in three layers:
@@ -39,6 +42,20 @@ export const useWords = defineStore('words', () => {
    * story coverage check uses exactly this logic.
    */
   const lookup = makeLookup(base)
+
+  const { anatomy: anatomyOf } = makeAnatomy({ base, affix: AFFIX, chunks: CHUNKS })
+
+  /**
+   * How a word is built, with a meaning for every base piece: the bundled
+   * table first, then the enriched gloss of that base if it is an NGSL word.
+   */
+  function anatomy (headword) {
+    return anatomyOf(headword, w => {
+      const id = lookup(w)
+      const e = id ? get(id) : null
+      return e?.enriched ? shortGloss(e) : ''
+    })
+  }
 
   const total = base.length
   const enrichedCount = computed(() => enriched.value.size)
@@ -308,6 +325,6 @@ export const useWords = defineStore('words', () => {
   return {
     total, enriched, enrichedCount, hydrating, enriching, enrichProgress, bandCounts,
     get, getMany, range, search, baseOf, lookup, hydrate, ensureEnriched, missing, allBase: base,
-    glosses, gloss, glossOf, derivation, derivedFrom, wordFamily
+    glosses, gloss, glossOf, derivation, derivedFrom, wordFamily, anatomy
   }
 })

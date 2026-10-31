@@ -10,6 +10,7 @@ import { useToast } from '@/stores/toast'
 import { testConnection, listModels, resolveModel } from '@/lib/gemini'
 import { whenVoicesReady, englishVoices, speak, ttsSupported } from '@/lib/tts'
 import { TOTAL_WORDS } from '@/config'
+import { soundEnabled, setSoundEnabled, sfx } from '@/lib/sfx'
 
 const settings = useSettings()
 const auth = useAuth()
@@ -18,6 +19,7 @@ const words = useWords()
 const session = useSession()
 const toast = useToast()
 const router = useRouter()
+const sound = ref(soundEnabled())
 
 const s = computed(() => settings.state)
 
@@ -207,7 +209,6 @@ const buildSha = __BUILD_SHA__
 <template>
   <main class="shell set">
     <header class="set__head">
-      <div class="eyebrow">Settings</div>
       <h1 class="page-title zh">設定</h1>
     </header>
 
@@ -415,6 +416,14 @@ const buildSha = __BUILD_SHA__
 
         <button class="btn btn--ghost btn--sm zh" @click="previewVoice">試聽（Ted took the ten o'clock train…）</button>
       </template>
+
+      <div class="row between">
+        <label class="label zh" for="sfx">遊戲與答題音效</label>
+        <button
+          id="sfx" class="toggle" :data-on="String(sound)" :aria-pressed="sound"
+          @click="sound = !sound; setSoundEnabled(sound); sfx('good')"
+        />
+      </div>
     </section>
 
     <!-- ---------- article topics ---------- -->

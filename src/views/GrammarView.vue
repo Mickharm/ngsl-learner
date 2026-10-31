@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useGrammar } from '@/stores/grammar'
 import { useSession } from '@/stores/session'
 import SessionHeader from '@/components/SessionHeader.vue'
@@ -36,8 +36,19 @@ import { inlineMd } from '@/lib/format'
 const grammar = useGrammar()
 const session = useSession()
 const router = useRouter()
+const route = useRoute()
 
-const point = computed(() => grammar.todayPoint)
+/**
+ * ?point=g05 opens a point from the course map (a learned one, or today's).
+ * Only today's point counts toward the day's quest.
+ */
+const picked = computed(() => {
+  const id = route.query.point
+  const p = id && grammar.all.find(x => x.id === id)
+  return p && (grammar.recOf(p.id) || p.id === grammar.todayPoint?.id) ? p : null
+})
+const browsing = computed(() => !!picked.value && picked.value.id !== grammar.todayPoint?.id)
+const point = computed(() => picked.value || grammar.todayPoint)
 const isNew = computed(() => point.value && !grammar.recOf(point.value.id))
 const studio = computed(() => (point.value ? STUDIO[point.value.id] : null))
 const daySeed = computed(() => {
@@ -110,12 +121,12 @@ const submitted = ref(null)
 function finish () {
   submitted.value = grammar.submit(point.value.id, { correct: todayCorrect.value, total: todayResults.value.length || 1 })
   stage.value = 'result'
-  session.markDone('grammar')
+  if (!browsing.value) session.markDone('grammar')
 }
 
 const pct = computed(() => todayResults.value.length ? Math.round((todayCorrect.value / todayResults.value.length) * 100) : 0)
 
-function done () { router.push(session.nextRoute('grammar')) }
+function done () { router.push(browsing.value ? '/courses' : session.nextRoute('grammar')) }
 function skipPhase () { session.markDone('grammar'); router.push(session.nextRoute('grammar')) }
 
 const headerCur = computed(() => (stage.value === 'practice' || stage.value === 'mix') ? idx.value + 1 : 0)
@@ -124,7 +135,7 @@ const headerTot = computed(() => (stage.value === 'practice' || stage.value === 
 onMounted(() => {
   session.startClock()
   if (!point.value) {
-    session.markDone('grammar')
+    if (!browsing.value) session.markDone('grammar')
     router.replace(session.nextRoute('grammar'))
     return
   }
@@ -197,7 +208,7 @@ onUnmounted(() => session.stopClock())
           </section>
 
           <section class="stack stack-3">
-            <div class="eyebrow">Examples</div>
+            <div class="eyebrow">例句</div>
             <div v-for="(ex, i) in point.examples" :key="i" class="gex">
               <div class="gex__row">
                 <p class="gex__en">{{ ex.en }}</p>

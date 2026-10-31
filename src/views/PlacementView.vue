@@ -315,7 +315,6 @@ watch(() => current.value?.id, () => { revealed.value = false; picked.value = nu
   <main class="place">
     <!-- ---------------- intro ---------------- -->
     <section v-if="stage === 'intro'" class="pane">
-      <div class="eyebrow">Step 1 of 1</div>
       <h1 class="page-title zh">先測一下你的起點</h1>
       <p class="lead zh">
         NGSL 的第 1 到 100 個字是 <em>be</em>、<em>and</em>、<em>of</em>、<em>to</em> 這類你早就會的字。
@@ -429,7 +428,6 @@ watch(() => current.value?.id, () => { revealed.value = false; picked.value = nu
 
     <!-- ---------------- result ---------------- -->
     <section v-else class="pane">
-      <div class="eyebrow">Result</div>
       <h1 class="page-title zh">你的字彙邊界大約在第 {{ frontier }} 名</h1>
       <p class="lead zh">
         48 題中認得 <strong class="num">{{ knownCount }}</strong> 個。

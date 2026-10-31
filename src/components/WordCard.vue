@@ -72,7 +72,7 @@ watch(() => props.word.id, autoplay)
         <p v-else class="dim wcard__pending zh">此單字尚未產生翻譯資料</p>
 
         <section v-if="word.examples?.length" class="wcard__block stack stack-3">
-          <div class="eyebrow">Examples</div>
+          <div class="eyebrow">例句</div>
           <div v-for="(ex, i) in word.examples" :key="i" class="ex">
             <div class="ex__row">
               <p class="ex__en" v-html="markExample(ex.en, word.headword)" />

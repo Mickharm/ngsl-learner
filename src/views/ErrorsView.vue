@@ -90,7 +90,6 @@ function next () {
     <!-- list mode -->
     <template v-else>
       <header class="err__head">
-        <div class="eyebrow">Mistake Log</div>
         <h1 class="page-title zh">錯題本</h1>
         <p class="err__sub zh">
           常忘的字會被強制拉高出現頻率。這裡是它們的清單，也是文法與閱讀答錯題的解析存放處。

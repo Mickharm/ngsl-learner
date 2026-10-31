@@ -1,142 +1,150 @@
 /* ==========================================================================
-   NGSL Learner — Design System
-   Identity: "Dictionary & Instrument"
-     · Newsreader serif for English headwords (dictionary authority)
-     · Figtree for UI chrome (warm geometric, not Inter)
-     · IBM Plex Mono for all data/numerals (instrument readout)
-     · Jade accent (progress/correct) · Amber (streak/attention) · Rose (error)
+   NGSL Learner v3 — "Tile Workshop" (字磚工坊)
+
+   An English word is built from pieces: syllables, prefixes, roots,
+   suffixes. The letter tile is the one bold element of the whole system —
+   the only thing with a raised edge, the only thing in colour by default.
+   Everything around it stays flat and quiet so the tiles read.
+
+     Lexend         English + UI. Designed for reading proficiency
+                    (Shaver-Troup); wide, open letterforms for a weak reader.
+     Noto Sans TC   Chinese.
+     Navy ink, cool paper, one warm yellow for "go".
+     Tile colours carry meaning and are always labelled on screen:
+       prefix = blue · root = yellow · suffix = violet · base word = white
    ========================================================================== */
 
 :root {
-  /* --- type --- */
-  --font-word: 'Newsreader', ui-serif, Georgia, 'Times New Roman', serif;
-  --font-ui: 'Figtree', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-zh: 'Noto Sans TC', 'Figtree', -apple-system, system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-word: 'Lexend', 'Noto Sans TC', ui-sans-serif, system-ui, sans-serif;
+  --font-ui: 'Lexend', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-zh: 'Noto Sans TC', 'Lexend', -apple-system, system-ui, sans-serif;
+  /* There is no monospace in v3: numbers use Lexend with tabular figures. */
+  --font-mono: 'Lexend', 'Noto Sans TC', system-ui, sans-serif;
 
-  --step--2: 0.694rem;
-  --step--1: 0.833rem;
+  --step--2: 0.72rem;
+  --step--1: 0.85rem;
   --step-0:  1rem;
   --step-1:  1.2rem;
   --step-2:  1.44rem;
-  --step-3:  1.728rem;
-  --step-4:  2.074rem;
-  --step-5:  2.488rem;
-  --step-6:  3.15rem;
+  --step-3:  1.75rem;
+  --step-4:  2.1rem;
+  --step-5:  2.6rem;
+  --step-6:  3.2rem;
 
-  /* --- space --- */
   --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
   --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
 
-  --radius-sm: 6px;
-  --radius: 12px;
-  --radius-lg: 18px;
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 22px;
   --radius-pill: 999px;
 
-  /* --- LIGHT PALETTE (complete, on bare :root) --- */
-  --paper:        #faf8f5;
-  --surface:      #ffffff;
-  --surface-2:    #f3f0ec;
-  --surface-3:    #e9e5df;
-  --ink:          #1a1d24;
-  --ink-2:        #4d5461;
-  --ink-3:        #7a828f;
-  --rule:         #e2ddd6;
-  --rule-strong:  #cbc5bc;
+  /* --- light --- */
+  --paper:       #f2f5fa;
+  --surface:     #ffffff;
+  --surface-2:   #e8edf5;
+  --surface-3:   #d9e0ec;
+  --ink:         #15213b;
+  --ink-2:       #48546f;
+  --ink-3:       #7b86a0;
+  --rule:        #dde3ee;
+  --rule-strong: #c2cbdc;
 
-  --jade:         #00785f;
-  --jade-ink:     #005c49;
-  --jade-wash:    rgba(0, 120, 95, 0.09);
-  --jade-edge:    rgba(0, 120, 95, 0.26);
+  --sun:         #ffc531;   /* the one "go" colour */
+  --sun-edge:    #dca200;
+  --sun-ink:     #15213b;
+  --sun-wash:    rgba(255, 197, 49, 0.18);
 
-  --amber:        #b45309;
-  --amber-wash:   rgba(180, 83, 9, 0.10);
-  --amber-edge:   rgba(180, 83, 9, 0.26);
+  --jade:        #148f55;   /* correct, progress */
+  --jade-ink:    #0c6d40;
+  --jade-wash:   rgba(20, 143, 85, 0.10);
+  --jade-edge:   rgba(20, 143, 85, 0.32);
 
-  --rose:         #be123c;
-  --rose-wash:    rgba(190, 18, 60, 0.09);
-  --rose-edge:    rgba(190, 18, 60, 0.24);
+  --amber:       #b86e00;
+  --amber-wash:  rgba(255, 166, 0, 0.14);
+  --amber-edge:  rgba(184, 110, 0, 0.30);
 
-  --violet:       #5b4bc4;
-  --violet-wash:  rgba(91, 75, 196, 0.09);
+  --rose:        #d93a40;   /* wrong */
+  --rose-wash:   rgba(217, 58, 64, 0.09);
+  --rose-edge:   rgba(217, 58, 64, 0.30);
 
-  --shadow-1: 0 1px 2px rgba(26, 29, 36, 0.06), 0 1px 3px rgba(26, 29, 36, 0.04);
-  --shadow-2: 0 2px 6px rgba(26, 29, 36, 0.07), 0 8px 24px rgba(26, 29, 36, 0.06);
-  --shadow-3: 0 12px 40px rgba(26, 29, 36, 0.13);
+  --violet:      #4655d4;   /* challenge, retrieval */
+  --violet-wash: rgba(70, 85, 212, 0.09);
 
-  --nav-bg: rgba(250, 248, 245, 0.86);
+  /* word-part tiles */
+  --t-prefix:      #2f6fed; --t-prefix-bg: #e6efff; --t-prefix-edge: #9fbdf7;
+  --t-root:        #8a6400; --t-root-bg:   #fff1c4; --t-root-edge:   #ecc54d;
+  --t-suffix:      #7a3fd0; --t-suffix-bg: #f1e8ff; --t-suffix-edge: #c7a8f2;
+  --t-base:        #15213b; --t-base-bg:   #ffffff; --t-base-edge:   #c2cbdc;
+
+  --shadow-1: 0 1px 0 rgba(21, 33, 59, 0.04);
+  --shadow-2: 0 6px 20px rgba(21, 33, 59, 0.10);
+  --shadow-3: 0 16px 48px rgba(21, 33, 59, 0.18);
+
+  --nav-bg: rgba(242, 245, 250, 0.92);
+  --focus: #2f6fed;
+  /* the navy slab: the day's route, level badge, card backs — always dark */
+  --slab: #15213b;
+  --slab-ink: #f2f5fa;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper:        #12151c;
-    --surface:      #1a1e27;
-    --surface-2:    #222732;
-    --surface-3:    #2c323f;
-    --ink:          #e8eaed;
-    --ink-2:        #a8b0bd;
-    --ink-3:        #767f8d;
-    --rule:         #2a3040;
-    --rule-strong:  #3a4252;
-
-    --jade:         #3ddc97;
-    --jade-ink:     #6ee7b0;
-    --jade-wash:    rgba(61, 220, 151, 0.11);
-    --jade-edge:    rgba(61, 220, 151, 0.28);
-
-    --amber:        #f5b143;
-    --amber-wash:   rgba(245, 177, 67, 0.11);
-    --amber-edge:   rgba(245, 177, 67, 0.28);
-
-    --rose:         #fb7185;
-    --rose-wash:    rgba(251, 113, 133, 0.11);
-    --rose-edge:    rgba(251, 113, 133, 0.26);
-
-    --violet:       #a99bff;
-    --violet-wash:  rgba(169, 155, 255, 0.11);
-
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.32);
-    --shadow-2: 0 2px 8px rgba(0, 0, 0, 0.36), 0 10px 28px rgba(0, 0, 0, 0.28);
-    --shadow-3: 0 14px 44px rgba(0, 0, 0, 0.52);
-
-    --nav-bg: rgba(18, 21, 28, 0.86);
+    --paper:       #0f1830;
+    --surface:     #172342;
+    --surface-2:   #1f2d50;
+    --surface-3:   #2a3a60;
+    --ink:         #eef2fa;
+    --ink-2:       #b2bcd3;
+    --ink-3:       #8190ae;
+    --rule:        #26365c;
+    --rule-strong: #34476f;
+    --sun-wash:    rgba(255, 197, 49, 0.14);
+    --jade:        #3ddc97; --jade-ink: #7beab8; --jade-wash: rgba(61, 220, 151, 0.12); --jade-edge: rgba(61, 220, 151, 0.32);
+    --amber:       #ffc531; --amber-wash: rgba(255, 197, 49, 0.12); --amber-edge: rgba(255, 197, 49, 0.30);
+    --rose:        #ff6b70; --rose-wash: rgba(255, 107, 112, 0.12); --rose-edge: rgba(255, 107, 112, 0.32);
+    --violet:      #9aa6ff; --violet-wash: rgba(154, 166, 255, 0.12);
+    --t-prefix: #8db4ff; --t-prefix-bg: #1c3264; --t-prefix-edge: #2f4f94;
+    --t-root:   #ffe08a; --t-root-bg:   #3a3116; --t-root-edge:   #6e5a1c;
+    --t-suffix: #d3b4ff; --t-suffix-bg: #33245a; --t-suffix-edge: #553c8f;
+    --t-base:   #eef2fa; --t-base-bg:   #1f2d50; --t-base-edge:   #34476f;
+    --shadow-1: 0 1px 0 rgba(0, 0, 0, 0.2);
+    --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-3: 0 18px 50px rgba(0, 0, 0, 0.55);
+    --nav-bg: rgba(15, 24, 48, 0.92);
+    --focus: #ffc531;
+    --slab: #24335c;
+    --slab-ink: #eef2fa;
     color-scheme: dark;
   }
 }
-
 :root[data-theme="dark"] {
-  --paper:        #12151c;
-  --surface:      #1a1e27;
-  --surface-2:    #222732;
-  --surface-3:    #2c323f;
-  --ink:          #e8eaed;
-  --ink-2:        #a8b0bd;
-  --ink-3:        #767f8d;
-  --rule:         #2a3040;
-  --rule-strong:  #3a4252;
-
-  --jade:         #3ddc97;
-  --jade-ink:     #6ee7b0;
-  --jade-wash:    rgba(61, 220, 151, 0.11);
-  --jade-edge:    rgba(61, 220, 151, 0.28);
-
-  --amber:        #f5b143;
-  --amber-wash:   rgba(245, 177, 67, 0.11);
-  --amber-edge:   rgba(245, 177, 67, 0.28);
-
-  --rose:         #fb7185;
-  --rose-wash:    rgba(251, 113, 133, 0.11);
-  --rose-edge:    rgba(251, 113, 133, 0.26);
-
-  --violet:       #a99bff;
-  --violet-wash:  rgba(169, 155, 255, 0.11);
-
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.32);
-  --shadow-2: 0 2px 8px rgba(0, 0, 0, 0.36), 0 10px 28px rgba(0, 0, 0, 0.28);
-  --shadow-3: 0 14px 44px rgba(0, 0, 0, 0.52);
-
-  --nav-bg: rgba(18, 21, 28, 0.86);
+  --paper:       #0f1830;
+  --surface:     #172342;
+  --surface-2:   #1f2d50;
+  --surface-3:   #2a3a60;
+  --ink:         #eef2fa;
+  --ink-2:       #b2bcd3;
+  --ink-3:       #8190ae;
+  --rule:        #26365c;
+  --rule-strong: #34476f;
+  --sun-wash:    rgba(255, 197, 49, 0.14);
+  --jade:        #3ddc97; --jade-ink: #7beab8; --jade-wash: rgba(61, 220, 151, 0.12); --jade-edge: rgba(61, 220, 151, 0.32);
+  --amber:       #ffc531; --amber-wash: rgba(255, 197, 49, 0.12); --amber-edge: rgba(255, 197, 49, 0.30);
+  --rose:        #ff6b70; --rose-wash: rgba(255, 107, 112, 0.12); --rose-edge: rgba(255, 107, 112, 0.32);
+  --violet:      #9aa6ff; --violet-wash: rgba(154, 166, 255, 0.12);
+  --t-prefix: #8db4ff; --t-prefix-bg: #1c3264; --t-prefix-edge: #2f4f94;
+  --t-root:   #ffe08a; --t-root-bg:   #3a3116; --t-root-edge:   #6e5a1c;
+  --t-suffix: #d3b4ff; --t-suffix-bg: #33245a; --t-suffix-edge: #553c8f;
+  --t-base:   #eef2fa; --t-base-bg:   #1f2d50; --t-base-edge:   #34476f;
+  --shadow-1: 0 1px 0 rgba(0, 0, 0, 0.2);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-3: 0 18px 50px rgba(0, 0, 0, 0.55);
+  --nav-bg: rgba(15, 24, 48, 0.92);
+  --focus: #ffc531;
+  --slab: #24335c;
+  --slab-ink: #eef2fa;
   color-scheme: dark;
 }
 
@@ -164,7 +172,7 @@ ul, ol { list-style: none; }
 img, svg { display: block; max-width: 100%; }
 
 :focus-visible {
-  outline: 2px solid var(--jade);
+  outline: 2.5px solid var(--focus);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
@@ -183,7 +191,7 @@ img, svg { display: block; max-width: 100%; }
 .shell {
   flex: 1;
   width: 100%;
-  max-width: 680px;
+  max-width: 600px;
   margin: 0 auto;
   padding:
     calc(env(safe-area-inset-top) + var(--sp-4))
@@ -193,19 +201,18 @@ img, svg { display: block; max-width: 100%; }
 .shell--flush { padding-left: 0; padding-right: 0; }
 
 /* ---------- typography utilities ---------- */
+/* A small sentence-case label. No caps, no tracking: it names what follows. */
 .eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--step--2);
-  font-weight: 500;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
+  font-family: var(--font-zh);
+  font-size: var(--step--1);
+  font-weight: 600;
   color: var(--ink-3);
 }
 .page-title {
   font-family: var(--font-ui);
   font-size: var(--step-3);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   line-height: 1.15;
   text-wrap: balance;
 }
@@ -217,15 +224,14 @@ img, svg { display: block; max-width: 100%; }
 }
 .muted { color: var(--ink-2); }
 .dim   { color: var(--ink-3); }
-.num   { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; }
+.num   { font-family: var(--font-ui); font-variant-numeric: tabular-nums; font-weight: 600; }
 .zh    { font-family: var(--font-zh); }
 
 /* ---------- surfaces ---------- */
 .card {
   background: var(--surface);
   border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-1);
+  border-radius: var(--radius-lg);
 }
 .card--pad { padding: var(--sp-4); }
 .card--flat { box-shadow: none; }
@@ -247,10 +253,10 @@ img, svg { display: block; max-width: 100%; }
   align-items: center;
   justify-content: center;
   gap: var(--sp-2);
-  min-height: 46px;
+  min-height: 50px;
   padding: 0 var(--sp-5);
-  border-radius: var(--radius);
-  font-weight: 600;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
   font-size: var(--step-0);
   letter-spacing: -0.005em;
   border: 1px solid transparent;
@@ -260,19 +266,16 @@ img, svg { display: block; max-width: 100%; }
 .btn:active:not(:disabled) { transform: scale(0.975); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.btn--primary { background: var(--jade); color: var(--paper); }
-:root[data-theme="dark"] .btn--primary,
-:root:not([data-theme="light"]) .btn--primary { color: #10231c; }
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) .btn--primary { color: #ffffff; }
-}
+.btn--primary { background: var(--sun); color: var(--sun-ink); }
+.btn--primary:active:not(:disabled) { background: var(--sun-edge); }
+.btn--ink { background: var(--slab); color: var(--slab-ink); }
 
 .btn--ghost { background: var(--surface); border-color: var(--rule-strong); color: var(--ink); }
 .btn--ghost:active:not(:disabled) { background: var(--surface-2); }
 .btn--quiet { background: transparent; color: var(--ink-2); border-color: transparent; }
 .btn--quiet:active:not(:disabled) { background: var(--surface-2); }
 .btn--block { width: 100%; }
-.btn--sm { min-height: 36px; padding: 0 var(--sp-3); font-size: var(--step--1); border-radius: var(--radius-sm); }
+.btn--sm { min-height: 38px; padding: 0 var(--sp-4); font-size: var(--step--1); }
 .btn--danger { background: var(--rose-wash); color: var(--rose); border-color: var(--rose-edge); }
 
 /* ---------- chips / tags ---------- */
@@ -280,10 +283,9 @@ img, svg { display: block; max-width: 100%; }
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: var(--step--2);
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-weight: 600;
   padding: 3px 9px;
   border-radius: var(--radius-pill);
   border: 1px solid transparent;
@@ -314,7 +316,7 @@ img, svg { display: block; max-width: 100%; }
   font-size: var(--step-0);
   transition: border-color 0.15s;
 }
-.input:focus { outline: none; border-color: var(--jade); box-shadow: 0 0 0 3px var(--jade-wash); }
+.input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px var(--violet-wash); }
 .input--mono { font-family: var(--font-mono); font-size: var(--step--1); }
 textarea.input { min-height: 96px; padding: var(--sp-3); resize: vertical; line-height: 1.6; }
 
@@ -343,8 +345,8 @@ textarea.input { min-height: 96px; padding: var(--sp-3); resize: vertical; line-
 .toggle[data-on="true"]::after { transform: translateX(19px); }
 
 /* ---------- progress ---------- */
-.bar { height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
-.bar__fill { height: 100%; border-radius: 3px; background: var(--jade); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+.bar { height: 8px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
+.bar__fill { height: 100%; border-radius: 4px; background: var(--jade); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 .bar__fill--amber { background: var(--amber); }
 
 /* ---------- divider ---------- */
@@ -419,3 +421,39 @@ textarea.input { min-height: 96px; padding: var(--sp-3); resize: vertical; line-
 .role--P { --rc: var(--role-p); --rw: var(--role-p-wash); }
 .role--T { --rc: var(--role-t); --rw: var(--role-t-wash); }
 .role--X { --rc: var(--role-x); --rw: var(--role-x-wash); }
+
+/* ==========================================================================
+   Letter tiles — the signature element. Used for word parts, syllables,
+   spelling tiles and game pieces. Raised edge = "this is a piece".
+   ========================================================================== */
+.lt {
+  --tc: var(--t-base); --tb: var(--t-base-bg); --te: var(--t-base-edge);
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 2.1em; min-height: 2.1em;
+  padding: 0.18em 0.5em;
+  font-family: var(--font-word); font-weight: 600; line-height: 1;
+  color: var(--tc); background: var(--tb);
+  border: 1.5px solid var(--te); border-radius: 10px;
+  box-shadow: 0 3px 0 var(--te);
+  letter-spacing: 0.01em;
+  user-select: none;
+}
+.lt--prefix { --tc: var(--t-prefix); --tb: var(--t-prefix-bg); --te: var(--t-prefix-edge); }
+.lt--root   { --tc: var(--t-root);   --tb: var(--t-root-bg);   --te: var(--t-root-edge); }
+.lt--suffix { --tc: var(--t-suffix); --tb: var(--t-suffix-bg); --te: var(--t-suffix-edge); }
+.lt--link   { min-width: 0; padding: 0.18em 0.15em; background: transparent; border-color: transparent; box-shadow: none; color: var(--ink-3); }
+.lt--good   { --tc: var(--jade-ink); --tb: var(--jade-wash); --te: var(--jade-edge); }
+.lt--bad    { --tc: var(--rose); --tb: var(--rose-wash); --te: var(--rose-edge); }
+button.lt { cursor: pointer; transition: transform 0.08s ease, box-shadow 0.08s ease; }
+button.lt:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--te); }
+button.lt:disabled { opacity: 0.35; cursor: default; }
+
+/* the legend that always travels with coloured tiles */
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: var(--step--2); color: var(--ink-3); font-family: var(--font-zh); }
+.legend__k { display: inline-flex; align-items: center; gap: 5px; }
+.legend__sw { width: 12px; height: 12px; border-radius: 4px; border: 1.5px solid var(--te, var(--t-base-edge)); background: var(--tb, var(--t-base-bg)); }
+
+/* game feedback */
+@keyframes pop-in { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@keyframes rise { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

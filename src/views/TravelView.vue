@@ -126,7 +126,6 @@ function close () {
   <main class="shell travel">
     <template v-if="!active">
       <header class="travel__head">
-        <div class="eyebrow">Roleplay</div>
         <h1 class="page-title zh">旅遊情境會話</h1>
         <p class="travel__sub zh">
           20 個出國真的會用到的場景。每個對話會用上你最近學過的單字，生成一次之後就存起來，沒網路也能看。

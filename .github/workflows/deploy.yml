@@ -1,21 +1,25 @@
 name: Deploy to GitHub Pages
 
+# Pages serves the gh-pages branch ("Deploy from a branch"). This workflow
+# builds main and force-pushes dist/ to that branch with the same script used
+# by hand (scripts/deploy-pages.mjs), so a push to main is all a release needs.
+# The earlier version uploaded a Pages *artifact*, which only works when Pages
+# is set to "GitHub Actions" — with a branch source it failed on every push.
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,24 +32,13 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Rebuild word base from CSV
-        run: npm run build:base
+      - name: Unit tests
+        run: npm test
 
       - name: Build
         run: npm run build
 
-      - uses: actions/configure-pages@v5
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish dist/ to gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/deploy-pages.mjs

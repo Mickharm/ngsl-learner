@@ -2,7 +2,7 @@
  * Browser smoke test. Serves dist/, stubs Supabase + Gemini at the network
  * layer, and walks the real app: placement → dashboard → Word Lab → review
  * games → Grammar Studio → essentials → write → article → listen → Story Time
- * → arcade → sticker book → settings, capturing a screenshot and console
+ * → word parts → game centre → settings, capturing a screenshot and console
  * errors at each step.
  *
  *   node scripts/smoke.mjs [--dark]
@@ -477,7 +477,9 @@ checks.push([
   `A=${trackA} B=${trackB} · ${stepLabels.slice(0, 120)}`
 ])
 const stepCount = await page.locator('.steps > li').count().catch(() => 0)
-checks.push(['the quest is six steps, not eight', stepCount === 6, `${stepCount} steps`])
+// v3: review, words, word parts, one taught pair, listening, summary
+checks.push(['the quest is seven steps: both daily strands plus one taught pair', stepCount === 7, `${stepCount} steps`])
+checks.push(['word parts run on the day', /字首字尾/.test(stepLabels), stepLabels.slice(0, 160)])
 checks.push(['listening is on the day, every day', /聽力/.test(stepLabels), stepLabels.slice(0, 120)])
 
 // Changing the daily new-word count before answering anything must re-plan
@@ -568,27 +570,28 @@ await page.goto(URL_BASE + '#/learn', { waitUntil: 'networkidle' })
 await page.waitForTimeout(1500)
 await shot('06-wordlab-meet')
 
+// v3: the learner guesses the meaning before the card is shown
 checks.push([
-  'Word Lab shows the word in spoken chunks with a picture slot',
-  await page.locator('.meet .chunks').first().isVisible().catch(() => false) &&
-    await page.locator('.meet .pic').first().isVisible().catch(() => false),
-  'chunks or picture missing on the meet card'
+  'Word Lab asks for a guess before showing the word card',
+  await page.locator('.guess .gopt').first().isVisible().catch(() => false) &&
+    !(await page.locator('.meet').first().isVisible().catch(() => false)),
+  'no guess step, or the card was already open'
 ])
-
-// draw a quick symbol on the first word — it must be kept and reused
-await page.locator('.htab:has-text("畫下來")').first().click().catch(() => {})
-await page.waitForTimeout(200)
-const canvas = page.locator('.sketch__canvas').first()
-let drewFor = null
-if (await canvas.isVisible().catch(() => false)) {
-  const box = await canvas.boundingBox()
-  await page.mouse.move(box.x + 40, box.y + 40)
-  await page.mouse.down()
-  for (let k = 0; k < 12; k++) await page.mouse.move(box.x + 40 + k * 12, box.y + 40 + (k % 3) * 25)
-  await page.mouse.up()
-  await shot('06b-wordlab-drawing')
-}
-await page.locator('textarea.hook__note').first().fill('I wait for the bus every day.').catch(() => {})
+await page.locator('.guess .gopt').first().click().catch(() => {})
+await page.waitForTimeout(1400)
+await shot('06b-wordlab-card')
+checks.push([
+  'the word card shows how the word is built, with a legend for its colours',
+  await page.locator('.meet .ana').first().isVisible().catch(() => false) &&
+    // coloured tiles always come with their legend; a one-syllable word has neither
+    (await page.locator('.meet .ana .legend').first().isVisible().catch(() => false) ||
+      await page.locator('.meet .ana__whole').first().isVisible().catch(() => false)),
+  'anatomy or legend missing on the meet card'
+])
+checks.push(['there is no drawing canvas any more', !(await page.locator('canvas').count().catch(() => 0)), 'a canvas is still on the card'])
+await page.locator('.mine__open').first().click().catch(() => {})
+await page.waitForTimeout(150)
+await page.locator('textarea.mine__note').first().fill('I wait for the bus every day.').catch(() => {})
 
 let sawMatch = false
 let matchSolved = false
@@ -601,6 +604,11 @@ for (let i = 0; i < 160; i++) {
     await page.waitForTimeout(700)
     continue
   }
+  if (await page.locator('.guess .gopt').first().isVisible({ timeout: 200 }).catch(() => false)) {
+    await page.locator('.guess .gopt').first().click().catch(() => {})
+    await page.waitForTimeout(1300)
+    continue
+  }
   // the last word may still be followed by a final 連連看 before recall starts
   const nextBtn = page.locator('.lab > button.btn--primary').first()
   if (await nextBtn.isVisible({ timeout: 400 }).catch(() => false)) {
@@ -610,22 +618,22 @@ for (let i = 0; i < 160; i++) {
 }
 checks.push(['連連看 appears after a few new words and can be solved', sawMatch && matchSolved, `seen=${sawMatch} solved=${matchSolved}`])
 
-drewFor = await page.evaluate(async () => new Promise(res => {
+const notes = await page.evaluate(async () => new Promise(res => {
   const req = indexedDB.open('ngsl-learner')
   req.onsuccess = () => {
     const out = []
     const c = req.result.transaction('meta', 'readonly').objectStore('meta').openCursor()
-    c.onsuccess = () => { const cur = c.result; if (!cur) return res(out); if (String(cur.key).startsWith('draw:')) out.push(cur.key); cur.continue() }
+    c.onsuccess = () => { const cur = c.result; if (!cur) return res(out); if (String(cur.key).startsWith('note:')) out.push(cur.key); cur.continue() }
     c.onerror = () => res(out)
   }
   req.onerror = () => res([])
 }))
-checks.push(['a drawing made in Word Lab is kept on the device', drewFor.length > 0, 'no draw:<id> key in IndexedDB'])
+checks.push(['the learner\'s own sentence is kept on the device', notes.length > 0, 'no note:<id> key in IndexedDB'])
 
 await page.locator('.wg').first().waitFor({ state: 'visible', timeout: 6000 }).catch(() => {})
 await shot('08-wordlab-recall')
 const recallTag = (await page.locator('.wg__tag .chip').first().innerText().catch(() => '')).trim()
-checks.push(['the recall round asks picture → English, not recognition', /看圖選字/.test(recallTag), `task="${recallTag}"`])
+checks.push(['the recall round asks 中文 → English, not recognition', /看中文選字/.test(recallTag), `task="${recallTag}"`])
 for (let i = 0; i < 60; i++) {
   if (await page.locator('.done').first().isVisible({ timeout: 300 }).catch(() => false)) break
   if (!(await page.locator('.wg').first().isVisible({ timeout: 1500 }).catch(() => false))) break
@@ -1002,39 +1010,110 @@ await shot('16h-story-page')
 }
 
 /* ------------------------------------------------------------------ *
- * arcade + sticker book
+ * Word Parts — map → guess → teach → an 8-item round → schedule
  * ------------------------------------------------------------------ */
-await page.goto(URL_BASE + '#/arcade', { waitUntil: 'networkidle' })
+await page.goto(URL_BASE + '#/parts', { waitUntil: 'networkidle' })
 await page.waitForTimeout(700)
-await shot('16m-arcade')
-await page.locator('.gcard:has-text("誰不一樣")').click().catch(() => {})
+await shot('16m-parts-map')
+checks.push(['the word-parts course lists its fifteen units', (await page.locator('.unit').count().catch(() => 0)) === 15, 'unit count'])
+await page.locator('.unit').first().click().catch(() => {})
 await page.waitForTimeout(400)
-await shot('16n-arcade-odd')
-await page.locator('.oddc').first().click().catch(() => {})
+await shot('16n-parts-discover')
+checks.push(['a unit opens on a guess, before any explanation', await page.locator('.disc .lt').first().isVisible().catch(() => false) && !(await page.locator('.tp').count().catch(() => 0)), 'no discover step'])
+await page.locator('.opts .popt').first().click().catch(() => {})
 await page.waitForTimeout(300)
-checks.push(['odd-one-out names the category after an answer', await page.locator('.odd__fb').isVisible().catch(() => false), 'no feedback'])
-await page.locator('button:has-text("← 遊樂場")').click().catch(() => {})
-await page.waitForTimeout(300)
-const matchEnabled = await page.locator('.gcard:has-text("配對")').isEnabled().catch(() => false)
-if (matchEnabled) {
-  await page.locator('.gcard:has-text("配對")').click().catch(() => {})
-  await page.waitForTimeout(400)
-  const solved = await solveMatch()
-  await page.waitForTimeout(700)
-  checks.push(['the arcade match game can be finished', solved && await page.locator('.fin').isVisible().catch(() => false), `solved=${solved}`])
-  await shot('16o-arcade-match-done')
-} else {
-  checks.push(['the arcade match game can be finished', false, 'match game disabled — fewer than 6 known words'])
+await page.locator('button:has-text("看看怎麼用")').click().catch(() => {})
+await page.waitForTimeout(400)
+await shot('16o-parts-teach')
+checks.push(['the teach step shows parts as coloured tiles', (await page.locator('.tp .lt').count().catch(() => 0)) > 3, 'no tiles'])
+await page.locator('button:has-text("開始練習")').click().catch(() => {})
+await page.waitForTimeout(400)
+{
+  const kinds = new Set()
+  let shots = 0
+  for (let i = 0; i < 40; i++) {
+    if (await page.locator('.res').first().isVisible({ timeout: 200 }).catch(() => false)) break
+    if (!(await page.locator('.pg').first().isVisible({ timeout: 1500 }).catch(() => false))) break
+    kinds.add((await page.locator('.pg__tag .chip').first().innerText().catch(() => '')).trim())
+    if (shots < 3) { await shot(`16p-parts-item-${shots}`); shots++ }
+    if (await page.locator('.pg .popt').first().isVisible().catch(() => false)) {
+      await page.locator('.pg .popt').first().click().catch(() => {})
+    } else if (await page.locator('.bank .lt').first().isVisible().catch(() => false)) {
+      for (let k = 0; k < 6; k++) {
+        const free = page.locator('.bank .lt:not([disabled])')
+        if (!(await free.count().catch(() => 0)) || !(await page.locator('.bank').isVisible().catch(() => false))) break
+        await free.first().click().catch(() => {})
+        await page.waitForTimeout(80)
+      }
+    } else if (await page.locator('.split__gap').first().isVisible().catch(() => false)) {
+      await page.locator('.split__gap').nth(1).click().catch(() => {})
+      await page.locator('button:has-text("切好了")').click().catch(() => {})
+    }
+    await page.waitForTimeout(350)
+    const cont = page.locator('.fb button:has-text("繼續")').first()
+    if (await cont.isVisible({ timeout: 1600 }).catch(() => false)) await cont.click().catch(() => {})
+    await page.waitForTimeout(250)
+  }
+  await page.waitForTimeout(500)
+  await shot('16q-parts-result')
+  checks.push(['a parts round mixes at least three game kinds', kinds.size >= 3, [...kinds].join(', ')])
+  checks.push(['finishing a parts unit shows its stars', await page.locator('.res__stars').isVisible().catch(() => false), 'no result'])
+  checks.push(['the unit is scheduled in grammar_progress as p01', db.grammar_progress.some(r => r.grammar_id === 'p01'), 'no p01 row'])
 }
 
-await page.goto(URL_BASE + '#/collection', { waitUntil: 'networkidle' })
-await page.waitForTimeout(800)
-await shot('16p-collection')
+/* ------------------------------------------------------------------ *
+ * game centre
+ * ------------------------------------------------------------------ */
+await page.goto(URL_BASE + '#/games', { waitUntil: 'networkidle' })
+await page.waitForTimeout(700)
+await shot('16r-games')
+checks.push(['the game centre offers its games', (await page.locator('.game').count().catch(() => 0)) >= 5, 'game tiles'])
+
+await page.goto(URL_BASE + '#/games/wordle', { waitUntil: 'networkidle' })
+await page.waitForTimeout(700)
+for (const k of 'water') await page.keyboard.press(k)
+await page.keyboard.press('Enter')
+await page.waitForTimeout(900)
+await shot('16s-wordle')
+checks.push(['a daily-puzzle guess is scored letter by letter', (await page.locator('.cell--hit, .cell--near, .cell--miss').count().catch(() => 0)) === 5, 'no scored row'])
+for (const k of 'zzzzz') await page.keyboard.press(k)
+await page.keyboard.press('Enter')
+await page.waitForTimeout(500)
+checks.push(['a non-word is rejected, not scored', (await page.locator('.cell--hit, .cell--near, .cell--miss').count().catch(() => 0)) === 5, 'zzzzz was accepted'])
+
+await page.goto(URL_BASE + '#/games/rain', { waitUntil: 'networkidle' })
+await page.waitForTimeout(900)
+await shot('16t-rain')
 {
-  const lit = await page.locator('.stk:not(.stk--locked)').count().catch(() => 0)
-  const locked = await page.locator('.stk--locked').count().catch(() => 0)
-  checks.push(['the sticker book lights up met words and locks the rest', lit > 0 && locked > 0, `lit=${lit} locked=${locked}`])
+  const before = await page.locator('.gs__heart--off').count().catch(() => 0)
+  const opts = page.locator('.opts .opt')
+  let scored = false
+  for (let i = 0; i < 4 && !scored; i++) {
+    await opts.nth(i).click().catch(() => {})
+    await page.waitForTimeout(600)
+    const score = Number(await page.locator('.gs__score b').innerText().catch(() => '0'))
+    const lost = await page.locator('.gs__heart--off').count().catch(() => 0)
+    scored = score > 0 || lost > before
+    if (!scored) await page.waitForTimeout(500)
+  }
+  checks.push(['word rain reacts to an answer (points or a life)', scored, 'no change'])
 }
+
+await page.goto(URL_BASE + '#/games/memory', { waitUntil: 'networkidle' })
+await page.waitForTimeout(700)
+await page.locator('.card3').nth(0).click().catch(() => {})
+await page.waitForTimeout(150)
+await page.locator('.card3').nth(1).click().catch(() => {})
+await page.waitForTimeout(150)
+checks.push(['memory cards flip', (await page.locator('.card3--open').count().catch(() => 0)) >= 1, 'no open card'])
+await shot('16u-memory')
+
+await page.goto(URL_BASE + '#/games/builder', { waitUntil: 'networkidle' })
+await page.waitForTimeout(700)
+await page.locator('.bank .lt').first().click().catch(() => {})
+await page.waitForTimeout(150)
+await shot('16v-builder')
+checks.push(['part builder places a tile in its slots', (await page.locator('.slots .lt').count().catch(() => 0)) >= 1, 'no tile placed'])
 
 await page.goto(URL_BASE + '#/', { waitUntil: 'networkidle' })
 await page.waitForTimeout(700)
@@ -1043,6 +1122,7 @@ await page.waitForTimeout(700)
   checks.push(['the dashboard shows a word-power level', /^Lv\.\d+$/.test(lv.trim()), `badge="${lv}"`])
   const order = await page.locator('.step__label').allInnerTexts().catch(() => [])
   checks.push(['review comes before new words in the day', order[0] === '複習挑戰' && order[1] === 'Word Lab', order.join(' → ')])
+  checks.push(['the day carries a word part of the day', await page.locator('.wotd .ana').isVisible().catch(() => false), 'no 今日零件'])
   await shot('16q-dashboard-v2')
 }
 

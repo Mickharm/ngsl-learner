@@ -1,37 +1,31 @@
 # Deployment
 
 The site is served from the `gh-pages` branch (GitHub Pages → Deploy from a
-branch). That path needs no special token scope, which is why it is the default
-here.
+branch).
 
-## Deploying
+## Normal path: push to `main`
+
+`.github/workflows/deploy.yml` runs on every push to `main`: install, unit
+tests, build, then `scripts/deploy-pages.mjs` force-pushes `dist/` to
+`gh-pages` using the workflow's own `GITHUB_TOKEN` (Contents: write). Nothing
+needs to run on a local machine.
+
+## By hand
 
 ```bash
 npm run build
 npm run deploy          # force-pushes dist/ to gh-pages
+DEPLOY_DRY_RUN=1 npm run deploy   # everything except the actual push
 ```
 
-`deploy` needs a GitHub token with **Contents: write** on the repo, taken from
-`GITHUB_TOKEN` or `~/.ghtok`.
+Auth comes from `GITHUB_TOKEN`, `~/.ghtok`, or — if neither is set — git's
+normal credential helper (Git Credential Manager on Windows).
 
-## Switching to GitHub Actions instead
+The script no longer copies `dist/` anywhere: git reads it in place through
+`--work-tree` with a temporary `--git-dir`. The previous copy step
+(`fs.cpSync`) crashed silently on Windows (exit `-1073740791`, 0xC0000409)
+when the project path contained non-ASCII characters.
 
-`github-pages-workflow.yml` is a ready-to-use Actions workflow that builds and
-deploys on every push to `main`. It is parked here rather than in
-`.github/workflows/` because GitHub refuses to accept a workflow file from a
-Personal Access Token that lacks the `workflow` scope:
-
-```
-refusing to allow a Personal Access Token to create or update
-workflow `.github/workflows/deploy.yml` without `workflow` scope
-```
-
-To activate it:
-
-1. Grant the token **Workflows: Read and write**
-   (github.com/settings/personal-access-tokens → the token → Repository permissions)
-2. `mkdir -p .github/workflows && git mv deploy/github-pages-workflow.yml .github/workflows/deploy.yml`
-3. Commit and push
-4. Repo → Settings → Pages → Source → **GitHub Actions**
-
-After that, `npm run deploy` is no longer needed — pushing to `main` deploys.
+`github-pages-workflow.yml` in this folder is the older artifact-based
+workflow, kept for reference; it only works with Pages → Source → GitHub
+Actions.

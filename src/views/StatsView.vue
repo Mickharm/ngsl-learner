@@ -139,7 +139,6 @@ function showTip (payload, evt) {
 <template>
   <main class="shell stats" @click="tip = null">
     <header class="stats__head">
-      <div class="eyebrow">Analytics</div>
       <h1 class="page-title zh">學習數據</h1>
     </header>
 

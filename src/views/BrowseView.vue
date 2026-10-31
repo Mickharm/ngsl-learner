@@ -72,7 +72,6 @@ const unlockedTo = computed(() => (progress.unlockedStage + 2) * STAGE_SIZE)
 <template>
   <main class="shell browse">
     <header class="browse__head">
-      <div class="eyebrow">NGSL 2801</div>
       <h1 class="page-title zh">單字庫</h1>
     </header>
 

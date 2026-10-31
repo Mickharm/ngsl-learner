@@ -25,26 +25,24 @@ export const THEMES = {
   food: {
     label: '食物飲料',
     words: {
-      food: '🍱', meal: '🍽️', breakfast: '🥞', lunch: '🥪', dinner: '🍲', coffee: '☕', tea: '🍵',
-      milk: '🥛', water: '💧', wine: '🍷', beer: '🍺', pub: '🍻', bottle: '🍾', bread: '🍞',
-      rice: '🍚', egg: '🥚', meat: '🥩', chicken: '🐔', fish: '🐟', cheese: '🧀', cake: '🍰',
-      chocolate: '🍫', sweet: '🍬', fruit: '🍎', orange: '🍊', vegetable: '🥦', potato: '🥔',
-      salt: '🧂'
+      food: '🍱', meal: '🍽️', coffee: '☕', tea: '🍵', milk: '🥛', water: '💧', wine: '🍷',
+      beer: '🍺', bottle: '🍾', bread: '🍞', rice: '🍚', egg: '🥚', meat: '🥩', chicken: '🐔',
+      fish: '🐟', cheese: '🧀', cake: '🍰', chocolate: '🍫', fruit: '🍎', orange: '🍊',
+      vegetable: '🥦', potato: '🥔', salt: '🧂'
     }
   },
   animals: {
     label: '動物',
     words: {
-      animal: '🐾', dog: '🐕', cat: '🐈', bird: '🐦', horse: '🐎', cow: '🐄', pig: '🐖', sheep: '🐑',
-      mouse: '🐁', rat: '🐀'
+      dog: '🐕', cat: '🐈', bird: '🐦', horse: '🐎', cow: '🐄', pig: '🐖', sheep: '🐑', mouse: '🐁',
+      rat: '🐀'
     }
   },
   body: {
     label: '身體',
     words: {
-      body: '🧍', hand: '✋', finger: '☝️', arm: '💪', muscle: '💪', leg: '🦵', foot: '🦶',
-      eye: '👁️', ear: '👂', nose: '👃', mouth: '👄', tongue: '👅', tooth: '🦷', brain: '🧠',
-      heart: '❤️', blood: '🩸', hair: '💇', face: '🙂'
+      hand: '✋', finger: '☝️', arm: '💪', muscle: '💪', leg: '🦵', foot: '🦶', eye: '👁️', ear: '👂',
+      nose: '👃', mouth: '👄', tongue: '👅', tooth: '🦷', brain: '🧠', heart: '❤️', blood: '🩸'
     }
   },
   people: {
@@ -52,34 +50,32 @@ export const THEMES = {
     words: {
       man: '👨', woman: '👩', child: '🧒', kid: '🧒', boy: '👦', girl: '👧', baby: '👶',
       person: '🧑', people: '👥', family: '👨‍👩‍👧', mother: '👩‍👧', mom: '👩‍👧', father: '👨‍👧',
-      dad: '👨‍👧', grandmother: '👵', couple: '💑', friend: '🧑‍🤝‍🧑', gentleman: '🤵', king: '🤴',
-      hero: '🦸', guard: '💂', soldier: '🪖'
+      dad: '👨‍👧', grandmother: '👵', couple: '💑', friend: '🧑‍🤝‍🧑', king: '🤴', hero: '🦸',
+      guard: '💂', soldier: '🪖'
     }
   },
   jobs: {
     label: '職業',
     words: {
-      job: '🧑‍💼', worker: '👷', teacher: '🧑‍🏫', student: '🧑‍🎓', doctor: '🧑‍⚕️', police: '👮',
+      worker: '👷', teacher: '🧑‍🏫', student: '🧑‍🎓', doctor: '🧑‍⚕️', police: '👮',
       judge: '👨‍⚖️', farmer: '🧑‍🌾', engineer: '🧑‍🔧', scientist: '🧑‍🔬', artist: '🧑‍🎨',
-      pilot: '🧑‍✈️', singer: '🧑‍🎤', actor: '🎭'
+      pilot: '🧑‍✈️', singer: '🧑‍🎤'
     }
   },
   places: {
     label: '地點',
     words: {
       house: '🏠', home: '🏡', school: '🏫', office: '🏢', factory: '🏭', hotel: '🏨', bank: '🏦',
-      church: '⛪', castle: '🏰', tower: '🗼', bridge: '🌉', city: '🏙️', town: '🏘️',
-      government: '🏛️', store: '🏪', shop: '🛍️', market: '🧺', station: '🚉', park: '🏞️',
-      camp: '🏕️', tent: '⛺', island: '🏝️', beach: '🏖️', desert: '🏜️', mountain: '⛰️',
-      forest: '🌲', field: '🌾', library: '📚', laboratory: '🧪', place: '📍', location: '📍',
-      port: '⚓', world: '🌍', earth: '🌏', restaurant: '🍴', bar: '🍸'
+      church: '⛪', castle: '🏰', tower: '🗼', bridge: '🌉', city: '🏙️', town: '🏘️', store: '🏪',
+      station: '🚉', park: '🏞️', camp: '🏕️', tent: '⛺', island: '🏝️', beach: '🏖️', desert: '🏜️',
+      mountain: '⛰️', forest: '🌲', field: '🌾', port: '⚓', world: '🌍', earth: '🌏'
     }
   },
   home: {
     label: '家裡',
     words: {
-      room: '🚪', door: '🚪', window: '🪟', wall: '🧱', bed: '🛏️', bath: '🛁', shower: '🚿',
-      furniture: '🛋️', chair: '🪑', mirror: '🪞'
+      door: '🚪', window: '🪟', wall: '🧱', bed: '🛏️', bath: '🛁', shower: '🚿', furniture: '🛋️',
+      chair: '🪑', mirror: '🪞'
     }
   },
   transport: {
@@ -94,25 +90,29 @@ export const THEMES = {
     label: '天氣自然',
     words: {
       weather: '🌦️', sun: '☀️', moon: '🌕', star: '⭐', sky: '🌤️', cloud: '☁️', rain: '🌧️',
-      snow: '❄️', storm: '⛈️', wind: '💨', air: '🌬️', fire: '🔥', ice: '🧊', sea: '🌊', ocean: '🌊',
-      rock: '🪨', wood: '🪵', tree: '🌳', plant: '🪴', flower: '🌸', garden: '🌻', nature: '🌿',
-      autumn: '🍂', winter: '⛄', spring: '🌷', planet: '🪐', space: '🚀', temperature: '🌡️'
+      snow: '❄️', storm: '⛈️', fire: '🔥', ice: '🧊', sea: '🌊', ocean: '🌊', rock: '🪨', wood: '🪵',
+      tree: '🌳', plant: '🪴', flower: '🌸', autumn: '🍂', winter: '⛄', planet: '🪐',
+      temperature: '🌡️'
     }
   },
   feelings: {
     label: '情緒',
     words: {
-      happy: '😊', smile: '😄', laugh: '😂', funny: '🤣', joy: '😆', sad: '😞', cry: '😢',
-      angry: '😠', hate: '😡', fear: '😨', scream: '😱', surprise: '😲', amaze: '😮', worry: '😟',
-      nervous: '😬', calm: '😌', relax: '🧘', bore: '🥱', excite: '🤩', embarrass: '😳',
-      confuse: '😕', terrible: '😖', complain: '😤', doubt: '🤨', crazy: '🤪', love: '💕'
+      happy: '😊', smile: '😄', laugh: '😂', funny: '🤣', sad: '😞', cry: '😢', angry: '😠',
+      fear: '😨', scream: '😱', surprise: '😲', worry: '😟', nervous: '😬', bore: '🥱',
+      embarrass: '😳', confuse: '😕',     }
+  },
+  health: {
+    label: '健康',
+    words: {
+      sick: '🤒', pain: '🤕', medicine: '💊', virus: '🦠', hospital: '🏥'
     }
   },
   clothes: {
     label: '衣物',
     words: {
       clothes: '👚', shirt: '👕', dress: '👗', coat: '🧥', hat: '🎩', cap: '🧢', shoe: '👟',
-      boot: '👢', tie: '👔', ring: '💍', fashion: '👠'
+      boot: '👢', tie: '👔', ring: '💍'
     }
   },
   media: {
@@ -120,105 +120,72 @@ export const THEMES = {
     words: {
       phone: '📱', telephone: '☎️', computer: '💻', screen: '🖥️', camera: '📷', photograph: '📸',
       video: '📹', television: '📺', radio: '📻', film: '🎞️', movie: '🎬', music: '🎵', song: '🎶',
-      sound: '🔊', voice: '🎙️', news: '📰', newspaper: '🗞️', email: '📧', message: '📨',
-      signal: '📶', online: '🌐', electric: '🔌', electricity: '⚡', energy: '🔋', printer: '🖨️',
-      link: '🔗', light: '🔦'
+      sound: '🔊', news: '📰', newspaper: '🗞️', email: '📧', electricity: '⚡', printer: '🖨️'
     }
   },
   sport: {
     label: '運動休閒',
     words: {
-      sport: '🏅', ball: '🏀', football: '⚽', tennis: '🎾', golf: '⛳', ski: '⛷️', goal: '🥅',
-      win: '🏆', game: '🎲', party: '🎉', holiday: '🌴', art: '🎨', target: '🎯', aim: '🏹',
-      victory: '✌️', honor: '🎖️', first: '🥇', silver: '🥈', festival: '🎪', race: '🏎️'
+      ball: '🏀', football: '⚽', tennis: '🎾', golf: '⛳', ski: '⛷️', goal: '🥅', win: '🏆',
+      party: '🎉', art: '🎨', target: '🎯'
     }
   },
   colors: {
     label: '顏色形狀',
     words: {
       red: '🔴', blue: '🔵', green: '🟢', yellow: '🟡', black: '⚫', white: '⚪', brown: '🟤',
-      pink: '🩷', gray: '🩶', circle: '⭕', square: '🟥', shape: '🔷', color: '🌈'
-    }
-  },
-  health: {
-    label: '健康',
-    words: {
-      sick: '🤒', pain: '🤕', cough: '😷', medicine: '💊', drug: '💊', virus: '🦠', disease: '🦠',
-      hospital: '🏥'
-    }
-  },
-  describe: {
-    label: '形容樣子',
-    words: {
-      healthy: '🥗', tall: '🦒', big: '🐘', small: '🐜', slow: '🐢', slowly: '🐌', lazy: '🦥',
-      pregnant: '🤰', blind: '🦯', old: '👴', royal: '👑', high: '🏔️', cold: '🥶', hot: '🥵',
-      warm: '♨️', wet: '💦', dark: '🌑', loud: '📢', quiet: '🔇', bright: '🔆'
-    }
-  },
-  mind: {
-    label: '想法與狀態',
-    words: {
-      breath: '😮‍💨', lucky: '🍀', wish: '🌠', sleep: '😴', rest: '🛌', dream: '💭', think: '🤔',
-      idea: '💡', smart: '🤓', secret: '🤫', disappear: '🫥', shake: '🫨', rich: '🤑', thank: '🙏',
-      sorry: '🙇', hope: '🤞'
+      pink: '🩷', gray: '🩶', circle: '⭕', square: '🟥'
     }
   },
   actions: {
     label: '動作',
     words: {
-      run: '🏃', walk: '🚶', stand: '🧍', sit: '🪑', climb: '🧗', swim: '🏊', dance: '💃',
-      sing: '🎤', play: '🎮', write: '✍️', read: '📖', draw: '🖍️', paint: '🖌️', study: '✏️',
-      look: '👀', see: '👁️', watch: '📺', listen: '🎧', speak: '🗣️', talk: '💬', shout: '📣',
-      call: '📞', ask: '🙋', meet: '🤝', agree: '🙆', give: '🫴', gift: '🎁', find: '🔎',
-      search: '🔍', open: '🔓', close: '🔒', lock: '🔐', cut: '✂️', build: '🏗️', fix: '🔧',
-      clean: '🧹', wash: '🧼', buy: '🛒', pay: '💳', send: '📤', receive: '📥', touch: '👆',
-      point: '👉', fight: '🥊', exercise: '🏋️', dig: '⛏️', pack: '🎒', rescue: '🛟', protect: '🛡️',
-      celebrate: '🥳', welcome: '🤗', hello: '👋', hi: '👋', print: '🖨️', die: '🪦', marry: '💒',
-      divorce: '💔', predict: '🔮', eat: '😋', drink: '🥤', cook: '🧑‍🍳', pour: '🫗', fly: '🕊️',
-      hear: '👂', smell: '👃', embrace: '🫂', work: '🧑‍💻', teach: '🧑‍🏫', graduate: '🎓',
-      arrive: '🛬', travel: '🧳', ride: '🚴', grow: '🌱', kiss: '💋'
+      run: '🏃', walk: '🚶', climb: '🧗', swim: '🏊', dance: '💃', write: '✍️', read: '📖',
+      look: '👀', speak: '🗣️', call: '📞', gift: '🎁', search: '🔍', lock: '🔐',
+      cut: '✂️', exercise: '🏋️', hello: '👋', hi: '👋', cook: '🧑‍🍳', graduate: '🎓', arrive: '🛬',
+      travel: '🧳', ride: '🚴'
     }
   },
   things: {
     label: '物品',
     words: {
       book: '📕', paper: '📃', page: '📄', letter: '✉️', envelope: '📩', mail: '📮', pen: '🖊️',
-      journal: '📓', poem: '📜', list: '📋', file: '📁', box: '📦', package: '📦', bag: '👜',
-      key: '🔑', card: '🃏', bell: '🔔', button: '🔘', hook: '🪝', chain: '⛓️', tool: '🛠️',
-      machine: '⚙️', metal: '🔩', trap: '🪤', toy: '🧸', bin: '🗑️', flag: '🚩', sign: '🪧',
-      license: '🪪', bomb: '💣', hole: '🕳️', magic: '🪄', ancient: '🏺', cigarette: '🚬',
-      smoke: '🚬', picture: '🖼️', instrument: '🎻', guitar: '🎸', piano: '🎹', album: '💿',
-      tune: '🎼', bowl: '🥣', knife: '🔪', shell: '🐚', wing: '🪽', bone: '🦴', web: '🕸️',
-      map: '🗺️'
+      journal: '📓', file: '📁', box: '📦', package: '📦', bag: '👜', key: '🔑', bell: '🔔',
+      button: '🔘', hook: '🪝', chain: '⛓️', tool: '🛠️', trap: '🪤', toy: '🧸', bin: '🗑️',
+      flag: '🚩', sign: '🪧', license: '🪪', bomb: '💣', hole: '🕳️', cigarette: '🚬',
+      picture: '🖼️', guitar: '🎸', piano: '🎹', bowl: '🥣', knife: '🔪', shell: '🐚', wing: '🪽',
+      bone: '🦴', web: '🕸️', map: '🗺️'
     }
   },
   money: {
     label: '金錢',
     words: {
-      money: '💰', dollar: '💵', coin: '🪙', price: '🏷️', cost: '💸', bill: '🧾', expensive: '💎',
-      currency: '💱', chart: '📊', increase: '📈', decrease: '📉', business: '💼'
+      money: '💰', dollar: '💵', coin: '🪙', price: '🏷️', bill: '🧾', chart: '📊', increase: '📈',
+      decrease: '📉'
     }
   },
   time: {
     label: '時間',
     words: {
-      time: '⌛', wait: '⏳', clock: '🕰️', hour: '🕐', minute: '⏱️', wake: '⏰', date: '📅',
-      month: '📆', week: '🗓️', morning: '🌅', evening: '🌆', night: '🌙', half: '🌗'
+      clock: '🕰️', morning: '🌅', evening: '🌆', night: '🌙'
     }
+  },
+  describe: {
+    label: '形容樣子',
+    words: {
+      cold: '🥶', hot: '🥵'
+    }
+  },
+  mind: {
+    label: '想法與狀態',
+    words: {
+      sleep: '😴',     }
   },
   symbols: {
     label: '符號概念',
     words: {
-      yes: '✅', check: '☑️', no: '🙅', wrong: '❌', ban: '🚫', question: '❓', information: 'ℹ️',
-      warn: '⚠️', emergency: '🚨', stop: '🛑', start: '▶️', pause: '⏸️', finish: '🏁', end: '🔚',
-      next: '⏭️', back: '🔙', up: '⬆️', down: '⬇️', left: '⬅️', right: '➡️', turn: '↩️',
-      repeat: '🔁', change: '🔄', add: '➕', plus: '➕', equal: '🟰', divide: '➗', mathematics: '📐',
-      measure: '📏', count: '🧮', number: '🔢', one: '1️⃣', perfect: '💯', new: '🆕', top: '🔝',
-      okay: '🆗', fine: '👌', good: '👍', great: '👏', help: '🆘', little: '🤏', peace: '☮️',
-      freedom: '🗽', law: '⚖️', vote: '🗳️', war: '⚔️', accident: '💥', symbol: '🔣', word: '🔤',
-      name: '📛', service: '🛎️', safety: '🦺', attract: '🧲', experiment: '⚗️', science: '🔬',
-      exam: '📝', fast: '⏩', mystery: '🕵️', oil: '🛢️', farm: '🚜', construction: '🚧',
-      direction: '🧭'
+      stop: '🛑', up: '⬆️', down: '⬇️', left: '⬅️', right: '➡️', one: '1️⃣', vote: '🗳️',
+      oil: '🛢️', construction: '🚧'
     }
   }
 }
