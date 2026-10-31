@@ -389,3 +389,33 @@ textarea.input { min-height: 96px; padding: var(--sp-3); resize: vertical; line-
   display: flex; align-items: center; gap: var(--sp-2);
 }
 .toast--err { background: var(--rose); color: #fff; }
+
+/* ---------- sentence roles (Grammar Studio) ----------
+   One colour per job in the sentence, used for slot frames and placed blocks.
+   Loosely after the Montessori grammar symbols: the verb is always red. */
+:root {
+  --role-s: #2563eb; --role-s-wash: rgba(37, 99, 235, 0.10);
+  --role-v: #dc2626; --role-v-wash: rgba(220, 38, 38, 0.10);
+  --role-o: #15803d; --role-o-wash: rgba(21, 128, 61, 0.10);
+  --role-c: #7c3aed; --role-c-wash: rgba(124, 58, 237, 0.10);
+  --role-p: #b45309; --role-p-wash: rgba(180, 83, 9, 0.10);
+  --role-t: #0e7490; --role-t-wash: rgba(14, 116, 144, 0.10);
+  --role-x: #6b7280; --role-x-wash: rgba(107, 114, 128, 0.10);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --role-s: #7aa7ff; --role-v: #ff7b7b; --role-o: #5fd38a; --role-c: #b79cff;
+    --role-p: #f5b143; --role-t: #4fd1e8; --role-x: #a3a9b4;
+  }
+}
+:root[data-theme="dark"] {
+  --role-s: #7aa7ff; --role-v: #ff7b7b; --role-o: #5fd38a; --role-c: #b79cff;
+  --role-p: #f5b143; --role-t: #4fd1e8; --role-x: #a3a9b4;
+}
+.role--S { --rc: var(--role-s); --rw: var(--role-s-wash); }
+.role--V { --rc: var(--role-v); --rw: var(--role-v-wash); }
+.role--O { --rc: var(--role-o); --rw: var(--role-o-wash); }
+.role--C { --rc: var(--role-c); --rw: var(--role-c-wash); }
+.role--P { --rc: var(--role-p); --rw: var(--role-p-wash); }
+.role--T { --rc: var(--role-t); --rw: var(--role-t-wash); }
+.role--X { --rc: var(--role-x); --rw: var(--role-x-wash); }

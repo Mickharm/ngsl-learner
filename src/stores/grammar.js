@@ -147,5 +147,35 @@ export const useGrammar = defineStore('grammar', () => {
     return { rec, grade }
   }
 
-  return { rows, loaded, load, recOf, available, dueList, nextNew, todayPoint, stats, submit, all: GRAMMAR, STATE }
+  /**
+   * A single answer about a point that was NOT today's point — it came up in
+   * the interleaved round. It does not reschedule the point (one item is too
+   * little evidence for that), but it counts toward the point's accuracy, and
+   * a miss pulls the point back to tomorrow if it was due later: mixing it up
+   * with another rule is exactly the signal the mixed round exists to find.
+   */
+  function observe (grammarId, correct) {
+    const base = rows.value.get(grammarId)
+    if (!base) return
+    const now = Date.now()
+    const rec = { ...base, correct: base.correct + (correct ? 1 : 0), attempts: base.attempts + 1 }
+    if (!correct && rec.dueAt > now + 86400000) rec.dueAt = now + 86400000
+    const next = new Map(rows.value)
+    next.set(grammarId, rec)
+    rows.value = next
+    persist(rec)
+    progress.bumpDay({ grammar_correct: correct ? 1 : 0, grammar_total: 1 })
+  }
+
+  /** Points already met, in syllabus order — the pool for the mixed round. */
+  const learned = computed(() => GRAMMAR.filter(g => rows.value.has(g.id)))
+
+  /** pointId → share of answers wrong (0..1); unknown points count as 0. */
+  const weakness = computed(() => {
+    const out = {}
+    for (const [id, r] of rows.value) out[id] = r.attempts ? 1 - r.correct / r.attempts : 0
+    return out
+  })
+
+  return { rows, loaded, load, recOf, available, dueList, nextNew, todayPoint, stats, submit, observe, learned, weakness, all: GRAMMAR, STATE }
 })

@@ -7,6 +7,8 @@ import { useSession } from '@/stores/session'
 import { useSettings } from '@/stores/settings'
 import { useWords } from '@/stores/words'
 import { TOTAL_WORDS, BANDS } from '@/config'
+import { isMasteredV2 } from '@/lib/wordsrs'
+import { wordPower, levelOf, titleOf } from '@/lib/xp'
 
 const auth = useAuth()
 const progress = useProgress()
@@ -41,7 +43,7 @@ const bandProgress = computed(() =>
       const c = progress.cards.get(id)
       if (!c) continue
       seen++
-      if (c.intervalDays >= 21 && c.streak >= 3) mastered++
+      if (isMasteredV2(c)) mastered++
     }
     const total = b.range[1] - b.range[0] + 1
     return { ...b, seen, mastered, total, pct: (seen / total) * 100 }
@@ -58,6 +60,9 @@ const needsPlacement = computed(() =>
 )
 
 const needsKey = computed(() => progress.loaded && !settings.hasGeminiKey)
+
+/** 字力 level — computed from the synced cards, so both devices agree. */
+const power = computed(() => levelOf(wordPower(progress.cards.values())))
 
 function go (p) {
   if (!p.unlocked) return
@@ -87,6 +92,16 @@ onUnmounted(() => session.stopClock())
         <span class="num">{{ progress.streak }}</span>
       </div>
     </header>
+
+    <!-- word power -->
+    <RouterLink to="/collection" class="lvl">
+      <span class="lvl__badge num">Lv.{{ power.level }}</span>
+      <span class="lvl__body">
+        <span class="lvl__title zh">{{ titleOf(power.level) }} · 字力 <span class="num">{{ power.xp }}</span></span>
+        <span class="lvl__bar"><span class="lvl__fill" :style="{ width: power.pct + '%' }" /></span>
+        <span class="lvl__hint zh">每個字在越難的考法答對，字力越高；忘記會掉。點我看圖鑑</span>
+      </span>
+    </RouterLink>
 
     <!-- setup nudges -->
     <RouterLink v-if="needsKey" to="/settings" class="nudge">
@@ -152,10 +167,10 @@ onUnmounted(() => session.stopClock())
               <span class="step__label zh">{{ p.label }}</span>
               <span class="step__meta zh">
                 <template v-if="p.key === 'learn'">
-                  {{ p.empty ? '今天沒有新字，先把複習做完' : `${session.plan.newCount} 個新字` }}
+                  {{ p.empty ? '今天沒有新字' : `${session.plan.newCount} 個新字：看圖、畫記號、連連看、回想` }}
                 </template>
                 <template v-else-if="p.key === 'review'">
-                  {{ p.empty ? '目前沒有到期的卡片' : `${session.plan.reviewCount} 張卡片` }}
+                  {{ p.empty ? '目前沒有到期的字' : `${session.plan.reviewCount} 個字，每個字換一種更難的考法` }}
                 </template>
                 <template v-else-if="p.key === 'grammar'">
                   {{ session.grammarPoint?.title || '30 個文法點都排過一輪了' }}
@@ -164,7 +179,7 @@ onUnmounted(() => session.stopClock())
                   {{ session.essentialUnit?.title || '12 個基礎單元都排過一輪了' }}
                 </template>
                 <template v-else-if="p.key === 'write'">用今天的字寫句子，AI 批改</template>
-                <template v-else-if="p.key === 'article'">用今天的單字生成短文</template>
+                <template v-else-if="p.key === 'read'">讀一篇你看得懂的圖文故事，再玩三個小遊戲</template>
                 <template v-else>看今天的成績</template>
               </span>
             </span>
@@ -215,11 +230,28 @@ onUnmounted(() => session.stopClock())
 
     <!-- shortcuts -->
     <section class="short">
+      <RouterLink to="/story" class="short__card">
+        <span class="short__ico" aria-hidden="true">📚</span>
+        <span class="short__t zh">故事屋</span>
+        <span class="short__d zh">分級圖文故事</span>
+      </RouterLink>
+      <RouterLink to="/arcade" class="short__card">
+        <span class="short__ico" aria-hidden="true">🎮</span>
+        <span class="short__t zh">遊樂場</span>
+        <span class="short__d zh">用學過的字玩</span>
+      </RouterLink>
+      <RouterLink to="/collection" class="short__card">
+        <span class="short__ico" aria-hidden="true">🗂️</span>
+        <span class="short__t zh">單字圖鑑</span>
+        <span class="short__d zh">收集每一張字卡</span>
+      </RouterLink>
       <RouterLink to="/travel" class="short__card">
+        <span class="short__ico" aria-hidden="true">🧳</span>
         <span class="short__t zh">旅遊會話</span>
-        <span class="short__d zh">20 個情境，隨時可練</span>
+        <span class="short__d zh">20 個情境</span>
       </RouterLink>
       <RouterLink to="/errors" class="short__card">
+        <span class="short__ico" aria-hidden="true">📝</span>
         <span class="short__t zh">錯題本</span>
         <span class="short__d zh">{{ progress.errors.length }} 題待複習</span>
       </RouterLink>
@@ -385,12 +417,30 @@ onUnmounted(() => session.stopClock())
 .band__n { font-size: var(--step--2); color: var(--ink-2); }
 
 /* shortcuts */
-.short { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.short { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--sp-2); }
+.short__ico { font-size: 1.5rem; line-height: 1; margin-bottom: 4px; }
+
+.lvl {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4); margin-bottom: var(--sp-4);
+  background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}
+.lvl__badge {
+  width: 56px; height: 56px; border-radius: 16px; flex-shrink: 0;
+  display: grid; place-items: center; font-size: var(--step-0); font-weight: 700;
+  background: linear-gradient(135deg, var(--jade), var(--violet)); color: #fff;
+}
+.lvl__body { flex: 1; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.lvl__title { font-weight: 700; font-size: var(--step--1); }
+.lvl__bar { height: 8px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
+.lvl__fill { display: block; height: 100%; background: linear-gradient(90deg, var(--jade), var(--violet)); border-radius: 4px; transition: width 0.5s; }
+.lvl__hint { font-size: var(--step--2); color: var(--ink-3); }
 .short__card {
   background: var(--surface);
   border: 1px solid var(--rule);
   border-radius: var(--radius);
-  padding: var(--sp-4);
+  padding: var(--sp-3);
   display: flex; flex-direction: column; gap: 2px;
   transition: border-color 0.15s;
 }

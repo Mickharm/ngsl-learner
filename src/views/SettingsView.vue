@@ -277,17 +277,10 @@ const buildSha = __BUILD_SHA__
         <p class="note zh">超過上限的到期卡片會順延到隔天，優先保留最快忘記的那些。</p>
       </div>
 
-      <div class="field">
-        <div class="row between">
-          <label class="label" for="cloze">例句填空比例</label>
-          <span class="num val">{{ Math.round(s.clozeRatio * 100) }}%</span>
-        </div>
-        <input
-          id="cloze" class="slider" type="range" min="0" max="80" step="5"
-          :value="Math.round(s.clozeRatio * 100)" @input="settings.set({ clozeRatio: +$event.target.value / 100 })"
-        >
-        <p class="note zh">複習時有多少比例改用例句填空。填空比純字卡更接近真實使用，但比較花時間。</p>
-      </div>
+      <!-- v2: the review task is chosen by each word's ladder rung, so the old
+           "cloze share" slider no longer controls anything and was removed
+           rather than left as a decoration. -->
+      <p class="note zh">複習題型由每個字的程度決定：認得 → 聽得懂 → 想得起 → 拼得出 → 用得出，答對升一階、答錯退一階。</p>
     </section>
 
     <!-- ---------- gemini ---------- -->
@@ -448,11 +441,6 @@ const buildSha = __BUILD_SHA__
         >{{ opt.l }}</button>
       </div>
 
-      <div class="row between">
-        <label class="label zh">顯示下次複習時間</label>
-        <button class="toggle" :data-on="String(s.showIntervalHints)" :aria-pressed="s.showIntervalHints"
-          @click="settings.set({ showIntervalHints: !s.showIntervalHints })" />
-      </div>
     </section>
 
     <!-- ---------- account & data ---------- -->

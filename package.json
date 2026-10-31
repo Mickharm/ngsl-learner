@@ -1,6 +1,6 @@
 {
   "name": "ngsl-learner",
-  "version": "1.1.3",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,15 +15,21 @@
     "test:models": "node scripts/test-model-resolution.mjs",
     "test:answer": "node scripts/test-answer.mjs",
     "test:format": "node scripts/test-format.mjs",
-    "test": "npm run test:srs && npm run test:models && npm run test:answer && npm run test:format && npm run test:drills && npm run test:affix && npm run test:tts",
+    "test": "npm run test:srs && npm run test:models && npm run test:answer && npm run test:format && npm run test:drills && npm run test:affix && npm run test:tts && npm run test:wordsrs && npm run test:pictures && npm run test:grammar && npm run test:stories",
     "test:drills": "node scripts/test-drills.mjs",
     "test:srs": "node scripts/test-srs.mjs",
     "test:affix": "node scripts/test-affix.mjs",
-    "test:tts": "node scripts/test-tts.mjs"
+    "test:tts": "node scripts/test-tts.mjs",
+    "test:wordsrs": "node scripts/test-wordsrs.mjs",
+    "test:pictures": "node scripts/test-pictures.mjs",
+    "test:grammar": "node scripts/test-grammar-studio.mjs",
+    "test:stories": "node scripts/test-stories.mjs",
+    "build:chunks": "node scripts/build-chunks.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
     "pinia": "^2.2.4",
+    "ts-fsrs": "^5.4.2",
     "vue": "^3.5.12",
     "vue-router": "^4.4.5"
   },

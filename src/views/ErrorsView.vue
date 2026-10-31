@@ -3,9 +3,8 @@ import { ref, computed } from 'vue'
 import { useProgress } from '@/stores/progress'
 import { useWords } from '@/stores/words'
 import { GRAMMAR_BY_ID } from '@/data/grammar'
-import { GRADE } from '@/lib/srs'
-import WordCard from '@/components/WordCard.vue'
-import GradeButtons from '@/components/GradeButtons.vue'
+import { modeFor } from '@/lib/wordsrs'
+import WordGame from '@/components/games/WordGame.vue'
 import AudioButton from '@/components/AudioButton.vue'
 
 /**
@@ -21,7 +20,7 @@ const tab = ref('words')
 const drilling = ref(false)
 const queue = ref([])
 const step = ref(0)
-const revealed = ref(false)
+const fixed = ref(0)
 
 const trouble = computed(() =>
   progress.troubleWords
@@ -38,26 +37,32 @@ const grouped = computed(() => {
 })
 
 const current = computed(() => queue.value[step.value] || null)
+const pool = computed(() => words.getMany([...progress.cards.keys()].slice(-400)).filter(w => w.meanings?.length))
 
+/**
+ * Drilling the notebook is extra practice, not a review: each word already
+ * gets its one scheduled review a day, and a second, self-graded one here used
+ * to push intervals around on the strength of a card the learner had just been
+ * shown. So the drill uses the same games, at the word's own rung (recall at
+ * least), and a correct answer only clears the word's open mistakes.
+ */
 function startDrill () {
-  queue.value = trouble.value.slice(0, 20).map(t => t.word)
+  queue.value = trouble.value.slice(0, 20).map(t => {
+    const m = modeFor(progress.cardOf(t.word.id), t.word)
+    return { word: t.word, mode: !m || m === 'meaning' || m === 'listen' ? 'recall' : m }
+  }).filter(q => q.word.meanings?.length)
   step.value = 0
-  revealed.value = false
+  fixed.value = 0
   drilling.value = queue.value.length > 0
 }
 
-function grade (g) {
-  const w = current.value
-  if (!w) return
-  progress.gradeCard(w.id, g, { mode: 'card' })
-  // Answering it well again is what takes a word off the list.
-  if (g >= GRADE.GOOD) progress.clearWordErrors(w.id)
-  if (step.value + 1 < queue.value.length) {
-    step.value++
-    revealed.value = false
-  } else {
-    drilling.value = false
-  }
+function onAnswer (a) {
+  if (a.correct) { progress.clearWordErrors(current.value.word.id); fixed.value++ }
+}
+
+function next () {
+  if (step.value + 1 < queue.value.length) step.value++
+  else drilling.value = false
 }
 </script>
 
@@ -70,10 +75,16 @@ function grade (g) {
         <button class="btn btn--quiet btn--sm zh" @click="drilling = false">結束</button>
       </header>
 
-      <WordCard :key="current.id" :word="current" :revealed="revealed" />
-
-      <button v-if="!revealed" class="btn btn--primary btn--block zh" @click="revealed = true">看答案</button>
-      <GradeButtons v-else :card="progress.cardOf(current.id)" @grade="grade" />
+      <WordGame
+        :key="step + ':' + current.word.id"
+        :word="current.word"
+        :mode="current.mode"
+        :pool="pool"
+        :seed="current.word.id * 17 + step"
+        @answer="onAnswer"
+        @next="next"
+      />
+      <p class="dim zh err__note">錯題強化是額外練習，不會改變複習排程；答對會把這個字從錯題本移除。已修正 <span class="num">{{ fixed }}</span></p>
     </template>
 
     <!-- list mode -->
@@ -116,7 +127,7 @@ function grade (g) {
               <span class="chip chip--rose">
                 {{ t.card.lapses > 0 ? `忘 ${t.card.lapses}` : '答錯' }}
               </span>
-              <span class="titem__ease num">ease {{ t.card.ease.toFixed(2) }}</span>
+              <span class="titem__ease num">難度 {{ progress.hardness(t.card).toFixed(1) }}</span>
             </div>
           </div>
         </div>
@@ -166,6 +177,7 @@ function grade (g) {
 </template>
 
 <style scoped>
+.err__note { font-size: var(--step--2); text-align: center; line-height: 1.6; }
 .err { display: flex; flex-direction: column; gap: var(--sp-4); }
 .err__head { display: flex; flex-direction: column; gap: var(--sp-2); }
 .err__sub { font-size: var(--step--1); color: var(--ink-2); line-height: 1.7; }

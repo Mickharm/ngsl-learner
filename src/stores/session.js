@@ -32,13 +32,19 @@ import { STATE } from '@/lib/srs'
  */
 export const TRACK = Object.freeze({ BOTH: 'both', A: 'A', B: 'B' })
 
+/*
+ * v2 order: review BEFORE new words. Retrieving yesterday's words first is
+ * the warm-up, and it keeps a new batch from crowding out the words that are
+ * about to be forgotten. Reading is now the bundled Story Time (levelled and
+ * coverage-checked); the AI article stays reachable from inside it.
+ */
 export const PHASES = [
-  { key: 'learn',      label: '新單字',   route: '/learn',      minutes: 15, track: TRACK.BOTH },
-  { key: 'review',     label: '複習',     route: '/review',     minutes: 15, track: TRACK.BOTH },
-  { key: 'grammar',    label: '文法',     route: '/grammar',    minutes: 12, track: TRACK.A },
-  { key: 'essentials', label: '基礎知識', route: '/essentials', minutes: 12, track: TRACK.B },
-  { key: 'write',      label: '造句',     route: '/write',      minutes: 12, track: TRACK.B },
-  { key: 'article',    label: '閱讀',     route: '/article',    minutes: 15, track: TRACK.A },
+  { key: 'review',     label: '複習挑戰',   route: '/review',          minutes: 15, track: TRACK.BOTH },
+  { key: 'learn',      label: 'Word Lab',  route: '/learn',           minutes: 15, track: TRACK.BOTH },
+  { key: 'grammar',    label: 'Grammar Studio', route: '/grammar',   minutes: 14, track: TRACK.A },
+  { key: 'essentials', label: '基礎知識',   route: '/essentials',      minutes: 12, track: TRACK.B },
+  { key: 'write',      label: '造句',       route: '/write',           minutes: 12, track: TRACK.B },
+  { key: 'read',       label: 'Story Time', route: '/story?phase=1',   minutes: 12, track: TRACK.A },
   // Listening runs every day and is the phase that flexes: it takes whatever
   // minutes the rest of the day did not use, so a light day is not a short
   // day and a heavy one does not overrun. Half a TOEIC score is listening and
@@ -235,7 +241,7 @@ export const useSession = defineStore('session', () => {
       essentials: !essentialUnit.value,
       listen: dayWordIds.value.length === 0,
       write: false,
-      article: false,
+      read: false,
       summary: false
     }
 

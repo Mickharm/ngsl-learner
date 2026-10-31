@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { idbGet, idbGetAll, idbPut, idbPutMany, STORE } from '@/lib/idb'
 import { enrichWords, lookupWord } from '@/lib/gemini'
 import { useSettings } from './settings'
+import { makeLookup } from '@/lib/lexicon'
 
 /**
  * Word data lives in three layers:
@@ -21,50 +22,6 @@ import { useSettings } from './settings'
 
 const BATCH = 20
 
-/**
- * Irregular surface forms the NGSL family lists and the suffix rules both miss.
- *
- * The suffix stripper handles -s/-ed/-ing/-ies; it cannot handle "went",
- * "children" or "better". Those are among the most frequent words in any
- * article, so before this table a beginner tapping the commonest words in the
- * text got nothing back at all.
- */
-const IRREGULAR = Object.freeze({
-  am: 'be', is: 'be', are: 'be', was: 'be', were: 'be', been: 'be', being: 'be',
-  has: 'have', had: 'have', having: 'have',
-  does: 'do', did: 'do', done: 'do', doing: 'do',
-  went: 'go', gone: 'go', goes: 'go',
-  said: 'say', made: 'make', took: 'take', taken: 'take',
-  came: 'come', saw: 'see', seen: 'see', knew: 'know', known: 'know',
-  got: 'get', gotten: 'get', gave: 'give', given: 'give',
-  found: 'find', thought: 'think', told: 'tell', became: 'become',
-  left: 'leave', felt: 'feel', put: 'put', brought: 'bring',
-  began: 'begin', begun: 'begin', kept: 'keep', held: 'hold',
-  wrote: 'write', written: 'write', stood: 'stand', heard: 'hear',
-  let: 'let', meant: 'mean', met: 'meet', ran: 'run', paid: 'pay',
-  sat: 'sit', spoke: 'speak', spoken: 'speak', lay: 'lie', led: 'lead',
-  grew: 'grow', grown: 'grow', lost: 'lose', fell: 'fall', fallen: 'fall',
-  sent: 'send', built: 'build', understood: 'understand',
-  drew: 'draw', drawn: 'draw', broke: 'break', broken: 'break',
-  spent: 'spend', cut: 'cut', rose: 'rise', risen: 'rise',
-  driven: 'drive', drove: 'drive', bought: 'buy', wore: 'wear', worn: 'wear',
-  chose: 'choose', chosen: 'choose', ate: 'eat', eaten: 'eat',
-  sold: 'sell', taught: 'teach', caught: 'catch', flew: 'fly', flown: 'fly',
-  fought: 'fight', threw: 'throw', thrown: 'throw', slept: 'sleep',
-  won: 'win', laid: 'lay', read: 'read', hit: 'hit', set: 'set', cost: 'cost',
-  children: 'child', men: 'man', women: 'woman', people: 'person',
-  feet: 'foot', teeth: 'tooth', lives: 'life', wives: 'wife',
-  knives: 'knife', leaves: 'leaf', halves: 'half', selves: 'self',
-  better: 'good', best: 'good', worse: 'bad', worst: 'bad',
-  more: 'much', most: 'much', less: 'little', least: 'little',
-  further: 'far', furthest: 'far', farther: 'far', farthest: 'far',
-  an: 'a', its: 'it', his: 'he', him: 'he', her: 'she', hers: 'she',
-  them: 'they', their: 'they', theirs: 'they', us: 'we', our: 'we', ours: 'we',
-  me: 'i', my: 'i', mine: 'i', your: 'you', yours: 'you',
-  'won\'t': 'will', 'can\'t': 'can', 'don\'t': 'do', 'didn\'t': 'do',
-  'doesn\'t': 'do', 'isn\'t': 'be', 'aren\'t': 'be', 'wasn\'t': 'be'
-})
-
 export const useWords = defineStore('words', () => {
   const settings = useSettings()
 
@@ -77,48 +34,11 @@ export const useWords = defineStore('words', () => {
   const baseById = new Map(base.map(w => [w.id, w]))
 
   /**
-   * Any inflected surface form → word id, so a word tapped inside an article
-   * ("waited", "achieving") resolves to its headword. Built once; the base
-   * list already ships every family member the NGSL data knows about.
+   * Resolve a word as it appears in running text ("waited", "went",
+   * "children") to its headword id, or null. Shared with the Node tests so the
+   * story coverage check uses exactly this logic.
    */
-  const idBySurface = (() => {
-    const m = new Map()
-    for (const w of base) {
-      const key = w.h.toLowerCase()
-      if (!m.has(key)) m.set(key, w.id)
-      for (const f of w.f || []) {
-        const fk = String(f).toLowerCase()
-        if (fk && !m.has(fk)) m.set(fk, w.id)
-      }
-    }
-    return m
-  })()
-
-  /** Resolve a word as it appears in running text. Returns an id or null. */
-  function lookup (surface) {
-    if (!surface) return null
-    const k = String(surface).toLowerCase().replace(/[^a-z'-]/g, '')
-    if (!k) return null
-    if (idBySurface.has(k)) return idBySurface.get(k)
-    const irr = IRREGULAR[k]
-    if (irr && idBySurface.has(irr)) return idBySurface.get(irr)
-    // cheap morphology for forms the family list misses
-    for (const strip of ['s', 'es', 'ed', 'ing', "'s"]) {
-      if (k.endsWith(strip)) {
-        const stem = k.slice(0, -strip.length)
-        if (idBySurface.has(stem)) return idBySurface.get(stem)
-        if (strip === 'ing' || strip === 'ed') {
-          if (idBySurface.has(stem + 'e')) return idBySurface.get(stem + 'e')
-          // running → run, stopped → stop
-          if (stem.length > 2 && stem.at(-1) === stem.at(-2) && idBySurface.has(stem.slice(0, -1))) {
-            return idBySurface.get(stem.slice(0, -1))
-          }
-        }
-      }
-    }
-    if (k.endsWith('ies') && idBySurface.has(k.slice(0, -3) + 'y')) return idBySurface.get(k.slice(0, -3) + 'y')
-    return null
-  }
+  const lookup = makeLookup(base)
 
   const total = base.length
   const enrichedCount = computed(() => enriched.value.size)

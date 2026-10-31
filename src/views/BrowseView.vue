@@ -5,7 +5,8 @@ import { useProgress } from '@/stores/progress'
 import { useSettings } from '@/stores/settings'
 import { useToast } from '@/stores/toast'
 import { BANDS, STAGE_SIZE } from '@/config'
-import { STATE, isMastered, formatDelay } from '@/lib/srs'
+import { STATE, formatDelay } from '@/lib/srs'
+import { isMasteredV2 as isMastered, ladderOf, LADDER } from '@/lib/wordsrs'
 import AudioButton from '@/components/AudioButton.vue'
 import WordCard from '@/components/WordCard.vue'
 
@@ -45,7 +46,7 @@ function statusOf (id) {
   const c = progress.cards.get(id)
   if (!c) return { label: '未學', cls: 'chip--plain' }
   if (isMastered(c)) return { label: '熟練', cls: 'chip--jade' }
-  if (c.state === STATE.REVIEW) return { label: formatDelay(Math.max(0, c.dueAt - Date.now())), cls: 'chip--violet' }
+  if (c.state === STATE.REVIEW) return { label: `${LADDER[ladderOf(c)].short} · ${formatDelay(Math.max(0, c.dueAt - Date.now()))}`, cls: 'chip--violet' }
   if (c.state === STATE.RELEARNING) return { label: '重學', cls: 'chip--rose' }
   return { label: '學習中', cls: 'chip--amber' }
 }

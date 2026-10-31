@@ -5,7 +5,8 @@ import { useSettings } from '@/stores/settings'
 import { useGrammar } from '@/stores/grammar'
 import { useWords } from '@/stores/words'
 import { TOTAL_WORDS, BANDS } from '@/config'
-import { STATE, isMastered } from '@/lib/srs'
+import { STATE } from '@/lib/srs'
+import { isMasteredV2 as isMastered } from '@/lib/wordsrs'
 
 /**
  * Charts follow three rules that matter more than looks:

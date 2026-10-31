@@ -269,13 +269,19 @@ function finishQuiz () {
 }
 
 function done () {
+  // The AI article is the alternative to the day's story: either one
+  // completes the reading phase.
   session.markDone('article')
-  router.push(session.nextRoute('article'))
+  session.markDone('read')
+  router.push(session.nextRoute('read'))
 }
 
 function skipPhase () {
+  // The AI article is the alternative to the day's story: either one
+  // completes the reading phase.
   session.markDone('article')
-  router.push(session.nextRoute('article'))
+  session.markDone('read')
+  router.push(session.nextRoute('read'))
 }
 
 const KIND_LABEL = { vocab: '單字語境', detail: '細節理解', grammar: '文法應用', inference: '情境推論' }

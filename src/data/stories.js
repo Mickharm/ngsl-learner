@@ -1,0 +1,339 @@
+/**
+ * Story Time — bundled graded readers.
+ *
+ * Why bundled and not generated: a reader is only useful when almost every
+ * word in it is already known. Hu & Nation (2000) put the comfortable-reading
+ * threshold near 98% known running words (a recent replication could not
+ * fully confirm the exact figure, but the direction is not in doubt). A model
+ * asked to "use simple words" does not check; these stories are checked —
+ * scripts/test-stories.mjs resolves every token with the app's own lexicon and
+ * fails the build if a story's level is not met.
+ *
+ *   level 1  words up to NGSL rank 1000 (B1)   level 2  up to 2000 (B2)
+ *   level 3  up to 2801 (B3)
+ *
+ * `names` are proper nouns (not counted). `gloss` pre-teaches the very few
+ * words a story needs above its level; they are shown highlighted with their
+ * meaning, the way a graded reader footnotes a word.
+ *
+ * Each page has an emoji scene so the picture carries part of the meaning
+ * (and the sequencing game has something to look at). `words` are the target
+ * words for the word-hunt game.
+ */
+
+export const LEVEL_CAP = Object.freeze({ 1: 1000, 2: 2000, 3: 2801 })
+export const LEVEL_LABEL = Object.freeze({ 1: '入門', 2: '基礎', 3: '進階' })
+
+export default [
+  {
+    id: 's01',
+    level: 1,
+    title: 'Where Is My Key?',
+    title_zh: '我的鑰匙在哪裡？',
+    cover: '🔑',
+    names: ['Ben'],
+    gloss: { bag: '包包' },
+    words: ['key', 'look', 'find', 'door', 'bag'],
+    pages: [
+      { scene: '🧑 🚪 🌅', lines: [
+        { en: 'It is Monday morning.', zh: '星期一早上。' },
+        { en: 'Ben is late for work.', zh: '班上班要遲到了。' },
+        { en: 'He goes to the door, but he cannot find his key.', zh: '他走到門口，卻找不到鑰匙。' }
+      ] },
+      { scene: '🛏️ 👀 ❓', lines: [
+        { en: 'He looks under the bed.', zh: '他看了床底下。' },
+        { en: 'No key.', zh: '沒有鑰匙。' },
+        { en: 'He looks on the table. No key again.', zh: '他看了桌上。還是沒有。' }
+      ] },
+      { scene: '📱 🧑 😟', lines: [
+        { en: 'Ben calls his sister.', zh: '班打電話給他妹妹。' },
+        { en: '"Did you see my key?" he asks.', zh: '「妳有看到我的鑰匙嗎？」他問。' },
+        { en: '"No, I did not," she says. "Look in your bag."', zh: '「沒有喔，」她說，「看看你的包包。」' }
+      ] },
+      { scene: '👜 🔑 😮', lines: [
+        { en: 'Ben opens his bag.', zh: '班打開包包。' },
+        { en: 'His key is there, next to his phone!', zh: '鑰匙就在那裡，在手機旁邊！' }
+      ] },
+      { scene: '🏃 🚌 😄', lines: [
+        { en: 'He laughs and runs to the bus.', zh: '他笑了出來，跑去搭公車。' },
+        { en: 'Now he always puts his key in the same place.', zh: '現在他都把鑰匙放在同一個地方。' }
+      ] }
+    ],
+    quiz: [
+      { q: 'Where was the key?', q_zh: '鑰匙在哪裡？', options: ['In his bag', 'Under the bed', 'On the table'], answer: 0, explain_zh: '他打開包包，鑰匙在手機旁邊。' },
+      { q: 'Who did Ben call?', q_zh: '班打給誰？', options: ['His sister', 'His boss', 'His mother'], answer: 0, explain_zh: 'Ben calls his sister.' },
+      { q: 'What does Ben do now?', q_zh: '班現在會怎麼做？', options: ['He puts his key in the same place.', 'He does not use a key.', 'He gives his key to his sister.'], answer: 0, explain_zh: '最後一句：他都把鑰匙放同一個地方。' }
+    ]
+  },
+  {
+    id: 's02',
+    level: 1,
+    title: 'A Rainy Day',
+    title_zh: '下雨天',
+    cover: '🌧️',
+    names: ['Mia', 'Amy'],
+    gloss: { umbrella: '雨傘', rain: '雨；下雨', coffee: '咖啡', wet: '濕的' },
+    words: ['rain', 'wait', 'bus', 'coffee', 'friend'],
+    pages: [
+      { scene: '🌧️ 👩 🚏', lines: [
+        { en: 'It is raining hard today.', zh: '今天雨下得很大。' },
+        { en: 'Mia is waiting for the bus.', zh: '米亞在等公車。' },
+        { en: 'She does not have an umbrella.', zh: '她沒有帶雨傘。' }
+      ] },
+      { scene: '⏰ 🚌 ❌', lines: [
+        { en: 'Ten minutes pass. Twenty minutes pass.', zh: '十分鐘過去了，二十分鐘過去了。' },
+        { en: 'The bus does not come.', zh: '公車一直沒來。' },
+        { en: 'Mia is cold and wet.', zh: '米亞又冷又濕。' }
+      ] },
+      { scene: '☕ 🏪 🚶‍♀️', lines: [
+        { en: 'She sees a small coffee shop.', zh: '她看到一間小咖啡店。' },
+        { en: 'She goes in to wait.', zh: '她走進去等。' }
+      ] },
+      { scene: '👩 👋 👩', lines: [
+        { en: 'A woman at the window says, "Mia? Is that you?"', zh: '窗邊一位女生說：「米亞？是妳嗎？」' },
+        { en: 'It is Amy, her old friend from school!', zh: '是艾咪，她的老同學！' }
+      ] },
+      { scene: '☕ ☕ 😊', lines: [
+        { en: 'They drink coffee and talk for an hour.', zh: '她們喝咖啡聊了一個小時。' },
+        { en: 'Mia is happy the bus was late.', zh: '米亞很慶幸公車遲到了。' }
+      ] }
+    ],
+    quiz: [
+      { q: 'Why did Mia go into the coffee shop?', q_zh: '米亞為什麼走進咖啡店？', options: ['To wait out of the rain', 'To meet Amy', 'To buy an umbrella'], answer: 0, explain_zh: '公車不來、她又冷又濕，所以進去等。遇到艾咪是巧合。' },
+      { q: 'Who is Amy?', q_zh: '艾咪是誰？', options: ['An old friend from school', 'Her sister', 'The bus driver'], answer: 0, explain_zh: 'her old friend from school' },
+      { q: 'How does Mia feel at the end?', q_zh: '最後米亞的感覺？', options: ['Happy', 'Angry', 'Cold'], answer: 0, explain_zh: 'Mia is happy the bus was late.' }
+    ]
+  },
+  {
+    id: 's03',
+    level: 1,
+    title: 'The New Phone',
+    title_zh: '新手機',
+    cover: '📱',
+    names: ['Leo', 'Max'],
+    gloss: { expensive: '貴的', camera: '相機', tail: '尾巴' },
+    words: ['buy', 'price', 'camera', 'picture', 'dog'],
+    pages: [
+      { scene: '📱 💔 😞', lines: [
+        { en: "Leo's old phone is broken.", zh: '里歐的舊手機壞了。' },
+        { en: 'He needs a new one.', zh: '他需要一支新的。' }
+      ] },
+      { scene: '🏪 📱📱📱 🏷️', lines: [
+        { en: 'At the store, there are many phones.', zh: '店裡有很多手機。' },
+        { en: 'Some are very expensive.', zh: '有些很貴。' },
+        { en: 'Leo looks at the price of each one.', zh: '里歐看了每一支的價格。' }
+      ] },
+      { scene: '🧑‍💼 📷 👍', lines: [
+        { en: '"This one has a great camera," the man says.', zh: '「這支的相機很棒，」店員說。' },
+        { en: '"And it is not too expensive."', zh: '「而且不會太貴。」' },
+        { en: 'Leo buys it.', zh: '里歐買了它。' }
+      ] },
+      { scene: '🏠 🐕 📸', lines: [
+        { en: 'At home, he takes a picture of his dog, Max.', zh: '回到家，他幫他的狗麥克斯拍照。' },
+        { en: 'Max does not sit still.', zh: '麥克斯一直動來動去。' }
+      ] },
+      { scene: '🖼️ 🐕 😂', lines: [
+        { en: 'The picture shows only the tail of the dog!', zh: '照片上只有狗的尾巴！' },
+        { en: 'Leo laughs. "Again, Max. Please sit!"', zh: '里歐笑了。「再一次，麥克斯，坐好！」' }
+      ] }
+    ],
+    quiz: [
+      { q: 'Why does Leo need a new phone?', q_zh: '里歐為什麼需要新手機？', options: ['His old phone is broken.', 'He lost his phone.', 'His dog wants one.'], answer: 0, explain_zh: "Leo's old phone is broken." },
+      { q: 'Why did Leo buy that phone?', q_zh: '他為什麼買那一支？', options: ['Good camera, not too expensive', 'It was the most expensive', 'It was red'], answer: 0, explain_zh: '店員說相機很棒又不會太貴。' },
+      { q: 'What was in the first picture?', q_zh: '第一張照片拍到什麼？', options: ["Only the dog's tail", "The dog's face", 'Leo'], answer: 0, explain_zh: '狗一直動，只拍到尾巴。' }
+    ]
+  },
+  {
+    id: 's04',
+    level: 2,
+    title: 'The Late Train',
+    title_zh: '誤點的火車',
+    cover: '🚆',
+    names: ['Ken', 'Lin'],
+    gloss: { announcement: '廣播；公告' },
+    words: ['station', 'late', 'meeting', 'manager', 'message'],
+    pages: [
+      { scene: '🚉 🧑 ⏰', lines: [
+        { en: 'Ken was standing at the station at 7:40.', zh: '7 點 40 分，肯站在車站。' },
+        { en: 'He had an important meeting at nine.', zh: '他九點有一個重要的會議。' }
+      ] },
+      { scene: '📢 🚆 ⚠️', lines: [
+        { en: 'Then he heard an announcement.', zh: '接著他聽到廣播。' },
+        { en: 'The train was going to be thirty minutes late because of a problem with the signal.', zh: '火車因為號誌故障會誤點三十分鐘。' }
+      ] },
+      { scene: '📱 💬 🧑‍💼', lines: [
+        { en: 'Ken sent a message to his manager, Ms. Lin.', zh: '肯傳訊息給他的經理林小姐。' },
+        { en: '"My train is late. I may miss the start of the meeting."', zh: '「我的火車誤點了，我可能會錯過會議的開頭。」' }
+      ] },
+      { scene: '📱 ✅ 😌', lines: [
+        { en: 'She answered quickly.', zh: '她很快就回覆了。' },
+        { en: '"Don\'t worry. Two other people are late too, so we will start at 9:30."', zh: '「別擔心，另外兩個人也遲到，所以我們九點半開始。」' }
+      ] },
+      { scene: '🚆 📄 ✍️', lines: [
+        { en: 'While he was waiting, Ken read his notes again.', zh: '等車的時候，肯又把筆記讀了一遍。' },
+        { en: 'When the meeting started, he was ready.', zh: '會議開始時，他已經準備好了。' },
+        { en: 'The late train gave him time to prepare.', zh: '誤點的火車反而給了他準備的時間。' }
+      ] }
+    ],
+    quiz: [
+      { q: 'Why was the train late?', q_zh: '火車為什麼誤點？', options: ['There was a problem with the signal.', 'The driver was sick.', 'It was raining.'], answer: 0, explain_zh: 'because of a problem with the signal' },
+      { q: 'What time did the meeting start?', q_zh: '會議幾點開始？', options: ['9:30', '9:00', '7:40'], answer: 0, explain_zh: '經理說九點半開始。' },
+      { q: 'What did Ken do while he was waiting?', q_zh: '肯等車時做了什麼？', options: ['He read his notes.', 'He took a taxi.', 'He went home.'], answer: 0, explain_zh: 'While he was waiting, Ken read his notes again.' }
+    ]
+  },
+  {
+    id: 's05',
+    level: 2,
+    title: 'Dinner in Osaka',
+    title_zh: '在大阪吃晚餐',
+    cover: '🍜',
+    names: ['Osaka', 'Tom', 'Sara', 'Japanese', 'English'],
+    gloss: { menu: '菜單', ramen: '拉麵', hungry: '餓的' },
+    words: ['restaurant', 'order', 'menu', 'pay', 'cash'],
+    pages: [
+      { scene: '🏙️ 🌙 🍜', lines: [
+        { en: 'Tom and Sara were on holiday in Osaka.', zh: '湯姆和莎拉在大阪度假。' },
+        { en: 'After a long day of walking, they were very hungry.', zh: '走了一整天，他們非常餓。' }
+      ] },
+      { scene: '🏮 🍜 👥', lines: [
+        { en: 'They found a small ramen restaurant near the hotel.', zh: '他們在飯店附近找到一間小拉麵店。' },
+        { en: 'There were many people inside, so they thought the food was good.', zh: '裡面很多人，所以他們覺得應該很好吃。' }
+      ] },
+      { scene: '📜 🤔 🈚', lines: [
+        { en: 'But the menu was only in Japanese.', zh: '可是菜單只有日文。' },
+        { en: 'Tom could not read it.', zh: '湯姆看不懂。' }
+      ] },
+      { scene: '📱 📷 🍜', lines: [
+        { en: 'Sara used her phone to take a picture of the menu.', zh: '莎拉用手機拍下菜單。' },
+        { en: 'The phone changed the words into English.', zh: '手機把字翻成了英文。' },
+        { en: 'They ordered two large ramen and a plate of fish.', zh: '他們點了兩碗大碗拉麵和一盤魚。' }
+      ] },
+      { scene: '💴 💳 ❌', lines: [
+        { en: 'The food was excellent.', zh: '東西非常好吃。' },
+        { en: 'When they wanted to pay, the cook said, "Sorry, cash only."', zh: '要付錢時，廚師說：「抱歉，只收現金。」' },
+        { en: 'Lucky for them, Tom had enough money in his pocket.', zh: '幸好湯姆口袋裡的錢夠。' }
+      ] }
+    ],
+    quiz: [
+      { q: 'Why did they choose this restaurant?', q_zh: '他們為什麼選這間？', options: ['Many people were eating there.', 'It was cheap.', 'The menu was in English.'], answer: 0, explain_zh: '裡面人很多，他們覺得應該好吃。' },
+      { q: 'How did they read the menu?', q_zh: '他們怎麼看懂菜單？', options: ['A phone changed it into English.', 'The cook read it for them.', 'Tom can read Japanese.'], answer: 0, explain_zh: '莎拉用手機拍照翻譯。' },
+      { q: 'What was the problem at the end?', q_zh: '最後遇到什麼問題？', options: ['The restaurant took cash only.', 'The food was cold.', 'They lost their phone.'], answer: 0, explain_zh: 'cash only = 只收現金。' }
+    ]
+  },
+  {
+    id: 's06',
+    level: 2,
+    title: 'The Office Plant',
+    title_zh: '辦公室的植物',
+    cover: '🪴',
+    names: ['Nina'],
+    gloss: { symbol: '象徵；符號' },
+    words: ['plant', 'water', 'light', 'team', 'grow'],
+    pages: [
+      { scene: '🏢 🪴 🥀', lines: [
+        { en: 'There has been a plant in our office for three years.', zh: '我們辦公室裡有一盆植物已經三年了。' },
+        { en: 'Nobody remembers who bought it.', zh: '沒有人記得是誰買的。' },
+        { en: 'Last month, its leaves started to turn brown.', zh: '上個月，它的葉子開始變黃。' }
+      ] },
+      { scene: '👩 🔍 🪴', lines: [
+        { en: 'Nina, our new engineer, looked at it carefully.', zh: '我們的新工程師妮娜仔細看了看它。' },
+        { en: '"It is not getting enough light," she said.', zh: '「它的光線不夠，」她說。' },
+        { en: '"And I think everyone gives it water, so it gets too much."', zh: '「而且我猜每個人都澆水，所以水太多了。」' }
+      ] },
+      { scene: '📋 💧 📅', lines: [
+        { en: 'So the team made a simple plan.', zh: '於是團隊訂了一個簡單的計畫。' },
+        { en: 'We moved the plant next to the window.', zh: '我們把植物搬到窗邊。' },
+        { en: 'Only one person gives it water, and only on Fridays.', zh: '只有一個人澆水，而且只在星期五。' }
+      ] },
+      { scene: '🪴 🌱 ☀️', lines: [
+        { en: 'Since then, the plant has grown three new leaves.', zh: '從那之後，植物長出了三片新葉子。' },
+        { en: 'It has become a small symbol of our team.', zh: '它成了我們團隊的小小象徵。' },
+        { en: 'When a project goes well, someone says, "Look, the plant is happy too."', zh: '專案順利的時候，就會有人說：「看，植物也很開心。」' }
+      ] }
+    ],
+    quiz: [
+      { q: 'What was wrong with the plant?', q_zh: '植物出了什麼問題？', options: ['Not enough light and too much water', 'Not enough water', 'It was too old'], answer: 0, explain_zh: '光線不夠、水澆太多。' },
+      { q: 'How long has the plant been in the office?', q_zh: '植物在辦公室多久了？', options: ['Three years', 'Three months', 'One week'], answer: 0, explain_zh: 'There has been a plant in our office for three years.' },
+      { q: 'What does "the plant is happy too" mean?', q_zh: '「植物也很開心」表示？', options: ['The team is doing well.', 'The plant needs water.', 'Nina bought a new plant.'], answer: 0, explain_zh: '專案順利時大家會這樣說，植物象徵團隊。' }
+    ]
+  },
+  {
+    id: 's07',
+    level: 3,
+    title: 'The Interview',
+    title_zh: '面試',
+    cover: '💼',
+    names: ['Jay', 'Wu', 'English'],
+    gloss: {},
+    words: ['interview', 'nervous', 'prepare', 'project', 'answer'],
+    pages: [
+      { scene: '🧑 💼 😬', lines: [
+        { en: 'Jay had his first job interview in English on Thursday.', zh: '傑星期四有他第一次的英文面試。' },
+        { en: 'He was so nervous that he could not sleep the night before.', zh: '他緊張到前一晚睡不著。' }
+      ] },
+      { scene: '📝 🗣️ 🪞', lines: [
+        { en: 'For a week, he had prepared answers to common questions.', zh: '一整個禮拜，他都在準備常見問題的答案。' },
+        { en: 'He practiced in front of the mirror and recorded himself on his phone.', zh: '他對著鏡子練習，還用手機錄下自己。' }
+      ] },
+      { scene: '🏢 🤝 👩‍💼', lines: [
+        { en: 'The manager, Ms. Wu, smiled and asked him to describe a difficult project.', zh: '經理吳小姐笑著請他描述一個困難的專案。' },
+        { en: 'Jay talked about a machine that kept failing at his old company.', zh: '傑談到他前公司一台一直故障的機器。' },
+        { en: 'He explained how his team had found the cause and fixed it.', zh: '他說明團隊怎麼找到原因並修好它。' }
+      ] },
+      { scene: '❓ 🤔 💬', lines: [
+        { en: 'Then she asked a question he had not expected.', zh: '接著她問了一個他沒料到的問題。' },
+        { en: '"What do you do when you do not know the answer?"', zh: '「你不知道答案的時候會怎麼做？」' },
+        { en: 'Jay paused, then gave an honest answer: "I ask, and I write it down so I do not ask twice."', zh: '傑停了一下，誠實地回答：「我會問，而且會記下來，同樣的問題不問第二次。」' }
+      ] },
+      { scene: '📧 🎉 😄', lines: [
+        { en: 'Two days later, he received an email.', zh: '兩天後，他收到一封電子郵件。' },
+        { en: 'He got the job.', zh: '他錄取了。' },
+        { en: 'Ms. Wu wrote that his honest answer had impressed the whole team.', zh: '吳小姐寫道，他誠實的回答讓整個團隊印象深刻。' }
+      ] }
+    ],
+    quiz: [
+      { q: 'How did Jay prepare?', q_zh: '傑怎麼準備？', options: ['He practiced answers and recorded himself.', 'He did not prepare.', 'He asked Ms. Wu for the questions.'], answer: 0, explain_zh: '準備答案、對鏡子練習、錄音。' },
+      { q: 'Which question surprised him?', q_zh: '哪一題讓他意外？', options: ['What he does when he does not know the answer', 'His favorite food', 'His salary'], answer: 0, explain_zh: 'a question he had not expected' },
+      { q: 'Why did Jay get the job?', q_zh: '傑為什麼錄取？', options: ['His honest answer impressed the team.', 'He knew Ms. Wu.', 'He was the only person.'], answer: 0, explain_zh: '最後一句：誠實的回答讓團隊印象深刻。' }
+    ]
+  },
+  {
+    id: 's08',
+    level: 3,
+    title: 'Gate Change',
+    title_zh: '登機門改了',
+    cover: '🛫',
+    names: ['Ann', 'Tokyo'],
+    gloss: { airport: '機場', passport: '護照' },
+    words: ['airport', 'flight', 'passport', 'announcement', 'gate'],
+    pages: [
+      { scene: '🛫 🧳 👩', lines: [
+        { en: 'Ann arrived at the airport two hours before her flight to Tokyo.', zh: '安在飛往東京的班機起飛前兩小時抵達機場。' },
+        { en: 'She checked in, went through security, and bought a coffee.', zh: '她辦好報到、通過安檢，買了一杯咖啡。' }
+      ] },
+      { scene: '📖 😴 ⏰', lines: [
+        { en: 'At gate 12, she sat down with a novel.', zh: '在 12 號登機門，她坐下來看小說。' },
+        { en: 'The story was so exciting that she did not notice the time.', zh: '故事太精彩，她沒注意時間。' }
+      ] },
+      { scene: '📢 ❓ 🚶', lines: [
+        { en: 'Suddenly she realized that the area around her was almost empty.', zh: '她突然發現周圍幾乎空了。' },
+        { en: 'She had missed an announcement: the flight had moved to gate 31.', zh: '她錯過了一則廣播：班機改到 31 號登機門。' }
+      ] },
+      { scene: '🏃‍♀️ 💨 🛂', lines: [
+        { en: 'Ann grabbed her bag and ran.', zh: '安抓起包包就跑。' },
+        { en: 'Gate 31 was at the other end of the building.', zh: '31 號門在航廈的另一頭。' },
+        { en: 'When she got there, boarding was nearly finished.', zh: '她到的時候，登機已經快結束了。' }
+      ] },
+      { scene: '✈️ 😮‍💨 🎫', lines: [
+        { en: 'The staff checked her passport and let her on.', zh: '工作人員檢查她的護照，讓她登機。' },
+        { en: 'She was the last passenger to get on the plane.', zh: '她是最後一位登機的乘客。' },
+        { en: 'Since that day, she always checks the screens every twenty minutes.', zh: '從那天起，她每二十分鐘就會看一次螢幕。' }
+      ] }
+    ],
+    quiz: [
+      { q: 'Why did Ann miss the announcement?', q_zh: '安為什麼錯過廣播？', options: ['She was reading an exciting novel.', 'She was sleeping on the plane.', 'She was at security.'], answer: 0, explain_zh: '故事太精彩，沒注意時間。' },
+      { q: 'Where did the flight move to?', q_zh: '班機改到哪裡？', options: ['Gate 31', 'Gate 12', 'Tokyo'], answer: 0, explain_zh: 'the flight had moved to gate 31' },
+      { q: 'What does Ann do now?', q_zh: '安現在會怎麼做？', options: ['She checks the screens often.', 'She never reads at airports.', 'She arrives late.'], answer: 0, explain_zh: '她每二十分鐘看一次螢幕。' }
+    ]
+  }
+]

@@ -1,47 +1,49 @@
 # NGSL Learner
 
-每天一關的英文學習 PWA：NGSL 2801 個高頻單字 + 30 個核心文法點 + LLM 生成的每日短文。
+每天一關的英文學習 PWA：NGSL 2801 個高頻單字 + 30 個核心文法點 + 分級圖文故事，以圖片、遊戲與提取練習為主。
 架在 GitHub Pages 上，用 iPhone 加到主畫面就是一個 App。
 
 **線上網址**：https://mickharm.github.io/ngsl-learner/
 
 ---
 
-## 這是什麼
+## v2：為什麼重構、改了什麼
 
-給「單字量約 400-500、沒有文法基礎、目標是旅遊會話與 TOEIC 600」的學習者用的。
-設計上針對三個具體問題：
+使用一個月後的兩個回饋，各自對應到學習科學裡很明確的失敗模式：
 
-| 問題 | 對應機制 |
-|---|---|
-| 背起來的字太久沒用會忘 | Modified SM-2 間隔重複，在快要忘記前把字排回來 |
-| 相似的字會搞混 | 每個字帶 confusables，複習時強制把易混字放進同一題的選項 |
-| 沒有文法，句子講不出來 | 30 個文法點，每個附 6 題練習（選擇 / 句子重組 / 找錯） |
-| 學了不會用 | 每天用當天的單字生成一篇短文 + 6 題理解測驗，文中任何字都能點開看解釋 |
-| 看得懂但說不出來 | 每天 4 個字的造句練習，AI 批改文法、用字與自然度 |
-| 基礎常識沒人教 | 12 個基礎單元：at/in/on、月份日期、數字、代名詞、不規則動詞、片語動詞… |
+| 回饋 | 診斷 | v2 的做法 |
+|---|---|---|
+| 單字沒有記憶點，或是短時間內重複看幾次記住了，過一陣子又忘 | ① 編碼太淺：只有「英文 → 中文」一種表徵。② 同一 session 的 1 分 / 10 分重看被當成複習證據（massed practice 會讓當下正確率與自信都偏高、一週後保留較差 — Nakata & Suzuki 2019）。③ 每次複習都是同一張卡、同一個方向，「認得這張卡」被當成「會這個字」。④ 自評按鈕緊接在看完答案之後，是最容易高估的時刻 | **Word Lab**：圖片（536 字手工對應 emoji）+ 依發音拆塊與重音（1471 字）+ 學習者自己畫的記號（drawing effect）或自己的句子（self-reference）。**一天只排一次複習**，同一 session 內的重看是練習、不進排程。**提取階梯**：認得 → 聽得懂 → 想得起 → 拼得出 → 用得出，答對升一階、答錯退一階，每次複習換更難的考法。**客觀評分**取代自評。排程改用 **FSRS**（ts-fsrs） |
+| 文法練習太相似，邏輯規則都一樣，照順序做就好 | 每個文法點六題同三種題型、而且只練這一點（blocked practice）——每題都能直接套剛讀到的規則，從來不需要判斷「這題考哪條規則」 | **Grammar Studio**：先讓學習者從例句猜規律（noticing），再看規則；規則用圖畫出來（時態時間線、句型色塊）；練習混合 9 種題型（看圖選句、時間線定位、意義判斷、句型積木、點出錯字、✅/❌ 分類…）；之後是**跨文法點交錯的混合挑戰**，每題答完標示「這題考：____」，混淆的文法點明天提早回來 |
 
-還有一個開場的**分級測驗**：NGSL 第 1-100 名是 `be / and / of / to`，直接從第 1 個開始
-複習等於浪費兩週。48 題二分搜尋找出你的字彙邊界，再決定從哪裡起步。
+另外加上「美式教學」常見的三塊：
 
----
+- **Story Time**：8 篇分級圖文故事（入門／基礎／進階），每個 token 都用 app 自己的字彙解析器檢查，未預教的超綱字 ≤ 2%（Hu & Nation 的 98% coverage 原則）；讀完玩排順序、理解題、找單字。
+- **遊樂場**：配對、拼字蜂、聽音辨義、誰不一樣（Marzano 六步驟的第 6 步：用遊戲玩這些字），不影響排程。
+- **單字圖鑑 + 字力等級**：字力 = 每個字達到的階梯高度加總，忘記會掉、刷簡單題刷不上去，兩支手機算出來一樣。
 
-## 每天的流程
+每天的流程（A/B 兩軌輪替不變）：
 
 ```
-新單字 → 複習 → 文法 → 基礎知識 → 造句 → 閱讀 → 結算
- 15min   15min  12min    12min    12min  15min   3min
+A 日：複習挑戰 → Word Lab → Grammar Studio → Story Time → 聽力 → 結算
+B 日：複習挑戰 → Word Lab → 基礎知識      → 造句       → 聽力 → 結算
 ```
 
-實測第一天只花 20 分鐘，因為分級測驗把已知字排到 3-10 天後，第一天的複習量是 0。
-加上基礎知識與造句兩個階段後，即使複習為空也有 ~60 分鐘；複習存量累積後會到 75-90。
+複習改到新字前面：先把快忘的字撈回來，再學新的。
 
-每個階段要前一個完成才會解鎖（沒東西可做的階段會自動跳過）。
-這條規則存在的唯一理由：防止只學新字、不做複習——那是所有單字 App 失敗的方式。
+### 依據（v2 實際參考的研究）
 
-另外每 50 個字是一個小關，該關 80% 的字進入 review 階段才會解鎖下一關。
-
----
+- Marzano 的詞彙教學六步驟（說明 → 用自己的話 → **自己畫圖或符號** → 延伸 → 討論 → **遊戲**）
+- Wammes, Meade & Fernandes (2016)：畫出一個字（即使只有 4 秒、畫得很醜）的自由回憶常是抄寫的兩倍以上
+- Nakata & Suzuki (2019, SSLA)：集中練習當下正確率較高但一週後保留較差，且集中組會高估自己的記憶；語意相近的字放在一起學會產生組內混淆
+- Nakata & Suzuki (2019)「Mixing grammar exercises facilitates long-term retention」；Pan et al. (2019)：**教的時候按順序、練的時候打散**才有交錯練習的效益（純隨機或純輪流都沒有）
+- Rawson & Dunlosky：successive relearning——跨多次 session 提取到答對為止（v2 的「答錯 → 當場重教 → session 結束前答對一次 → 兩天內再考」）
+- Ehri：orthographic mapping——拼字、發音、意思綁在一起時新字比較好記
+- Wang & Thomas (1995)：諧音／關鍵字記憶法立即效果好，但沒有複習時一週後忘得比語意策略快 → v2 把 mnemonic 當輔助，主推自己的句子與圖
+- VanPatten 的 processing instruction（structured input）：學習者必須處理形式才能答對意義題
+- Hu & Nation (2000)：舒適閱讀約需 98% 已知字（Lancaster 的複製研究未能完全重現精確門檻，方向不變）
+- Sailer & Homner (2020) 遊戲化統合分析：認知成效 g≈0.49 在高嚴謹子集仍成立；動機與行為成效在高嚴謹子集不顯著 → 點數直接等於學習本身，不做獨立的抽獎/徽章經濟
+- Open Spaced Repetition 的 SRS benchmark：FSRS-6 在 99.6% 使用者的 log loss 低於 SM-2
 
 ## 技術架構
 
@@ -117,47 +119,64 @@ npm run deploy         # 把 dist/ 推到 gh-pages 分支
 `workflow` scope。若要改成 push 就自動建置的 GitHub Actions，
 `deploy/README.md` 有完整步驟。
 
-`npm run smoke` 會把 Supabase 與 Gemini 都 stub 在網路層，跑完 23 個畫面，
-檢查 console error 與水平溢出。改完 UI 跑一次再 push。
+`npm run smoke` 會把 Supabase 與 Gemini 都 stub 在網路層，跑完 56 個畫面、63 項檢查，
+檢查 console error 與水平溢出。改完 UI 跑一次再 push。fixture 內含 8 張到期的舊 SM-2 卡與
+3 個已學文法點，所以 v2 的轉換、階梯題型與交錯混合每次都會被走到。
 
 ### 專案結構
 
 ```
 src/
   lib/
-    srs.js        SM-2 排程引擎（純函式，可單獨測）
-    gemini.js     LLM 呼叫、structured output schema、重試
-    tts.js        Web Speech，處理 iOS Safari 的 voice 載入與首次手勢限制
-    idb.js        IndexedDB 薄封裝
+    wordsrs.js    單字排程 v2：FSRS（ts-fsrs）+ 提取階梯 + 舊 SM-2 卡就地轉換
+    srs.js        SM-2，仍用於文法點與基礎單元（concept card）
+    game.js       單字遊戲共用：干擾選項、字母磚、配對
+    grammarGames.js  文法題型衍生（點錯字 / 二選一 / ✅❌）、練習與交錯混合
+    lexicon.js    字形 → NGSL id（瀏覽器與 Node 測試共用）
+    xp.js         字力與等級
+    drawings.js   學習者自己的圖與句子（只存在裝置上）
+    gemini.js / tts.js / idb.js
   stores/
     progress.js   卡片狀態 + outbox（離線時寫入佇列，回線自動同步）
     session.js    當日關卡、階段解鎖、計時
     words.js      三層資料：bundled base → Supabase 共用快取 → Gemini 補齊
   data/
-    words.base.json    2801 字的 rank/headword/band/family（168 KB）
+    words.base.json    2801 字的 rank/headword/band/family
+    pictures.js        536 字的手工圖片對應（依主題分組）
+    chunks.json        1471 字的發音拆塊 + 重音（hyphen 與 CMU 字典一致才收）
     grammar-b1/b2/b3   30 個文法點、180 題練習
-    essentials-*       12 個基礎單元、71 題種子練習
+    grammar-studio.js  每點的找規律題、視覺模型、90 題圖像/時間線/意義/積木題
+    stories.js         8 篇分級圖文故事
+    essentials-*       12 個基礎單元
   components/
-    DrillRunner.vue    文法／基礎／AI 生成題共用的答題器
+    games/WordGame.vue     五種提取題型（同一元件）
+    games/MatchPairs.vue   連連看
+    grammar/               GrammarGame（9 種題型）、TenseTimeline、SentenceSlots
+    SketchPad / PictureTile / WordChunks
 ```
+
+**v2 不需要改資料庫**：`card_progress` 欄位照舊，`ease` 存 FSRS difficulty、
+`interval_days` 存 stability、`step_index` 存 `100 + 階梯`；`step_index < 100` 的舊卡在讀入時轉換、
+下次作答寫回 v2 格式（`scripts/test-wordsrs.mjs` 釘住轉換保留到期日、等級對應與冪等）。
 
 **基礎單元不需要新資料表**：`grammar_progress` 的欄位完全相同，且 id 不會撞
 （文法是 g01…g30，基礎是 e01…e12），兩個 store 各自用前綴過濾。
 
 ---
 
-## SRS 參數
+## SRS 參數（單字，v2）
 
 | 參數 | 值 | 理由 |
 |---|---|---|
-| Learning steps | 1 min → 10 min | 新字在同一個 session 內看三次，不是一次 |
-| 畢業間隔 | 1 天（簡單：4 天） | |
-| 初始 ease | 2.5，下限 1.3 | |
-| Lapse 後 | 間隔 × 0.4，進 relearning | 全部歸零在這個量下太打擊人；40% 保留壓力但不重來 |
-| Mastered | interval ≥ 21 天且連續 3 次正確 | 只是顯示狀態，仍會回到輪替 |
-| 逾期加成 | 最多 ×1.3 | 逾期很久還答對，代表記憶比排程假設的強 |
+| 演算法 | FSRS-6（ts-fsrs 預設參數），目標保留率 90% | 對大量真實資料的預測優於 SM-2 |
+| 短期步驟 | 關閉 | 同一 session 的重看不算複習；每字每天只排一次 |
+| 最短間隔 | 約 1 天 | 「今天稍後」不排，那是 Word Lab 的事 |
+| 階梯上限 | 認得 3 天 / 聽得懂 7 / 想得起 14 / 拼得出 30 / 用得出 365 | 只靠辨識答對的字不會被推到一個月後 |
+| 答錯 | 退一階，2 天內重考 | successive relearning |
+| 評分 | 錯 = AGAIN、慢或用提示 = HARD、乾淨答對 = GOOD；遊戲永不給 EASY | 客觀量測取代自評 |
+| 熟練 | stability ≥ 21 天且階梯 ≥ 拼得出 | 只認得不算熟練 |
 
-複習佇列依 retrievability 由低到高排序——最快忘記的先出現，超過每日上限的順延。
+文法點與基礎單元仍用原本的 SM-2 concept card 參數（`CONCEPT_SRS`）。
 
 ---
 

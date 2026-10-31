@@ -2,9 +2,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
 import { idbGetAll, idbPutMany, idbPut, idbGet, idbDelete, STORE } from '@/lib/idb'
+import { newCard, GRADE, STATE } from '@/lib/srs'
 import {
-  newCard, schedule, GRADE, STATE, isMastered, sortReviewQueue, retrievability
-} from '@/lib/srs'
+  scheduleWord, migrateLegacy, isMasteredV2, retrievabilityV2, dueSoonest,
+  ladderOf, isV2, easeToDifficulty, V2_BASE
+} from '@/lib/wordsrs'
 import { STAGE_SIZE, STAGE_UNLOCK_RATIO } from '@/config'
 import AFFIX from '@/data/affix.json'
 const AFFIX_FAMILIES = AFFIX.families
@@ -93,7 +95,7 @@ export const useProgress = defineStore('progress', () => {
    * ------------------------------------------------------------------ */
   async function load () {
     const cached = await idbGetAll(STORE.CARDS)
-    if (cached.length) cards.value = new Map(cached.map(c => [c.wordId, c]))
+    if (cached.length) cards.value = new Map(cached.map(c => [c.wordId, migrateLegacy(c)]))
 
     const savedOutbox = await idbGet(STORE.META, 'outbox')
     if (Array.isArray(savedOutbox)) outbox = savedOutbox
@@ -118,10 +120,13 @@ export const useProgress = defineStore('progress', () => {
         from += page
       }
       const next = new Map()
-      for (const r of rows) next.set(r.word_id, rowToCard(r))
+      // Legacy SM-2 rows are converted in memory; they are written back in v2
+      // form the next time each word is answered, so there is nothing to run
+      // on the database before this version goes live.
+      for (const r of rows) next.set(r.word_id, migrateLegacy(rowToCard(r)))
       // Anything still queued locally is newer than what the server returned.
       for (const q of outbox) {
-        if (q.kind === 'card') next.set(q.card.wordId, q.card)
+        if (q.kind === 'card') next.set(q.card.wordId, migrateLegacy(q.card))
         else if (q.kind === 'card-delete') next.delete(q.wordId)
       }
       cards.value = next
@@ -236,7 +241,7 @@ export const useProgress = defineStore('progress', () => {
 
   const dueCards = computed(() => {
     const now = Date.now()
-    return sortReviewQueue([...cards.value.values()].filter(c => c.dueAt <= now), now)
+    return dueSoonest([...cards.value.values()].filter(c => c.dueAt <= now), now)
   })
 
   const learningCards = computed(() =>
@@ -246,7 +251,7 @@ export const useProgress = defineStore('progress', () => {
   const stats = computed(() => {
     let mastered = 0, review = 0, learning = 0, lapsedTotal = 0
     for (const c of cards.value.values()) {
-      if (isMastered(c)) mastered++
+      if (isMasteredV2(c)) mastered++
       else if (c.state === STATE.REVIEW) review++
       else learning++
       lapsedTotal += c.lapses
@@ -263,7 +268,9 @@ export const useProgress = defineStore('progress', () => {
       let graduated = 0
       for (let id = from; id <= to; id++) {
         const c = cards.value.get(id)
-        if (c && (c.state === STATE.REVIEW || isMastered(c))) graduated++
+        // Answered correctly at least once after being introduced — a word
+        // that was only ever shown does not open the next stage.
+        if (c && c.state === STATE.REVIEW && ladderOf(c) >= 1) graduated++
       }
       if (graduated / STAGE_SIZE >= STAGE_UNLOCK_RATIO && to < 2801) stage++
       else break
@@ -353,10 +360,16 @@ export const useProgress = defineStore('progress', () => {
   /* ------------------------------------------------------------------ *
    * mutations
    * ------------------------------------------------------------------ */
-  function gradeCard (wordId, grade, { mode = 'card', elapsedMs = null } = {}) {
+  /**
+   * One measured review of a word. `level` is the ladder rung the answer was
+   * given at (see lib/wordsrs.js); omitted, the card's own rung is assumed.
+   * Call this once per word per sitting — repeats inside a sitting are
+   * practice and must not reach the scheduler.
+   */
+  function gradeCard (wordId, grade, { mode = 'card', elapsedMs = null, level } = {}) {
     const existing = cards.value.get(wordId) || newCard(wordId)
     const wasNew = existing.state === STATE.NEW
-    const updated = schedule(existing, grade, Date.now())
+    const updated = scheduleWord(existing, grade, Date.now(), { level })
 
     const next = new Map(cards.value)
     next.set(wordId, updated)
@@ -393,17 +406,20 @@ export const useProgress = defineStore('progress', () => {
     const rows = []
     for (const id of wordIds) {
       if (next.has(id)) continue
+      // Written straight as a v2 card on rung 2: a claimed-known word is first
+      // checked by recall (picture → English), not by recognition.
       const c = {
         ...newCard(id, now),
         state: STATE.REVIEW,
         intervalDays,
-        ease: 2.5,
+        ease: 4,
+        stepIndex: V2_BASE + 2,
         reps: 1,
         streak: 1,
         lastGrade: GRADE.GOOD,
         lastReviewedAt: now,
         introducedAt: now,
-        dueAt: now + intervalDays * 86400000
+        dueAt: now + Math.min(intervalDays, 14) * 86400000
       }
       next.set(id, c)
       rows.push(c)
@@ -488,15 +504,21 @@ export const useProgress = defineStore('progress', () => {
     )
   }
 
-  /** Weakest first: most lapses, then lowest ease. */
+  /** Weakest first: most lapses, then highest difficulty. */
   const troubleWords = computed(() => {
     const out = []
     for (const id of troubleWordIds.value) {
       const c = cards.value.get(id) || newCard(id)
       out.push(c)
     }
-    return out.sort((a, b) => (b.lapses - a.lapses) || (a.ease - b.ease)).slice(0, 60)
+    return out.sort((a, b) => (b.lapses - a.lapses) || (hardness(b) - hardness(a))).slice(0, 60)
   })
+
+  /** FSRS difficulty, whichever format the card is in. */
+  function hardness (c) {
+    if (!c || c.state === STATE.NEW) return 0
+    return isV2(c) ? c.ease : easeToDifficulty(c.ease)
+  }
 
   /** What the tab badge shows — must equal what the page can actually list. */
   const mistakeCount = computed(() => troubleWordIds.value.size + questionErrors.value.length)
@@ -554,6 +576,6 @@ export const useProgress = defineStore('progress', () => {
     load, loadDay, loadHistory, loadErrors, flush,
     cardOf, newCandidates, clearUntouchedPrefill, gradeCard, markKnown, bumpDay, setDay,
     logError, resolveError, resetAll,
-    retrievability, daysBetween
+    retrievability: retrievabilityV2, hardness, daysBetween
   }
 })
