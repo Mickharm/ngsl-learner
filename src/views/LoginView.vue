@@ -6,12 +6,14 @@ import { useToast } from '@/stores/toast'
 import { PROFILES } from '@/config'
 
 /**
- * Two named profiles instead of an email field. Public signup is disabled in
- * Supabase, so there is no reason to make either person remember that "Dai"
- * is spelled dai@ngsl.app — the app knows.
+ * Three named profiles instead of an email field — this instance is for
+ * exactly these three people, so nobody has to remember that "Dai" is
+ * spelled dai@ngsl.app; the app knows.
  *
- * The manual form stays available behind a link: it is what the first-run
- * registration uses, and the escape hatch if a third account is ever added.
+ * There is no free-form login and no general sign-up. The only way to create
+ * an account is the one-time first-use link on a profile marked `firstUse`
+ * (玟廷, added in v4), and that only works while sign-up is still enabled in
+ * Supabase; once it is turned off the link fails with a plain message.
  *
  * The device also remembers who used it last, so a returning learner lands on
  * their own password box rather than the chooser — and with "記住我" left on,
@@ -25,9 +27,7 @@ const route = useRoute()
 const toast = useToast()
 
 const picked = ref(null)          // a PROFILES entry, or null on the chooser
-const manual = ref(false)
 const mode = ref('signin')        // signin | signup
-const email = ref('')
 const password = ref('')
 const remember = ref(true)
 const err = ref('')
@@ -37,15 +37,10 @@ onMounted(() => {
   const last = auth.lastEmail
   const known = PROFILES.find(p => p.email === last)
   if (known) choose(known, { focus: false })
-  else if (last) { manual.value = true; email.value = last }
 })
 
-const activeEmail = computed(() =>
-  manual.value ? email.value.trim() : (picked.value?.email || '')
-)
-const activeName = computed(() =>
-  manual.value ? email.value.split('@')[0] : (picked.value?.name || '')
-)
+const activeEmail = computed(() => picked.value?.email || '')
+const activeName = computed(() => picked.value?.name || '')
 
 const canSubmit = computed(() =>
   /.+@.+\..+/.test(activeEmail.value) && password.value.length >= 6 && !auth.busy
@@ -53,7 +48,7 @@ const canSubmit = computed(() =>
 
 async function choose (p, { focus = true } = {}) {
   picked.value = p
-  manual.value = false
+  mode.value = 'signin'
   err.value = ''
   password.value = ''
   await nextTick()
@@ -62,16 +57,11 @@ async function choose (p, { focus = true } = {}) {
 
 function back () {
   picked.value = null
-  manual.value = false
+  mode.value = 'signin'
   password.value = ''
   err.value = ''
 }
 
-function openManual () {
-  manual.value = true
-  picked.value = null
-  err.value = ''
-}
 
 async function submit () {
   err.value = ''
@@ -112,7 +102,7 @@ async function submit () {
       </section>
 
       <!-- ---------- profile chooser: one exercise book each ---------- -->
-      <section v-if="!picked && !manual" class="pick">
+      <section v-if="!picked" class="pick">
         <p class="pick__label kai">拿起你的作業簿</p>
         <div class="pick__grid">
           <button
@@ -128,10 +118,9 @@ async function submit () {
             </span>
           </button>
         </div>
-        <button class="btn btn--quiet btn--sm zh" @click="openManual">用其他帳號登入</button>
       </section>
 
-      <!-- ---------- password / manual form ---------- -->
+      <!-- ---------- password ---------- -->
       <form v-else class="form card card--pad" @submit.prevent="submit">
         <header v-if="picked" class="who__head">
           <span class="who__chip" :class="`book--${picked.accent}`" aria-hidden="true" />
@@ -142,15 +131,6 @@ async function submit () {
           <button type="button" class="btn btn--quiet btn--sm zh" @click="back">換人</button>
         </header>
         <p v-if="mode === 'signup'" class="first zh">第一次使用：自己設定一組密碼（至少 6 個字），之後就用它登入。建立後會先做一個 5 分鐘的程度測驗。</p>
-
-        <div v-if="manual" class="field">
-          <label class="label" for="email">Email</label>
-          <input
-            id="email" v-model="email" class="input" type="email"
-            autocomplete="email" inputmode="email" autocapitalize="none"
-            placeholder="you@example.com" required
-          >
-        </div>
 
         <div class="field">
           <label class="label" for="pw">密碼</label>
@@ -184,14 +164,11 @@ async function submit () {
         </button>
 
         <button
+          v-if="picked?.firstUse"
           type="button" class="btn btn--quiet btn--sm btn--block zh"
           @click="mode = mode === 'signup' ? 'signin' : 'signup'; err = ''"
         >
           {{ mode === 'signup' ? '我已經有帳號，回到登入' : '第一次使用？設定密碼、建立帳號' }}
-        </button>
-
-        <button v-if="manual" type="button" class="btn btn--quiet btn--sm btn--block zh" @click="back">
-          ← 回到選擇使用者
         </button>
       </form>
 

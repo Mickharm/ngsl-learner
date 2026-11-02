@@ -212,12 +212,12 @@ function isNetworkError (err) {
 function translateAuthError (msg = '') {
   const m = msg.toLowerCase()
   if (m.includes('invalid login')) return 'Email 或密碼不正確'
-  if (m.includes('already registered') || m.includes('already been registered')) return '這個 Email 已經註冊過了，請直接登入'
+  if (m.includes('already registered') || m.includes('already been registered')) return '這個帳號已經建立過了，請按「回到登入」直接輸入密碼'
   if (m.includes('password should be at least')) return '密碼至少需要 6 個字元'
   if (m.includes('unable to validate email') || m.includes('invalid email')) return 'Email 格式不正確'
   if (m.includes('email not confirmed')) return '請先到信箱點擊確認信，或到 Supabase 後台關閉 Email 驗證'
   if (m.includes('rate limit') || m.includes('too many')) return '嘗試次數過多，請稍後再試'
-  if (m.includes('signups not allowed') || m.includes('signup is disabled')) return '這個 App 已關閉註冊，請用既有的帳號登入'
+  if (m.includes('signups not allowed') || m.includes('signup is disabled')) return '註冊已關閉。如果這個帳號還沒建立，請 Mick 在 Supabase 暫時開啟註冊，或直接在後台新增使用者。'
   if (m.includes('fetch')) return '無法連線到伺服器，請檢查網路'
   return msg || '登入失敗'
 }

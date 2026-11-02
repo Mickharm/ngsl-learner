@@ -23,9 +23,10 @@ export const SUPABASE_KEY =
 export const PROFILES = Object.freeze([
   { name: 'Dai', email: 'dai@ngsl.app', accent: 'pink' },
   { name: 'Xin', email: 'xin@ngsl.app', accent: 'blue' },
-  // Added in v4. Creates her own account on first use (signup is open in
-  // Supabase with auto-confirm); the login screen offers that path.
-  { name: '玟廷', email: 'wenting@ngsl.app', accent: 'yellow' }
+  // Added in v4. `firstUse` shows the one-time "set a password" link on her
+  // book — the only sign-up path in the app. It needs Supabase sign-up to be
+  // enabled at that moment; turn it off again once her account exists.
+  { name: '玟廷', email: 'wenting@ngsl.app', accent: 'yellow', firstUse: true }
 ])
 
 export const APP_NAME = 'NGSL Learner'

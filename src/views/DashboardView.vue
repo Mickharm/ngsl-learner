@@ -1,12 +1,11 @@
 <script setup>
-import { computed, onMounted, onUnmounted, watch } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProgress } from '@/stores/progress'
 import { useSession } from '@/stores/session'
 import { useSettings } from '@/stores/settings'
 import { useWords } from '@/stores/words'
 import { useAuth } from '@/stores/auth'
-import { useFamily } from '@/stores/family'
 import { BANDS } from '@/config'
 import { wordPower, levelOf, titleOf } from '@/lib/xp'
 import { EXAMPLES } from '@/data/morphology'
@@ -26,7 +25,6 @@ const session = useSession()
 const settings = useSettings()
 const words = useWords()
 const router = useRouter()
-const family = useFamily()
 
 const ZH_NUM = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
 const WEEKDAY = ['日', '一', '二', '三', '四', '五', '六']
@@ -84,23 +82,10 @@ const wotd = computed(() => {
   return list[day % list.length]
 })
 
-/* ---- 家人聯絡簿 ---- */
-const myLine = computed(() => ({
-  done_steps: session.completedCount,
-  total_steps: session.todayPhases.length,
-  minutes: session.minutesToday,
-  streak: progress.streak,
-  xp: power.value.xp
-}))
-watch(myLine, l => family.publish(l))
-const showFamily = computed(() => family.available && family.board.length >= 2)
-
-onMounted(async () => {
+onMounted(() => {
   session.rollIfNewDay()
   session.startClock()
-  if (needsPlacement.value) { router.replace('/setup'); return }
-  await family.load()
-  family.publish(myLine.value)
+  if (needsPlacement.value) router.replace('/setup')
 })
 onUnmounted(() => session.stopClock())
 </script>
@@ -150,21 +135,6 @@ onUnmounted(() => session.stopClock())
           </button>
         </li>
       </ol>
-    </section>
-
-    <!-- the family's day -->
-    <section v-if="showFamily" class="fam">
-      <h2 class="sec__t kai">家人聯絡簿</h2>
-      <ul class="fam__list">
-        <li v-for="m in family.board" :key="m.user_id" class="fam__row" :class="{ 'fam__row--me': m.me }">
-          <span class="fam__name kai">{{ m.name }}</span>
-          <span class="fam__bar"><span :style="{ width: (m.total_steps ? m.doneSteps / m.total_steps * 100 : 0) + '%' }" /></span>
-          <span class="fam__n num">{{ m.doneSteps }}/{{ m.total_steps || 8 }}</span>
-          <span class="fam__streak zh">{{ m.streak }} 天</span>
-          <svg v-if="m.finished" class="fam__tick" viewBox="0 0 32 24" aria-label="今天的課上完了"><path d="M3 13.5c3 2.6 5.6 5.3 8 8.2C16.4 13.4 22.5 6.2 29.5 2" /></svg>
-          <span v-else class="fam__tick" />
-        </li>
-      </ul>
     </section>
 
     <!-- one word part a day -->
@@ -280,17 +250,6 @@ onUnmounted(() => session.stopClock())
 .sec__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-2); }
 .sec__t { font-size: var(--step-1); font-weight: 700; }
 .sec__link { font-size: var(--step--1); color: var(--pen); }
-
-.fam { display: flex; flex-direction: column; gap: var(--sp-2); }
-.fam__list { display: flex; flex-direction: column; }
-.fam__row { display: grid; grid-template-columns: 4em 1fr auto auto 26px; align-items: center; gap: var(--sp-2); padding: 9px 0; border-bottom: 1px dashed var(--rule-strong); }
-.fam__row--me .fam__name { background: linear-gradient(transparent 55%, var(--hl-yellow) 55%, var(--hl-yellow) 92%, transparent 92%); }
-.fam__name { font-size: var(--step-1); font-weight: 700; justify-self: start; }
-.fam__bar { height: 6px; background: var(--surface-3); border-radius: 2px; overflow: hidden; }
-.fam__bar span { display: block; height: 100%; background: var(--pen); }
-.fam__n { font-size: var(--step--1); color: var(--ink-2); }
-.fam__streak { font-size: var(--step--2); color: var(--ink-3); min-width: 3em; text-align: right; }
-.fam__tick { width: 26px; height: 20px; fill: none; stroke: var(--redpen); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
 
 .wotd { display: flex; flex-direction: column; gap: var(--sp-2); }
 .wotd__head { display: flex; align-items: center; justify-content: space-between; }
