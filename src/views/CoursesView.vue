@@ -36,10 +36,10 @@ const points = computed(() => grammar.all.map((g, i) => {
 }))
 
 const courses = computed(() => [
-  { key: 'parts', title: '字首字尾', sub: '15 個單元：合成字、字尾、字首、字根', to: '/parts', done: parts.stats.started, total: parts.stats.total, tiles: [['un', 'prefix'], ['help', 'base'], ['ful', 'suffix']] },
-  { key: 'grammar', title: 'Grammar Studio 文法', sub: '先看句子猜規則，再用時間軸和色塊理解', done: grammar.stats.started, total: grammar.stats.total, toggle: true, tiles: [['I', 'base'], ['have', 'suffix'], ['been', 'prefix']] },
-  { key: 'story', title: 'Story Time 圖文故事', sub: '分級故事，每個字都能點', to: '/story', done: storiesDone.value, total: STORIES.length, tiles: [['Once', 'base']] },
-  { key: 'essentials', title: '基礎知識', sub: '日期、數字、詞性、多益 Part 5 必考', to: '/essentials', done: essentials.stats.started, total: essentials.stats.total, tiles: [['May', 'base'], ['1st', 'root']] }
+  { key: 'parts', title: '字首字尾', sub: '15 個單元：合成字、字尾、字首、字根', to: '/parts', done: parts.stats.started, total: parts.stats.total },
+  { key: 'grammar', title: '文法', sub: '先看句子猜規則，再用時間軸和色塊理解', to: '/grammar', done: grammar.stats.started, total: grammar.stats.total },
+  { key: 'story', title: '故事屋', sub: '分級圖文故事，每個字都能點', to: '/story', done: storiesDone.value, total: STORIES.length },
+  { key: 'essentials', title: '基礎知識', sub: '日期、數字、詞性、多益 Part 5 必考', to: '/essentials', done: essentials.stats.started, total: essentials.stats.total }
 ])
 
 const practice = [
@@ -49,33 +49,26 @@ const practice = [
   { title: '每日文章', sub: 'AI 用你今天的字寫一篇短文', to: '/article' }
 ]
 
-function openCourse (c) {
-  if (c.toggle) showGrammar.value = !showGrammar.value
-  else router.push(c.to)
-}
+function openCourse (c) { router.push(c.to) }
 </script>
 
 <template>
   <main class="shell courses">
     <header>
-      <h1 class="page-title zh">課程</h1>
-      <p class="lead zh">每天的關卡會自動排好每門課的進度；想回頭複習哪一課，從這裡進去。</p>
+      <h1 class="page-title">課本目錄</h1>
+      <p class="lead zh">每天的課表會自動排好每一科的進度；想回頭複習哪一課，從這裡翻過去。</p>
     </header>
 
-    <ul class="clist">
-      <li v-for="c in courses" :key="c.key">
-        <button class="course" @click="openCourse(c)">
-          <span class="course__art" aria-hidden="true">
-            <span v-for="(t, i) in c.tiles" :key="i" class="lt" :class="`lt--${t[1]}`">{{ t[0] }}</span>
-          </span>
-          <span class="course__body">
-            <span class="course__t zh">{{ c.title }}</span>
-            <span class="course__s zh">{{ c.sub }}</span>
-            <span class="course__bar"><span :style="{ width: (c.total ? c.done / c.total * 100 : 0) + '%' }" /></span>
-            <span class="course__n zh"><b class="num">{{ c.done }}</b> / {{ c.total }}</span>
-          </span>
-          <svg class="course__chev" :class="{ 'course__chev--open': c.toggle && showGrammar }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" /></svg>
+    <ol class="toc">
+      <li v-for="(c, i) in courses" :key="c.key" class="toc__item">
+        <button class="toc__row" @click="openCourse(c)">
+          <span class="toc__n kai">第{{ ['一', '二', '三', '四'][i] }}冊</span>
+          <span class="toc__t kai">{{ c.title }}</span>
+          <span class="toc__dots" aria-hidden="true" />
+          <span class="toc__p num">{{ c.done }}<small>/{{ c.total }}</small></span>
         </button>
+        <p class="toc__s zh">{{ c.sub }}</p>
+        <span class="toc__bar" aria-hidden="true"><span :style="{ width: (c.total ? c.done / c.total * 100 : 0) + '%' }" /></span>
 
         <ol v-if="c.key === 'grammar' && showGrammar" class="points">
           <li v-for="p in points" :key="p.id">
@@ -86,15 +79,16 @@ function openCourse (c) {
             </button>
           </li>
         </ol>
+        <button v-if="c.key === 'grammar'" class="toc__more zh" @click="showGrammar = !showGrammar">{{ showGrammar ? '收起 30 個文法點' : '展開 30 個文法點' }}</button>
       </li>
-    </ul>
+    </ol>
 
     <section>
-      <h2 class="sec zh">練習</h2>
+      <h2 class="sec kai">練習本</h2>
       <ul class="plist">
         <li v-for="p in practice" :key="p.to">
           <RouterLink :to="p.to" class="prac">
-            <span class="prac__t zh">{{ p.title }}</span>
+            <span class="prac__t kai">{{ p.title }}</span>
             <span class="prac__s zh">{{ p.sub }}</span>
           </RouterLink>
         </li>
@@ -104,30 +98,31 @@ function openCourse (c) {
 </template>
 
 <style scoped>
-.courses { display: flex; flex-direction: column; gap: var(--sp-5); }
+.courses { display: flex; flex-direction: column; gap: var(--sp-6); }
 .lead { color: var(--ink-2); font-size: var(--step--1); line-height: 1.6; margin-top: 6px; }
-.clist { display: flex; flex-direction: column; gap: var(--sp-3); }
-.course { width: 100%; display: grid; grid-template-columns: 92px 1fr 20px; gap: var(--sp-3); align-items: center; padding: var(--sp-3); text-align: left; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); }
-.course__art { height: 84px; border-radius: var(--radius); background: var(--surface-2); display: flex; align-items: center; justify-content: center; gap: 2px; flex-wrap: wrap; padding: 4px; }
-.course__art .lt { font-size: 0.78rem; min-height: 1.8em; padding: 0.15em 0.35em; box-shadow: 0 2px 0 var(--te); }
-.course__body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.course__t { font-weight: 800; }
-.course__s { font-size: var(--step--2); color: var(--ink-2); line-height: 1.45; }
-.course__bar { height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden; margin-top: 4px; }
-.course__bar span { display: block; height: 100%; background: var(--jade); border-radius: 3px; }
-.course__n { font-size: var(--step--2); color: var(--ink-3); }
-.course__chev { width: 18px; height: 18px; color: var(--ink-3); transition: transform 0.15s; }
-.course__chev--open { transform: rotate(90deg); }
-.points { display: flex; flex-direction: column; gap: 2px; margin: 6px 0 0 12px; padding-left: 12px; border-left: 2px solid var(--rule); }
-.point { width: 100%; display: grid; grid-template-columns: 28px 1fr auto; gap: var(--sp-2); align-items: center; padding: 8px 6px; text-align: left; border-radius: var(--radius-sm); }
+.toc { display: flex; flex-direction: column; }
+.toc__item { padding: var(--sp-4) 0; border-top: 1px solid var(--rule-strong); }
+.toc__item:last-child { border-bottom: 1px solid var(--rule-strong); }
+.toc__row { width: 100%; display: flex; align-items: baseline; gap: var(--sp-2); text-align: left; }
+.toc__n { font-size: var(--step--1); color: var(--redpen); flex-shrink: 0; }
+.toc__t { font-size: var(--step-2); font-weight: 700; }
+.toc__dots { flex: 1; border-bottom: 2px dotted var(--rule-strong); transform: translateY(-5px); min-width: 12px; }
+.toc__p { font-size: var(--step-1); font-family: var(--font-word); }
+.toc__p small { font-size: 0.7em; color: var(--ink-3); }
+.toc__s { font-size: var(--step--1); color: var(--ink-2); margin-top: 2px; }
+.toc__bar { display: block; height: 4px; background: var(--surface-3); margin-top: 10px; border-radius: 2px; overflow: hidden; }
+.toc__bar span { display: block; height: 100%; background: var(--pen); }
+.toc__more { margin-top: 8px; font-size: var(--step--1); color: var(--pen); }
+.points { display: flex; flex-direction: column; margin-top: 8px; }
+.point { width: 100%; display: grid; grid-template-columns: 26px 1fr auto; gap: var(--sp-2); align-items: center; padding: 9px 2px; text-align: left; border-bottom: 1px dashed var(--rule); }
 .point:disabled { opacity: 0.4; }
-.point--today { background: var(--sun-wash); }
+.point--today .point__t { background: linear-gradient(transparent 55%, var(--hl-yellow) 55%); }
 .point__n { color: var(--ink-3); font-size: var(--step--1); }
-.point__t { font-size: var(--step--1); font-weight: 600; line-height: 1.4; }
+.point__t { font-size: var(--step--1); font-weight: 600; line-height: 1.4; justify-self: start; }
 .point__s { font-size: var(--step--2); color: var(--ink-3); white-space: nowrap; }
-.sec { font-size: var(--step-0); font-weight: 800; margin-bottom: var(--sp-2); }
+.sec { font-size: var(--step-1); font-weight: 700; margin-bottom: var(--sp-2); }
 .plist { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
-.prac { display: flex; flex-direction: column; gap: 3px; padding: var(--sp-3); border-radius: var(--radius); background: var(--surface); border: 1px solid var(--rule); min-height: 76px; }
-.prac__t { font-weight: 800; }
+.prac { display: flex; flex-direction: column; gap: 3px; padding: var(--sp-3); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-1); min-height: 80px; }
+.prac__t { font-weight: 700; font-size: var(--step-1); }
 .prac__s { font-size: var(--step--2); color: var(--ink-2); line-height: 1.45; }
 </style>

@@ -10,6 +10,7 @@ import { sfx } from '@/lib/sfx'
 import SessionHeader from '@/components/SessionHeader.vue'
 import AudioButton from '@/components/AudioButton.vue'
 import PartsGame from '@/components/parts/PartsGame.vue'
+import Stamp from '@/components/ui/Stamp.vue'
 
 /**
  * 字首字尾 — the Word Parts course.
@@ -105,11 +106,15 @@ const teachParts = computed(() => {
   const u = unit.value
   if (!u) return []
   if (!u.parts.length) return [{ id: null, label: '兩個字', zh: '各自的意思加起來', examples: u.ex.slice(0, 6) }]
-  return u.parts.map(id => ({
-    id,
-    ...PARTS[id],
-    examples: u.ex.filter(([, spec]) => spec.split('+').some(t => t === id || t.endsWith('=' + id))).slice(0, 3)
-  })).filter(p => p.examples.length)
+  // Spelling variants (im- il- ir- of in-) are taught inside their parent's
+  // card, not as four separate parts that all mean 不.
+  const uses = (spec, id) => spec.split('+').some(t => t === id || t.endsWith('=' + id))
+  return u.parts.filter(id => !PARTS[id].of || !u.parts.includes(PARTS[id].of)).map(id => {
+    const variants = u.parts.filter(v => PARTS[v].of === id)
+    const own = u.ex.filter(([, spec]) => uses(spec, id)).slice(0, 3)
+    const vEx = variants.map(v => u.ex.find(([, spec]) => uses(spec, v))).filter(Boolean)
+    return { id, ...PARTS[id], variants: variants.map(v => PARTS[v].label), examples: [...own, ...vEx] }
+  }).filter(p => p.examples.length)
 })
 const exByWord = new Map(EXAMPLES.map(e => [e.w, e]))
 
@@ -139,7 +144,7 @@ onUnmounted(() => session.stopClock())
       <!-- ================= MAP ================= -->
       <template v-if="stage === 'map'">
         <header class="parts__intro">
-          <h1 class="page-title zh">字首字尾</h1>
+          <h1 class="page-title">字首字尾</h1>
           <p class="parts__lead zh">長的英文字大多是零件拼起來的。學會一個零件，就同時看懂幾十個字。從合成字開始，一路到拉丁字根。</p>
           <div class="legend">
             <span class="legend__k"><span class="legend__sw lt--prefix" />字首：放在前面</span>
@@ -152,7 +157,7 @@ onUnmounted(() => session.stopClock())
             <button class="unit" :class="[`unit--${u.status}`, { 'unit--next': u.next }]" @click="open(u.id)">
               <span class="unit__n num">{{ u.n }}</span>
               <span class="unit__body">
-                <span class="unit__title zh">{{ u.title }}</span>
+                <span class="unit__title kai">{{ u.title }}</span>
                 <span class="unit__parts">
                   <span v-for="p in u.parts.slice(0, 5)" :key="p" class="lt unit__lt" :class="`lt--${PARTS[p].kind}`">{{ PARTS[p].label.split(' ')[0] }}</span>
                   <span v-if="!u.parts.length" class="lt unit__lt">week</span><span v-if="!u.parts.length" class="lt unit__lt">end</span>
@@ -175,7 +180,7 @@ onUnmounted(() => session.stopClock())
             <span class="disc__zh zh">{{ e.zh }}</span>
           </div>
         </div>
-        <p class="disc__q zh">{{ disc.q }}</p>
+        <p class="disc__q kai">{{ disc.q }}</p>
         <div class="opts">
           <button
             v-for="o in disc.options" :key="o"
@@ -196,12 +201,13 @@ onUnmounted(() => session.stopClock())
       <!-- ================= TEACH ================= -->
       <template v-else-if="stage === 'teach' && unit">
         <p class="step zh">這個單元的零件</p>
-        <p class="hook zh">{{ unit.hook }}</p>
+        <p class="hook kai">{{ unit.hook }}</p>
 
         <section v-for="p in teachParts" :key="p.id || 'compound'" class="tp card">
           <div class="tp__head">
             <span v-if="p.id" class="lt tp__lt" :class="`lt--${p.kind}`">{{ p.label }}</span>
-            <span class="tp__zh zh">{{ p.zh }}</span>
+            <span class="tp__zh kai">{{ p.zh }}</span>
+            <span v-if="p.variants?.length" class="tp__var zh">也寫成 {{ p.variants.join('、') }}</span>
             <span v-if="p.pos" class="chip chip--plain zh">變{{ { 'n.': '名詞', 'v.': '動詞', 'adj.': '形容詞', 'adv.': '副詞' }[p.pos] }}</span>
           </div>
           <p v-if="p.more" class="tp__more zh">{{ p.more }}</p>
@@ -241,10 +247,8 @@ onUnmounted(() => session.stopClock())
 
       <!-- ================= RESULT ================= -->
       <section v-else-if="stage === 'result' && unit" class="res">
-        <div class="res__stars" :aria-label="`${stars} 顆星`">
-          <span v-for="n in 3" :key="n" class="star" :class="{ 'star--on': n <= stars }" :style="{ animationDelay: n * 0.12 + 's' }">★</span>
-        </div>
-        <h2 class="res__title zh">{{ unit.title }}</h2>
+        <div class="res__stars"><Stamp :ratio="items.length ? score / items.length : 0" :size="124" /></div>
+        <h2 class="res__title kai">{{ unit.title }}</h2>
         <p class="res__score zh">答對 <b class="num">{{ score }}</b> / <span class="num">{{ items.length }}</span>，最長連對 <b class="num">{{ best }}</b></p>
         <p class="res__desc zh">{{ stars >= 2 ? '這個單元會過幾天再回來考你，每次換一批字。' : '明天會再練一次這個單元。' }}</p>
         <button class="btn btn--primary btn--block zh" @click="leave">{{ inPhase ? '下一關' : '回到課程地圖' }}</button>
@@ -260,19 +264,20 @@ onUnmounted(() => session.stopClock())
 .parts__intro { display: flex; flex-direction: column; gap: var(--sp-3); }
 .parts__lead { color: var(--ink-2); line-height: 1.65; }
 
-.units { display: flex; flex-direction: column; gap: var(--sp-2); }
-.unit { width: 100%; display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: var(--sp-3); padding: 14px; text-align: left; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); transition: transform 0.1s; }
-.unit:active { transform: scale(0.99); }
-.unit__n { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--surface-2); color: var(--ink-2); font-size: var(--step-0); }
-.unit--learning .unit__n, .unit--mastered .unit__n { background: var(--jade-wash); color: var(--jade-ink); }
-.unit--due .unit__n { background: var(--amber-wash); color: var(--amber); }
-.unit--next { border: 2px solid var(--sun); }
-.unit--next .unit__n { background: var(--sun); color: var(--sun-ink); }
-.unit__body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.unit__title { font-weight: 700; line-height: 1.35; }
-.unit__parts { display: flex; flex-wrap: wrap; gap: 6px; }
-.unit__lt { font-size: 0.8rem; min-height: 1.9em; box-shadow: 0 2px 0 var(--te); }
+.units { display: flex; flex-direction: column; }
+.units li { border-top: 1px solid var(--line); }
+.units li:last-child { border-bottom: 1px solid var(--line); }
+.unit { width: 100%; display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: var(--sp-3); padding: 12px 2px; text-align: left; }
+.unit__n { font-family: var(--font-word); font-size: var(--step-1); color: var(--ink-3); text-align: center; }
+.unit--learning .unit__n, .unit--mastered .unit__n { color: var(--jade); }
+.unit--due .unit__n { color: var(--redpen); }
+.unit--next .unit__title { background: linear-gradient(transparent 55%, var(--hl-yellow) 55%, var(--hl-yellow) 92%, transparent 92%); }
+.unit__body { display: flex; flex-direction: column; gap: 4px; min-width: 0; align-items: flex-start; }
+.unit__title { font-weight: 700; font-size: var(--step-1); line-height: 1.35; }
+.unit__parts { display: flex; flex-wrap: wrap; gap: 2px 4px; }
+.unit__lt { font-size: 0.82rem; min-height: 1.7em; }
 .unit__status { font-size: var(--step--2); color: var(--ink-3); white-space: nowrap; }
+.unit--due .unit__status { color: var(--redpen); }
 .unit--next .unit__status { color: var(--ink); font-weight: 700; }
 
 .step { font-size: var(--step--1); font-weight: 700; color: var(--ink-3); }
@@ -285,38 +290,38 @@ onUnmounted(() => session.stopClock())
 .disc__q { font-size: var(--step-1); font-weight: 800; line-height: 1.4; }
 .disc__why { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); line-height: 1.6; }
 .opts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
-.popt { min-height: 60px; padding: 8px 10px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--rule-strong); font-weight: 600; line-height: 1.3; }
-.popt--right { border-color: var(--jade); background: var(--jade-wash); color: var(--jade-ink); animation: pop-in 0.25s; }
-.popt--wrong { border-color: var(--rose); background: var(--rose-wash); color: var(--rose); animation: shake 0.3s; }
+.popt { min-height: 60px; padding: 8px 10px; border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-1); font-weight: 600; line-height: 1.3; }
+.popt--right { background: var(--hl-green); animation: pop-in 0.25s; }
+.popt--wrong { background: var(--redpen-wash); color: var(--redpen); text-decoration: line-through; animation: shake 0.3s; }
 .popt--mute { opacity: 0.4; }
 
 .hook { font-size: var(--step-1); font-weight: 700; line-height: 1.5; }
 .tp { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
 .tp__head { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
 .tp__lt { font-size: var(--step-2); }
-.tp__zh { font-size: var(--step-1); font-weight: 800; }
+.tp__zh { font-size: var(--step-1); font-weight: 700; }
+.tp__var { font-size: var(--step--2); color: var(--ink-3); }
 .tp__more { color: var(--ink-2); font-size: var(--step--1); line-height: 1.6; }
 .tp__ex { display: flex; flex-direction: column; gap: 10px; }
 .tp__ex li { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .tp__tiles { display: flex; gap: 3px; }
-.tp__tiles .lt { font-size: 0.95rem; min-height: 1.9em; box-shadow: 0 2px 0 var(--te); }
+.tp__tiles { gap: 0; }
+.tp__tiles .lt { font-size: 1.05rem; min-height: 1.8em; padding: 0.1em 0.12em; }
 .tp__eq { color: var(--ink-3); }
 .tp__w { font-family: var(--font-word); font-weight: 700; }
 .tp__wzh { color: var(--ink-2); font-size: var(--step--1); flex: 1; }
 
-.note { display: flex; flex-direction: column; gap: 6px; padding: var(--sp-3) var(--sp-4); border-left: 4px solid var(--t-prefix); background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0; line-height: 1.6; font-size: var(--step--1); }
+.note { display: flex; flex-direction: column; gap: 6px; padding: var(--sp-3) var(--sp-4); border-left: 4px solid var(--hl-blue); background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0; line-height: 1.6; font-size: var(--step--1); }
 .note--trap { border-left-color: var(--rose); }
-.note__t { font-size: var(--step--1); font-weight: 800; }
+.note__t { font-family: var(--font-kai); font-size: var(--step-0); font-weight: 700; }
 
 .hud { display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
 .hud__score { font-size: var(--step--1); color: var(--ink-2); }
-.hud__combo { font-weight: 800; color: var(--sun-ink); background: var(--sun); padding: 2px 12px; border-radius: var(--radius-pill); animation: pop-in 0.2s; font-size: var(--step--1); }
+.hud__combo { font-weight: 700; color: var(--ink); background: var(--hl-yellow); padding: 1px 10px; border-radius: 2px; transform: rotate(-2deg); animation: pop-in 0.2s; font-size: var(--step--1); }
 
 .res { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); text-align: center; padding-top: var(--sp-6); }
-.res__stars { display: flex; gap: 6px; }
-.star { font-size: 3rem; color: var(--surface-3); line-height: 1; }
-.star--on { color: var(--sun); animation: pop-in 0.35s both; }
-.res__title { font-size: var(--step-2); font-weight: 800; }
+.res__stars { display: flex; justify-content: center; }
+.res__title { font-size: var(--step-2); font-weight: 700; }
 .res__score { color: var(--ink-2); }
 .res__desc { color: var(--ink-2); font-size: var(--step--1); max-width: 30ch; line-height: 1.6; }
 </style>

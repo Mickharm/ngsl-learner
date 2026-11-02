@@ -44,8 +44,11 @@ watch(() => auth.userId, async id => { if (id) await bootUserData() })
 </script>
 
 <template>
+  <!-- Enter-only page transition: the old page leaves at once, the new one
+       settles in over 140 ms. v3 faded out, waited, then faded in — 360 ms of
+       blank screen on every tap. -->
   <RouterView v-slot="{ Component }">
-    <Transition name="fade" mode="out-in">
+    <Transition name="page">
       <component :is="Component" />
     </Transition>
   </RouterView>

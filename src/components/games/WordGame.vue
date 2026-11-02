@@ -4,6 +4,7 @@ import AudioButton from '@/components/AudioButton.vue'
 import PictureTile from '@/components/PictureTile.vue'
 import WordChunks from '@/components/WordChunks.vue'
 import WordAnatomy from '@/components/WordAnatomy.vue'
+import AnswerSheet from '@/components/ui/AnswerSheet.vue'
 import { sfx, buzz } from '@/lib/sfx'
 import { meaningOptions, wordOptions, letterTiles, glossOf, sameWord } from '@/lib/game'
 import { clozeSentence, LADDER } from '@/lib/wordsrs'
@@ -29,7 +30,7 @@ const props = defineProps({
   mode: { type: String, required: true },
   pool: { type: Array, default: () => [] },
   seed: { type: Number, default: 1 },
-  /** Advance automatically after a correct answer. */
+  /** Allow the right-answer countdown (the setting still decides). */
   autoNext: { type: Boolean, default: true }
 })
 const emit = defineEmits(['answer', 'next'])
@@ -88,9 +89,16 @@ function say (text) {
   })
 }
 
+const given = ref('')
+const revealChars = computed(() => {
+  const m = props.word.meanings?.map(x => x.zh).join('').length || 0
+  return m + (result.value?.correct ? 0 : (props.word.examples?.[0]?.en?.length || 0))
+})
+
 function settle (correct, extra = {}) {
   if (settled.value) return
   settled.value = true
+  given.value = extra.given || ''
   result.value = { correct, hinted: !!extra.hinted }
   sfx(correct ? 'good' : 'bad')
   if (!correct) buzz(40)
@@ -103,7 +111,6 @@ function settle (correct, extra = {}) {
   })
   // Hear the word once more on the reveal — sound + spelling + meaning together.
   if (props.mode !== 'meaning' && props.mode !== 'listen') say(props.word.headword)
-  if (correct && props.autoNext) timer = setTimeout(() => emit('next'), 1300)
 }
 
 function pickMeaning (o, i) {
@@ -177,9 +184,6 @@ onUnmounted(() => clearTimeout(timer))
   <section class="wg" :class="[`wg--${mode}`, settled && (result.correct ? 'wg--right' : 'wg--wrong')]">
     <div class="wg__tag">
       <span class="chip chip--violet zh">{{ label }}</span>
-      <span v-if="settled" class="wg__verdict zh" :class="result.correct ? 'ok' : 'no'">
-        {{ result.correct ? (result.hinted ? '對了（有提示）' : '答對！') : '再記一次' }}
-      </span>
     </div>
 
     <!-- ===== prompt ===== -->
@@ -270,19 +274,21 @@ onUnmounted(() => clearTimeout(timer))
       </div>
     </form>
 
-    <!-- ===== reveal ===== -->
-    <Transition name="slide-up">
-      <div v-if="settled" class="reveal card">
-        <div class="reveal__top">
-          <PictureTile :word-id="word.id" :headword="word.headword" :size="48" />
-          <span class="reveal__zh zh"><span class="wg__pos">{{ pos }}</span>{{ word.meanings?.map(m => m.zh).join('；') }}</span>
-          <AudioButton :text="word.headword" size="md" />
-        </div>
-        <WordAnatomy :word="word.headword" size="md" :explore="false" />
-        <p v-if="!result.correct && word.examples?.[0]" class="reveal__ex">{{ word.examples[0].en }}<br><span class="zh dim">{{ word.examples[0].zh }}</span></p>
-        <button class="btn btn--block zh" :class="result.correct ? 'btn--ghost' : 'btn--primary'" @click="cont">繼續</button>
+    <!-- ===== feedback: waits on a wrong answer, counts down on a right one ===== -->
+    <AnswerSheet
+      v-if="settled"
+      :right="result.correct" :hinted="result.hinted"
+      :chars="revealChars" :no-auto="!autoNext"
+      @next="cont"
+    >
+      <div class="reveal__top">
+        <WordAnatomy :word="word.headword" size="sm" :legend="false" :explore="false" />
+        <AudioButton :text="word.headword" size="md" />
       </div>
-    </Transition>
+      <p class="reveal__zh"><span class="wg__pos">{{ pos }}</span><span class="kai">{{ word.meanings?.map(m => m.zh).join('；') }}</span></p>
+      <p v-if="!result.correct && given" class="reveal__given zh">你的答案：<s>{{ given }}</s></p>
+      <p v-if="!result.correct && word.examples?.[0]" class="reveal__ex">{{ word.examples[0].en }}<br><span class="zh dim">{{ word.examples[0].zh }}</span></p>
+    </AnswerSheet>
   </section>
 </template>
 
@@ -297,11 +303,9 @@ onUnmounted(() => clearTimeout(timer))
   padding: var(--sp-5) var(--sp-4);
   display: flex; flex-direction: column; align-items: center; gap: var(--sp-3);
   text-align: center;
-  border-top: 4px solid var(--violet);
+  border-top: 0;
   min-height: 180px; justify-content: center;
 }
-.wg--right .wg__prompt { border-top-color: var(--jade); }
-.wg--wrong .wg__prompt { border-top-color: var(--rose); }
 
 .wg__bigplay {
   width: 96px; height: 96px; border-radius: 50%;
@@ -328,22 +332,22 @@ onUnmounted(() => clearTimeout(timer))
 .opt {
   min-height: 104px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-  background: var(--surface); border: 1.5px solid var(--rule-strong); border-radius: var(--radius);
+  background: var(--surface); border: 0; box-shadow: var(--shadow-1); border-radius: var(--radius);
   padding: var(--sp-2);
   transition: transform 0.12s, background 0.15s, border-color 0.15s, opacity 0.2s;
 }
 .opt:active:not(:disabled) { transform: scale(0.97); }
 .opt__pic { font-size: 2.2rem; line-height: 1; }
 .opt__zh { font-size: var(--step-0); font-weight: 600; text-align: center; line-height: 1.3; }
-.opt--right { border-color: var(--jade); background: var(--jade-wash); color: var(--jade-ink); }
-.opt--wrong { border-color: var(--rose); background: var(--rose-wash); color: var(--rose); animation: shake 0.35s; }
+.opt--right { background: var(--hl-green); color: var(--ink); }
+.opt--wrong { background: var(--redpen-wash); color: var(--redpen); text-decoration: line-through; animation: shake 0.35s; }
 .opt--mute { opacity: 0.38; }
 
 /* recall list */
 .wg__list { display: flex; flex-direction: column; gap: var(--sp-2); }
 .optw {
   min-height: 54px; border-radius: var(--radius);
-  border: 1.5px solid var(--rule-strong); background: var(--surface);
+  border: 0; box-shadow: var(--shadow-1); background: var(--surface);
   font-family: var(--font-word); font-size: var(--step-1);
   transition: transform 0.12s, background 0.15s;
 }
@@ -380,9 +384,10 @@ onUnmounted(() => clearTimeout(timer))
 .wg__input { font-family: var(--font-word); font-size: var(--step-2); text-align: center; }
 
 /* reveal */
-.reveal { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
-.reveal__top { display: flex; align-items: center; gap: var(--sp-3); }
-.reveal__zh { flex: 1; font-size: var(--step-0); font-weight: 600; color: var(--ink); min-width: 0; }
-.reveal__ex { font-family: var(--font-word); font-size: var(--step-0); line-height: 1.5; padding: var(--sp-2) var(--sp-3); background: var(--surface-2); border-radius: var(--radius-sm); }
+.reveal__top { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+.reveal__zh { font-size: var(--step-1); color: var(--ink); }
+.reveal__given { font-size: var(--step--1); color: var(--ink-3); }
+.reveal__given s { color: var(--redpen); font-family: var(--font-word); }
+.reveal__ex { font-family: var(--font-word); font-size: var(--step-0); line-height: 1.55; border-left: 3px solid var(--hl-yellow); padding-left: 10px; }
 
 </style>

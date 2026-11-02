@@ -7,6 +7,7 @@ import { useSession } from '@/stores/session'
 import { useWords } from '@/stores/words'
 import { TOTAL_WORDS } from '@/config'
 import SessionHeader from '@/components/SessionHeader.vue'
+import Stamp from '@/components/ui/Stamp.vue'
 
 const progress = useProgress()
 const settings = useSettings()
@@ -63,19 +64,23 @@ onMounted(() => {
 
     <main class="shell sum">
       <header class="sum__head">
-        <div class="eyebrow">{{ t.day }}</div>
-        <h1 class="page-title zh">今天完成了</h1>
-        <p class="sum__verdict zh">{{ verdict }}</p>
-      </header>
-
-      <section class="grid">
-        <div v-for="r in rows" :key="r.label" class="cell">
-          <div class="cell__v num" :class="`cell__v--${r.tone}`">
-            {{ r.value }}<small v-if="r.unit">{{ r.unit }}</small>
-          </div>
-          <div class="cell__l zh">{{ r.label }}</div>
+        <div class="sum__stamp"><Stamp :ratio="accuracy ?? 0" :text="t.total_count ? '' : '待補'" :size="112" /></div>
+        <div>
+          <p class="sum__date kai">{{ t.day }}</p>
+          <h1 class="page-title">今天的課上完了</h1>
         </div>
-      </section>
+      </header>
+      <p class="sum__verdict kai">老師評語：{{ verdict }}</p>
+
+      <!-- a report card: label column, value column, ruled -->
+      <table class="report">
+        <tbody>
+          <tr v-for="r in rows" :key="r.label">
+            <th class="zh">{{ r.label }}</th>
+            <td :class="`v--${r.tone}`"><b class="num">{{ r.value }}</b><small v-if="r.unit" class="zh">{{ r.unit }}</small></td>
+          </tr>
+        </tbody>
+      </table>
 
       <section class="card card--pad stack stack-3">
         <div class="row between">
@@ -116,30 +121,18 @@ onMounted(() => {
 .view { min-height: 100dvh; }
 .sum { display: flex; flex-direction: column; gap: var(--sp-4); }
 
-.sum__head { display: flex; flex-direction: column; gap: var(--sp-2); padding-top: var(--sp-3); }
-.sum__verdict {
-  font-size: var(--step-0);
-  color: var(--ink-2);
-  line-height: 1.7;
-  border-left: 3px solid var(--jade);
-  padding-left: var(--sp-3);
-}
-
-.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); }
-.cell {
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  padding: var(--sp-3) var(--sp-2);
-  text-align: center;
-}
-.cell__v { font-size: var(--step-2); line-height: 1.15; }
-.cell__v small { font-size: var(--step--2); color: var(--ink-3); margin-left: 2px; font-family: var(--font-zh); }
-.cell__v--jade { color: var(--jade); }
-.cell__v--amber { color: var(--amber); }
-.cell__v--rose { color: var(--rose); }
-.cell__v--violet { color: var(--violet); }
-.cell__l { font-size: var(--step--2); color: var(--ink-3); margin-top: 3px; }
+.sum__head { display: flex; align-items: center; gap: var(--sp-4); padding-top: var(--sp-3); }
+.sum__stamp { flex-shrink: 0; }
+.sum__date { color: var(--ink-3); }
+.sum__head .page-title { font-size: var(--step-3); line-height: 1.25; }
+.sum__verdict { font-size: var(--step-1); color: var(--redpen); line-height: 1.6; }
+.report { width: 100%; border-collapse: collapse; border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); }
+.report th { text-align: left; font-weight: 500; color: var(--ink-2); padding: 10px 4px; font-size: var(--step--1); }
+.report td { text-align: right; padding: 10px 4px; font-family: var(--font-word); }
+.report tr + tr th, .report tr + tr td { border-top: 1px solid var(--rule); }
+.report td b { font-size: var(--step-1); }
+.report td small { color: var(--ink-3); margin-left: 3px; font-size: var(--step--2); }
+.v--jade b { color: var(--jade); } .v--amber b { color: var(--amber); } .v--rose b { color: var(--redpen); }
 
 .weak { display: flex; flex-direction: column; gap: var(--sp-2); }
 .weak__item { display: flex; align-items: center; gap: var(--sp-3); }

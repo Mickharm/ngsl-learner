@@ -34,8 +34,8 @@ export default defineConfig({
         name: 'NGSL Learner',
         short_name: 'NGSL',
         description: 'NGSL 2801 單字 · 文法 · 閱讀 每日闖關',
-        theme_color: '#0f1830',
-        background_color: '#0f1830',
+        theme_color: '#1c2a23',
+        background_color: '#f2f4ee',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/ngsl-learner/',
@@ -47,7 +47,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,svg,json}'],
+        globPatterns: ['**/*.{js,css,html,png,svg,json,woff2}'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         // Without these, a redeploy keeps serving the previous build until the
         // user closes every tab — which on an iPhone home-screen app is

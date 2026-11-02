@@ -7,6 +7,7 @@ import fs from 'node:fs'
 import assert from 'node:assert/strict'
 import { scoreGuess, wordleAnswers, wordleAllowed, dailyAnswer, dayNumber, rainPoints, rainDuration, GAMES } from '../src/lib/arcade.js'
 import { builderItem } from '../src/lib/partsGames.js'
+import { dealDeck, QUEST_GOAL } from '../src/lib/arcade.js'
 import { EXAMPLES } from '../src/data/morphology.js'
 
 const base = JSON.parse(fs.readFileSync(new URL('../src/data/words.base.json', import.meta.url), 'utf8'))
@@ -53,4 +54,15 @@ for (const [i, ex] of EXAMPLES.entries()) {
 }
 
 ok(new Set(GAMES.map(g => g.id)).size === GAMES.length, 'game ids unique')
+
+/* the quest's game round: today's words first */
+{
+  const pool = Array.from({ length: 30 }, (_, i) => ({ id: i + 1 }))
+  const today = new Set([4, 9, 17, 22, 28])
+  const deck = dealDeck(pool, today, 7)
+  ok(deck.length === pool.length && new Set(deck.map(w => w.id)).size === pool.length, 'deal keeps every word once')
+  ok(deck.slice(0, today.size).every(w => today.has(w.id)), "today's words are dealt first")
+  ok(dealDeck(pool, null, 7).length === pool.length, 'no today set = a plain shuffle')
+  for (const [g, n] of Object.entries(QUEST_GOAL)) ok(GAMES.some(x => x.id === g) && n >= 6 && n <= 20, `quest goal for ${g} is a short round (${n})`)
+}
 console.log(`arcade: ${answers.length} daily words, ${allowed.size} accepted guesses — ${pass} checks ok`)

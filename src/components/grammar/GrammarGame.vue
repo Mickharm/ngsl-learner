@@ -1,4 +1,6 @@
 <script setup>
+import AnswerSheet from '@/components/ui/AnswerSheet.vue'
+import { sfx } from '@/lib/sfx'
 import { ref, computed, watch, onMounted } from 'vue'
 import AudioButton from '@/components/AudioButton.vue'
 import TenseTimeline from './TenseTimeline.vue'
@@ -68,6 +70,7 @@ function settle (ok) {
   if (settled.value) return
   settled.value = true
   correct.value = ok
+  if (props.item.type !== 'sort') sfx(ok ? 'good' : 'bad')
   emit('answer', { correct: ok, pointId: props.item.pointId, type: props.item.type })
 }
 
@@ -116,11 +119,17 @@ function judgeCard (says) {
   const ok = says === sortCard.value.ok
   if (ok) sortRight.value++
   sortLast.value = { ok, card: sortCard.value }
-  setTimeout(() => {
-    sortLast.value = null
-    if (sortIdx.value + 1 < props.item.cards.length) sortIdx.value++
-    else settle(sortRight.value >= props.item.cards.length - 1)
-  }, ok ? 500 : 1500)
+  sfx(ok ? 'good' : 'bad')
+  // A right card moves on by itself; a wrong one waits for 下一句, so the
+  // correction under it can actually be read.
+  if (ok) sortTimer = setTimeout(nextSortCard, 650)
+}
+let sortTimer = 0
+function nextSortCard () {
+  clearTimeout(sortTimer)
+  sortLast.value = null
+  if (sortIdx.value + 1 < props.item.cards.length) sortIdx.value++
+  else settle(sortRight.value >= props.item.cards.length - 1)
 }
 
 const explain = computed(() => {
@@ -240,24 +249,23 @@ onMounted(reset)
     </div>
 
     <div v-else-if="item.type === 'sort' && !settled" class="sortbtns">
-      <button class="sortbtn sortbtn--no" :disabled="!!sortLast" @click="judgeCard(false)">❌ 錯</button>
-      <button class="sortbtn sortbtn--ok" :disabled="!!sortLast" @click="judgeCard(true)">✅ 對</button>
+      <template v-if="sortLast && !sortLast.ok">
+        <button class="btn btn--block btn--ink zh sortnext" @click="nextSortCard">看懂了，下一句</button>
+      </template>
+      <template v-else>
+        <button class="sortbtn sortbtn--no zh" :disabled="!!sortLast" @click="judgeCard(false)">錯</button>
+        <button class="sortbtn sortbtn--ok zh" :disabled="!!sortLast" @click="judgeCard(true)">對</button>
+      </template>
     </div>
 
     <!-- ===== feedback ===== -->
-    <Transition name="slide-up">
-      <div v-if="settled" class="fb card">
-        <div class="fb__head">
-          <span class="fb__verdict zh" :class="correct ? 'ok' : 'no'">{{ correct ? '答對！' : '差一點' }}</span>
-          <span v-if="showPoint && point" class="chip chip--plain zh">這題考：{{ point.title.split('：')[0] }}</span>
-        </div>
-        <p v-if="item.type === 'order' && !correct" class="fb__ans">{{ item.answer }}</p>
-        <p v-if="item.type === 'tap'" class="fb__ans">{{ item.answer }}</p>
-        <p v-if="item.type === 'blocks' && !correct" class="fb__ans">{{ item.blocks.map(b => b[0]).join(' ') }}</p>
-        <p v-if="explain" class="fb__ex zh" v-html="inlineMd(explain)" />
-        <button class="btn btn--block zh" :class="correct ? 'btn--ghost' : 'btn--primary'" @click="emit('next')">繼續</button>
-      </div>
-    </Transition>
+    <AnswerSheet v-if="settled" :right="correct" :title="correct ? '答對了' : '差一點'" :chars="(explain || '').length" @next="emit('next')">
+      <span v-if="showPoint && point" class="fb__point zh">這題考：{{ point.title.split('：')[0] }}</span>
+      <p v-if="item.type === 'order' && !correct" class="fb__ans">{{ item.answer }}</p>
+      <p v-if="item.type === 'tap'" class="fb__ans">{{ item.answer }}</p>
+      <p v-if="item.type === 'blocks' && !correct" class="fb__ans">{{ item.blocks.map(b => b[0]).join(' ') }}</p>
+      <p v-if="explain" class="fb__ex zh" v-html="inlineMd(explain)" />
+    </AnswerSheet>
   </section>
 </template>
 
@@ -266,10 +274,8 @@ onMounted(reset)
 .gg__prompt {
   padding: var(--sp-5) var(--sp-4);
   display: flex; flex-direction: column; align-items: center; gap: var(--sp-3);
-  text-align: center; border-top: 3px solid var(--violet); min-height: 150px; justify-content: center;
+  text-align: center; border-top: 0; min-height: 150px; justify-content: center;
 }
-.gg--right .gg__prompt { border-top-color: var(--jade); }
-.gg--wrong .gg__prompt { border-top-color: var(--rose); }
 .gg__ask { font-size: var(--step--1); color: var(--ink-2); }
 .gg__sent { font-family: var(--font-word); font-size: var(--step-2); line-height: 1.45; transition: color 0.2s; }
 .gg__sent--ok { color: var(--jade); }
@@ -283,21 +289,21 @@ onMounted(reset)
 .gg__opts { display: flex; flex-direction: column; gap: var(--sp-2); }
 .gopt {
   min-height: 52px; padding: var(--sp-2) var(--sp-4);
-  border-radius: var(--radius); border: 1.5px solid var(--rule-strong); background: var(--surface);
+  border-radius: var(--radius); border: 0; box-shadow: var(--shadow-1); background: var(--surface);
   text-align: left; font-size: var(--step-0); font-weight: 500; line-height: 1.4;
   transition: transform 0.12s, background 0.15s, opacity 0.2s;
 }
 .gopt--sent { font-family: var(--font-word); font-size: var(--step-1); }
 .gopt:active:not(:disabled) { transform: scale(0.98); }
-.gopt--right { border-color: var(--jade); background: var(--jade-wash); color: var(--jade-ink); }
-.gopt--wrong { border-color: var(--rose); background: var(--rose-wash); color: var(--rose); animation: shake 0.35s; }
+.gopt--right { background: var(--hl-green); color: var(--ink); }
+.gopt--wrong { background: var(--redpen-wash); color: var(--redpen); text-decoration: line-through; animation: shake 0.35s; }
 .gopt--mute { opacity: 0.4; }
 
 .zones { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
 .zone {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: var(--sp-2); border-radius: var(--radius);
-  border: 1.5px solid var(--rule-strong); background: var(--surface);
+  border: 0; box-shadow: var(--shadow-1); background: var(--surface);
 }
 .zone__lbl { font-size: var(--step--1); font-weight: 600; }
 .zone--right { border-color: var(--jade); background: var(--jade-wash); }
@@ -308,7 +314,7 @@ onMounted(reset)
 .bank { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .wtile {
   padding: 8px 14px; border-radius: 10px;
-  background: var(--surface); border: 1.5px solid var(--rule-strong); box-shadow: 0 3px 0 var(--rule-strong);
+  background: var(--surface); border: 1px solid var(--rule-strong); box-shadow: 0 2px 0 var(--rule-strong);
   font-family: var(--font-word); font-size: var(--step-1);
 }
 .wtile:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--rule-strong); }
@@ -326,18 +332,15 @@ onMounted(reset)
 .tapw__fix { position: absolute; left: 50%; top: 100%; transform: translate(-50%, 4px); color: var(--jade); text-decoration: none; font-weight: 700; font-size: var(--step--1); white-space: nowrap; }
 
 .sortbtns { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.sortnext { grid-column: 1 / -1; }
 .sortbtn { min-height: 64px; border-radius: var(--radius); font-size: var(--step-1); font-weight: 700; border: 2px solid; }
 .sortbtn--ok { border-color: var(--jade); color: var(--jade); background: var(--jade-wash); }
 .sortbtn--no { border-color: var(--rose); color: var(--rose); background: var(--rose-wash); }
 .sortbtn:active { transform: scale(0.97); }
 
-.fb { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
-.fb__head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); flex-wrap: wrap; }
-.fb__verdict { font-weight: 800; }
-.fb__verdict.ok { color: var(--jade); }
-.fb__verdict.no { color: var(--rose); }
+.fb__point { align-self: flex-start; font-size: var(--step--2); color: var(--ink-2); background: var(--hl-yellow); padding: 1px 8px; border-radius: 3px; }
 .fb__ans { font-family: var(--font-word); font-size: var(--step-1); color: var(--jade-ink); }
-.fb__ex { font-size: var(--step--1); color: var(--ink-2); line-height: 1.6; }
+.fb__ex { font-size: var(--step-0); color: var(--ink-2); line-height: 1.65; }
 
 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 </style>

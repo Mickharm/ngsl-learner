@@ -16,13 +16,16 @@ export const SUPABASE_KEY =
   import.meta.env.VITE_SUPABASE_KEY || 'sb_publishable_XkY-88x21b4zaC-thoAIiw_YJErlg2k'
 
 /**
- * The two people this instance is for. Public signup is turned off in
+ * The people this instance is for. Public signup is turned off in
  * Supabase, so the login screen can present names instead of asking anyone to
  * remember an email address — the address is an implementation detail.
  */
 export const PROFILES = Object.freeze([
-  { name: 'Dai', email: 'dai@ngsl.app', accent: 'jade' },
-  { name: 'Xin', email: 'xin@ngsl.app', accent: 'violet' }
+  { name: 'Dai', email: 'dai@ngsl.app', accent: 'pink' },
+  { name: 'Xin', email: 'xin@ngsl.app', accent: 'blue' },
+  // Added in v4. Creates her own account on first use (signup is open in
+  // Supabase with auto-confirm); the login screen offers that path.
+  { name: '玟廷', email: 'wenting@ngsl.app', accent: 'yellow' }
 ])
 
 export const APP_NAME = 'NGSL Learner'
@@ -74,6 +77,10 @@ export const DEFAULT_SETTINGS = Object.freeze({
   // first syllable instead of a pause. Device-dependent, hence a setting.
   ttsLeadIn: 2,
   autoPlayAudio: true,
+  // After a right answer, move on by itself once the explanation has had time
+  // to be read (a countdown on 繼續; touching the sheet stops it). A wrong
+  // answer never moves on by itself.
+  autoAdvance: true,
   clozeRatio: 0.35,
   theme: 'system',
   articleTopics: ['daily', 'travel', 'work'],

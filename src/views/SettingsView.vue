@@ -418,6 +418,15 @@ const buildSha = __BUILD_SHA__
       </template>
 
       <div class="row between">
+        <label class="label zh" for="adv">答對後自動下一題</label>
+        <button
+          id="adv" class="toggle" :data-on="String(s.autoAdvance !== false)" :aria-pressed="s.autoAdvance !== false"
+          @click="settings.set({ autoAdvance: s.autoAdvance === false })"
+        />
+      </div>
+      <p class="note zh">開著時，「繼續」按鈕上會有倒數條；手指碰一下說明就會停住。答錯一定會停下來等你。</p>
+
+      <div class="row between">
         <label class="label zh" for="sfx">遊戲與答題音效</label>
         <button
           id="sfx" class="toggle" :data-on="String(sound)" :aria-pressed="sound"

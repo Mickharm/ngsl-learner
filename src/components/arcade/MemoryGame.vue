@@ -4,7 +4,7 @@ import { useAuth } from '@/stores/auth'
 import { useSettings } from '@/stores/settings'
 import { useGamePool } from '@/composables/useGamePool'
 import { shuffle, glossOf } from '@/lib/game'
-import { readBest, saveBest } from '@/lib/arcade'
+import { readBest, saveBest, dealDeck } from '@/lib/arcade'
 import { speak } from '@/lib/tts'
 import { sfx } from '@/lib/sfx'
 import GameShell from './GameShell.vue'
@@ -16,7 +16,7 @@ import GameShell from './GameShell.vue'
  */
 const auth = useAuth()
 const settings = useSettings()
-const { pool } = useGamePool(8)
+const { pool, todayIds, inPhase } = useGamePool(8)
 
 const cards = ref([])
 const open = ref([])
@@ -31,7 +31,7 @@ let clock = 0, lock = false
 function deal () {
   const ws = []
   const seen = new Set()
-  for (const w of shuffle(pool.value, Date.now())) {
+  for (const w of dealDeck(pool.value, inPhase.value ? todayIds.value : null)) {
     const g = glossOf(w)
     if (seen.has(g)) continue
     seen.add(g); ws.push(w)
@@ -109,8 +109,8 @@ onUnmounted(() => clearInterval(clock))
 .card3__in { position: relative; display: block; width: 100%; height: 100%; transition: transform 0.35s; transform-style: preserve-3d; }
 .card3--open .card3__in { transform: rotateY(180deg); }
 .card3__back, .card3__face { position: absolute; inset: 0; display: grid; place-items: center; border-radius: var(--radius); backface-visibility: hidden; -webkit-backface-visibility: hidden; padding: 6px; text-align: center; line-height: 1.2; }
-.card3__back { background: var(--slab); color: var(--sun); font-family: var(--font-word); font-weight: 800; font-size: 2rem; box-shadow: 0 4px 0 #0008; }
-.card3__face { transform: rotateY(180deg); background: var(--surface); border: 1.5px solid var(--rule-strong); font-weight: 700; font-size: clamp(0.85rem, 4vw, 1.05rem); box-shadow: 0 4px 0 var(--rule-strong); }
+.card3__back { background: var(--slab); color: var(--slab-ink); font-family: var(--font-word); font-weight: 700; font-size: 1.6rem; box-shadow: 0 3px 0 #0006; background-image: repeating-linear-gradient(to bottom, transparent 0 15px, rgba(255,255,255,0.07) 15px 16px); }
+.card3__face { transform: rotateY(180deg); background: var(--surface); font-family: var(--font-kai); font-weight: 700; font-size: clamp(0.95rem, 4.2vw, 1.15rem); box-shadow: var(--shadow-1); }
 .card3__face--en { font-family: var(--font-word); font-size: clamp(0.95rem, 4.4vw, 1.2rem); }
-.card3--done .card3__face { background: var(--jade-wash); border-color: var(--jade); color: var(--jade-ink); box-shadow: 0 4px 0 var(--jade-edge); }
+.card3--done .card3__face { background: var(--hl-green); }
 </style>

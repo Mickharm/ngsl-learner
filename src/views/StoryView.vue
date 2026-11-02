@@ -240,7 +240,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 <template>
   <div class="view">
     <SessionHeader
-      :title="story ? story.title : 'Story Time · 故事屋'"
+      :title="story ? story.title : '故事屋'"
       :current="stage === 'read' ? page + 1 : 0"
       :total="stage === 'read' && story ? story.pages.length : 0"
       :exit-to="inPhase ? '/' : '/story'"

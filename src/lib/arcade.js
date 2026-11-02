@@ -101,3 +101,16 @@ export function sample (arr, n, seed) {
   const r = rng(seed)
   return shuffle(arr, Math.floor(r() * 1e9)).slice(0, n)
 }
+
+/**
+ * Deal a game deck: in the quest, today's words first (shuffled among
+ * themselves), then the rest — so a short quest round is mostly today's.
+ */
+export function dealDeck (pool, todayIds, seed = Date.now()) {
+  const today = pool.filter(w => todayIds?.has(w.id))
+  const rest = pool.filter(w => !todayIds?.has(w.id))
+  return [...shuffle(today, seed), ...shuffle(rest, seed + 1)]
+}
+
+/** How many words a bounded quest round asks for. */
+export const QUEST_GOAL = { rain: 15, bubbles: 12, memory: 6, match: 15 }

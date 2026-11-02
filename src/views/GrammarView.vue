@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useGrammar } from '@/stores/grammar'
 import { useSession } from '@/stores/session'
 import SessionHeader from '@/components/SessionHeader.vue'
+import Stamp from '@/components/ui/Stamp.vue'
 import AudioButton from '@/components/AudioButton.vue'
 import GrammarGame from '@/components/grammar/GrammarGame.vue'
 import TenseTimeline from '@/components/grammar/TenseTimeline.vue'
@@ -146,7 +147,7 @@ onUnmounted(() => session.stopClock())
 
 <template>
   <div class="view">
-    <SessionHeader title="Grammar Studio · 文法" :current="headerCur" :total="headerTot" />
+    <SessionHeader title="文法" :current="headerCur" :total="headerTot" />
 
     <main v-if="point" class="shell gram">
       <!-- ================= DISCOVER ================= -->
@@ -243,8 +244,8 @@ onUnmounted(() => session.stopClock())
 
       <!-- ================= RESULT ================= -->
       <section v-else-if="stage === 'result'" class="res">
-        <div class="res__ring" :style="{ '--pct': pct }"><span class="res__pct num">{{ pct }}<small>%</small></span></div>
-        <div class="res__title zh">{{ point.title.split('：')[0] }}</div>
+        <Stamp :ratio="pct / 100" :size="124" />
+        <div class="res__title kai">{{ point.title.split('：')[0] }}</div>
         <p class="res__line zh">今天這個文法點：{{ todayCorrect }} / {{ todayResults.length }}</p>
         <div v-if="mixByPoint.length" class="mixres">
           <div class="eyebrow">混合挑戰</div>

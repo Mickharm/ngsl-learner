@@ -3,8 +3,7 @@ import { ref, computed, nextTick, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import { useToast } from '@/stores/toast'
-import { TOTAL_WORDS, PROFILES } from '@/config'
-import { DRILL_COUNT } from '@/data/grammar'
+import { PROFILES } from '@/config'
 
 /**
  * Two named profiles instead of an email field. Public signup is disabled in
@@ -107,42 +106,26 @@ async function submit () {
 
     <div v-else class="login__inner">
       <section class="brand">
-        <div class="brand__mark">
-          <span class="brand__n">N</span>
-          <span class="brand__g">G</span>
-        </div>
-        <h1 class="brand__title">NGSL Learner</h1>
-        <p class="brand__sub zh">2801 個高頻單字 · 30 個文法點 · 每天一關</p>
+        <p class="brand__kicker kai">每天一頁的</p>
+        <h1 class="brand__title"><span class="staff brand__staff">English</span></h1>
+        <p class="brand__sub kai">高頻 2801 字，從字的零件學起</p>
       </section>
 
-      <section class="figures">
-        <div class="fig">
-          <div class="fig__n num">{{ TOTAL_WORDS.toLocaleString() }}</div>
-          <div class="fig__l zh">單字</div>
-        </div>
-        <div class="fig__rule" />
-        <div class="fig">
-          <div class="fig__n num">30</div>
-          <div class="fig__l zh">文法點</div>
-        </div>
-        <div class="fig__rule" />
-        <div class="fig">
-          <div class="fig__n num">{{ DRILL_COUNT }}</div>
-          <div class="fig__l zh">練習題</div>
-        </div>
-      </section>
-
-      <!-- ---------- profile chooser ---------- -->
+      <!-- ---------- profile chooser: one exercise book each ---------- -->
       <section v-if="!picked && !manual" class="pick">
-        <p class="pick__label zh">你是誰？</p>
+        <p class="pick__label kai">拿起你的作業簿</p>
         <div class="pick__grid">
           <button
             v-for="p in PROFILES" :key="p.email"
-            class="who" :class="`who--${p.accent}`"
+            class="book" :class="`book--${p.accent}`"
             @click="choose(p)"
           >
-            <span class="who__initial">{{ p.name[0] }}</span>
-            <span class="who__name">{{ p.name }}</span>
+            <span class="book__spine" aria-hidden="true" />
+            <span class="book__title en">English</span>
+            <span class="book__label">
+              <span class="book__field zh">姓名</span>
+              <span class="book__name kai">{{ p.name }}</span>
+            </span>
           </button>
         </div>
         <button class="btn btn--quiet btn--sm zh" @click="openManual">用其他帳號登入</button>
@@ -151,13 +134,14 @@ async function submit () {
       <!-- ---------- password / manual form ---------- -->
       <form v-else class="form card card--pad" @submit.prevent="submit">
         <header v-if="picked" class="who__head">
-          <span class="who__chip" :class="`who--${picked.accent}`">{{ picked.name[0] }}</span>
+          <span class="who__chip" :class="`book--${picked.accent}`" aria-hidden="true" />
           <div class="who__meta">
-            <div class="who__hi zh">{{ picked.name }}</div>
+            <div class="who__hi kai">{{ picked.name }} 的作業簿</div>
             <div class="who__mail">{{ picked.email }}</div>
           </div>
           <button type="button" class="btn btn--quiet btn--sm zh" @click="back">換人</button>
         </header>
+        <p v-if="mode === 'signup'" class="first zh">第一次使用：自己設定一組密碼（至少 6 個字），之後就用它登入。建立後會先做一個 5 分鐘的程度測驗。</p>
 
         <div v-if="manual" class="field">
           <label class="label" for="email">Email</label>
@@ -203,7 +187,7 @@ async function submit () {
           type="button" class="btn btn--quiet btn--sm btn--block zh"
           @click="mode = mode === 'signup' ? 'signin' : 'signup'; err = ''"
         >
-          {{ mode === 'signup' ? '← 回到登入' : '第一次使用？建立這個帳號' }}
+          {{ mode === 'signup' ? '我已經有帳號，回到登入' : '第一次使用？設定密碼、建立帳號' }}
         </button>
 
         <button v-if="manual" type="button" class="btn btn--quiet btn--sm btn--block zh" @click="back">
@@ -212,7 +196,7 @@ async function submit () {
       </form>
 
       <p class="hint zh">
-        進度存在雲端，換手機、換瀏覽器都接得上。兩個帳號的資料完全獨立，只有單字的翻譯與例句是共用的。
+        進度存在雲端，換手機、換瀏覽器都接得上。每個人的進度完全獨立，只有單字的翻譯與例句是共用的。
       </p>
     </div>
   </main>
@@ -233,85 +217,41 @@ async function submit () {
   gap: var(--sp-5);
 }
 
-.brand { display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
-.brand__mark {
-  display: flex;
-  font-family: var(--font-word);
-  font-size: 2.6rem;
-  font-weight: 600;
-  line-height: 1;
-  border: 2px solid var(--ink);
-  border-radius: var(--radius);
-  overflow: hidden;
+.brand { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
+.brand__kicker { font-size: var(--step-1); color: var(--ink-2); }
+.brand__title { font-size: clamp(3rem, 16vw, 4.2rem); font-weight: 700; line-height: 1; }
+.brand__staff { padding: 0 0.25em; }
+.brand__sub { font-size: var(--step-0); color: var(--ink-2); margin-top: var(--sp-2); }
+
+.pick { display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); }
+.pick__label { font-size: var(--step-1); color: var(--ink); }
+.pick__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); width: 100%; }
+
+/* an exercise-book cover: coloured board, spine tape, white name label */
+.book {
+  --cover: #d98aa6;
+  position: relative; aspect-ratio: 3 / 4.1;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  padding: 16% 10% 12% 16%;
+  background: var(--cover);
+  border-radius: 3px 8px 8px 3px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), 0 12px 20px -14px rgba(0, 0, 0, 0.55);
+  transition: transform 0.15s ease;
 }
-.brand__n { padding: 10px 12px 10px 14px; }
-.brand__g { padding: 10px 14px 10px 12px; background: var(--ink); color: var(--paper); }
+.book:active { transform: translateY(2px) rotate(-1deg); }
+.book--pink { --cover: #d98aa6; }
+.book--blue { --cover: #7fa7d6; }
+.book--yellow { --cover: #e5c25d; }
+.book__spine { position: absolute; left: 0; top: 0; bottom: 0; width: 11%; background: rgba(0, 0, 0, 0.18); border-radius: 3px 0 0 3px; }
+.book__title { font-family: var(--font-word); font-weight: 700; color: rgba(255, 255, 255, 0.92); font-size: clamp(0.9rem, 4vw, 1.1rem); letter-spacing: 0.02em; }
+.book__label { width: 100%; background: #fffdf7; border-radius: 2px; padding: 6px 6px 4px; display: flex; flex-direction: column; align-items: flex-start; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06); }
+.book__field { font-size: 0.62rem; color: #8a8f96; }
+.book__name { font-size: clamp(1rem, 5vw, 1.3rem); color: #1f2530; font-weight: 700; line-height: 1.15; border-bottom: 1px solid #c9cfd6; width: 100%; text-align: center; padding-bottom: 2px; }
 
-.brand__title {
-  font-family: var(--font-ui);
-  font-size: var(--step-2);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin-top: var(--sp-2);
-}
-.brand__sub { font-size: var(--step--1); color: var(--ink-2); text-align: center; }
-
-.figures { display: flex; align-items: center; justify-content: center; gap: var(--sp-4); }
-.fig { display: flex; flex-direction: column; align-items: center; gap: 1px; }
-.fig__n { font-size: var(--step-1); color: var(--ink); }
-.fig__l { font-size: var(--step--2); color: var(--ink-3); }
-.fig__rule { width: 1px; height: 26px; background: var(--rule); }
-
-/* ---- chooser ---- */
-.pick { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); }
-.pick__label { font-size: var(--step--1); color: var(--ink-2); font-weight: 600; }
-.pick__grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); width: 100%; }
-
-.who {
-  display: flex; flex-direction: column; align-items: center; gap: var(--sp-2);
-  padding: var(--sp-5) var(--sp-3);
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-1);
-  transition: transform 0.12s ease, border-color 0.15s, box-shadow 0.15s;
-}
-.who:active { transform: scale(0.97); }
-.who:hover { box-shadow: var(--shadow-2); }
-
-.who__initial {
-  width: 54px; height: 54px;
-  border-radius: 50%;
-  display: grid; place-items: center;
-  font-family: var(--font-word);
-  font-size: var(--step-3);
-  font-weight: 600;
-  line-height: 1;
-}
-.who__name { font-size: var(--step-1); font-weight: 700; letter-spacing: -0.01em; }
-
-.who--jade { border-top: 3px solid var(--jade); }
-.who--jade .who__initial { background: var(--jade-wash); color: var(--jade); }
-.who--violet { border-top: 3px solid var(--violet); }
-.who--violet .who__initial { background: var(--violet-wash); color: var(--violet); }
-
-/* ---- form ---- */
 .form { display: flex; flex-direction: column; gap: var(--sp-3); }
-
-.who__head {
-  display: flex; align-items: center; gap: var(--sp-3);
-  padding-bottom: var(--sp-3);
-  border-bottom: 1px solid var(--rule);
-}
-.who__chip {
-  width: 38px; height: 38px; border-radius: 50%;
-  display: grid; place-items: center;
-  font-family: var(--font-word); font-size: var(--step-1); font-weight: 600;
-  border-top: none !important;
-  flex-shrink: 0;
-}
-.who__chip.who--jade { background: var(--jade-wash); color: var(--jade); }
-.who__chip.who--violet { background: var(--violet-wash); color: var(--violet); }
+.who__head { display: flex; align-items: center; gap: var(--sp-3); padding-bottom: var(--sp-3); border-bottom: 1px dashed var(--rule-strong); }
+.who__chip { width: 34px; height: 44px; border-radius: 2px 5px 5px 2px; background: var(--cover); flex-shrink: 0; box-shadow: inset 5px 0 0 rgba(0, 0, 0, 0.18); }
+.first { font-size: var(--step--1); line-height: 1.6; color: var(--ink-2); background: var(--hl-yellow); padding: 8px 10px; border-radius: 3px; }
 .who__meta { flex: 1; min-width: 0; }
 .who__hi { font-size: var(--step-0); font-weight: 700; line-height: 1.2; }
 .who__mail {

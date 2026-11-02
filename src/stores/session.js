@@ -41,15 +41,19 @@ export const TRACK = Object.freeze({ BOTH: 'both', A: 'A', B: 'B' })
  */
 export const PHASES = [
   { key: 'review',     label: '複習挑戰',   route: '/review',          minutes: 15, track: TRACK.BOTH },
-  { key: 'learn',      label: 'Word Lab',  route: '/learn',           minutes: 15, track: TRACK.BOTH },
+  { key: 'learn',      label: '新單字',     route: '/learn',           minutes: 15, track: TRACK.BOTH },
   // v3: word parts every day, short. US classrooms run word study as a daily
   // strand of 10-15 minutes rather than a unit taught once; here one unit is
   // a guess, a short teach and an 8-item game round.
   { key: 'parts',      label: '字首字尾',   route: '/parts?phase=1',   minutes: 7,  track: TRACK.BOTH },
-  { key: 'grammar',    label: 'Grammar Studio', route: '/grammar',   minutes: 14, track: TRACK.A },
+  { key: 'grammar',    label: '文法',       route: '/grammar',   minutes: 14, track: TRACK.A },
   { key: 'essentials', label: '基礎知識',   route: '/essentials',      minutes: 12, track: TRACK.B },
   { key: 'write',      label: '造句',       route: '/write',           minutes: 12, track: TRACK.B },
-  { key: 'read',       label: 'Story Time', route: '/story?phase=1',   minutes: 12, track: TRACK.A },
+  { key: 'read',       label: '讀故事',     route: '/story?phase=1',   minutes: 12, track: TRACK.A },
+  // v4: a game on today's words, near the end of the day so it is a spaced
+  // second retrieval rather than more of the same minute. The game rotates
+  // daily; the route is filled in by todayPhases.
+  { key: 'play',       label: '遊戲時間',   route: '/games',           minutes: 4,  track: TRACK.BOTH },
   // Listening runs every day and is the phase that flexes: it takes whatever
   // minutes the rest of the day did not use, so a light day is not a short
   // day and a heavy one does not overrun. Half a TOEIC score is listening and
@@ -74,6 +78,13 @@ export function trackFor (dayKey = todayKey()) {
 }
 
 const LS_KEY = 'ngsl.session'
+
+/** The quest's game for a given day: one of the four that run on today's words. */
+export const QUEST_GAMES = ['rain', 'memory', 'bubbles', 'match']
+export function questGame (dayKey = todayKey()) {
+  const days = Math.floor(Date.parse(`${dayKey}T00:00:00Z`) / 86400000)
+  return QUEST_GAMES[((days % QUEST_GAMES.length) + QUEST_GAMES.length) % QUEST_GAMES.length]
+}
 
 function readPhaseState () {
   try {
@@ -155,6 +166,7 @@ export const useSession = defineStore('session', () => {
   const track = computed(() => { rollIfNewDay(); return trackFor(phase.value.day) })
   const todayPhases = computed(() =>
     PHASES.filter(p => p.track === TRACK.BOTH || p.track === track.value)
+      .map(p => p.key === 'play' ? { ...p, route: `/games/${questGame(phase.value.day)}?phase=1`, game: questGame(phase.value.day) } : p)
   )
   function runsToday (key) {
     return todayPhases.value.some(p => p.key === key)
@@ -248,6 +260,7 @@ export const useSession = defineStore('session', () => {
       grammar: !grammarPoint.value,
       essentials: !essentialUnit.value,
       parts: !partsUnit.value,
+      play: (progress.stats.seen || 0) < 6,
       listen: dayWordIds.value.length === 0,
       write: false,
       read: false,

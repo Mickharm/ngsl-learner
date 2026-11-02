@@ -65,10 +65,11 @@ const pct = computed(() => props.total ? Math.min(100, (props.current / props.to
 .shead__exit:active { background: var(--surface-2); }
 
 .shead__title {
-  font-size: var(--step-0);
+  font-family: var(--font-kai);
+  font-size: var(--step-1);
   font-weight: 700;
   text-align: center;
-  letter-spacing: -0.01em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
 .shead__count {
@@ -79,10 +80,10 @@ const pct = computed(() => props.total ? Math.min(100, (props.current / props.to
 }
 .shead__slash { color: var(--ink-3); margin: 0 1px; }
 
-.shead__track { height: 3px; background: var(--surface-3); }
+.shead__track { height: 4px; background: transparent; border-top: 1px solid var(--rule); }
 .shead__fill {
   height: 100%;
-  background: var(--jade);
+  background: var(--hl-yellow);
   transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>

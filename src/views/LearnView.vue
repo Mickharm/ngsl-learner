@@ -13,6 +13,7 @@ import DataGate from '@/components/DataGate.vue'
 import AudioButton from '@/components/AudioButton.vue'
 import PictureTile from '@/components/PictureTile.vue'
 import WordAnatomy from '@/components/WordAnatomy.vue'
+import AnswerSheet from '@/components/ui/AnswerSheet.vue'
 import WordGame from '@/components/games/WordGame.vue'
 import MatchPairs from '@/components/games/MatchPairs.vue'
 
@@ -132,8 +133,9 @@ function pickGuess (o, i) {
   if (guessPick.value !== null) return
   guessPick.value = i
   sfx(o.correct ? 'good' : 'soft')
-  setTimeout(() => { guessing.value = false }, o.correct ? 650 : 1100)
 }
+const guessRight = computed(() => guessPick.value !== null && !!guess.value?.options[guessPick.value]?.correct)
+const guessAnswer = computed(() => guess.value?.options.find(o => o.correct)?.zh || '')
 
 async function nextWord () {
   const w = current.value
@@ -212,7 +214,7 @@ onUnmounted(() => session.stopClock())
 
 <template>
   <div class="view">
-    <SessionHeader title="Word Lab · 新單字" :current="headerCurrent" :total="headerTotal" />
+    <SessionHeader title="新單字" :current="headerCurrent" :total="headerTotal" />
 
     <DataGate :ids="ids">
       <main class="shell lab">
@@ -237,7 +239,18 @@ onUnmounted(() => session.stopClock())
                 @click="pickGuess(o, i)"
               >{{ o.zh }}</button>
             </div>
-            <button class="btn btn--quiet btn--sm zh guess__skip" @click="guessing = false">我不想猜，直接看</button>
+            <button v-if="guessPick === null" class="btn btn--quiet btn--sm zh guess__skip" @click="guessing = false">我不想猜，直接看</button>
+            <AnswerSheet
+              v-if="guessPick !== null"
+              :right="guessRight"
+              :title="guessRight ? '猜對了' : '猜錯沒關係'"
+              :chars="20"
+              next-label="看完整字卡"
+              @next="guessing = false"
+            >
+              <p class="zh">{{ guessRight ? '你從線索推出來了，這樣記得最牢。' : '先猜過再看答案，反而記得更牢。' }}</p>
+              <p class="guess__ans"><b class="en">{{ current.headword }}</b>　<span class="kai">{{ guessAnswer }}</span></p>
+            </AnswerSheet>
           </section>
 
           <template v-else>
@@ -303,7 +316,7 @@ onUnmounted(() => session.stopClock())
         <!-- ================= MATCH ================= -->
         <template v-else-if="stage === 'match'">
           <div class="phase">
-            <span class="chip chip--amber zh">連連看</span>
+            <span class="phase__t kai">連連看</span>
             <span class="dim zh">剛剛那幾個字，配得起來嗎？</span>
           </div>
           <MatchPairs :words="matchWords" :seed="meetIndex + 3" :count="matchWords.length" @done="onMatchDone" />
@@ -312,8 +325,8 @@ onUnmounted(() => session.stopClock())
         <!-- ================= RECALL ================= -->
         <template v-else-if="stage === 'recall' && recallWord">
           <div class="phase">
-            <span class="chip chip--violet zh">{{ recallItem.graded ? '回想挑戰' : '再試一次' }}</span>
-            <span class="dim zh">{{ recallItem.graded ? '這一題的結果決定它什麼時候回來' : '這題不計分，記住它就好' }}</span>
+            <span class="phase__t kai">{{ recallItem.graded ? '回想挑戰' : '再試一次' }}</span>
+            <span class="dim zh">{{ recallItem.graded ? '答對答錯決定它什麼時候回來' : '這題不計分，記住它就好' }}</span>
           </div>
           <WordGame
             :key="recallIndex + ':' + recallItem.id"
@@ -346,7 +359,8 @@ onUnmounted(() => session.stopClock())
 <style scoped>
 .view { min-height: 100dvh; }
 .lab { display: flex; flex-direction: column; gap: var(--sp-4); padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-6)); }
-.phase { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); font-size: var(--step--2); }
+.phase { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2); font-size: var(--step--2); }
+.phase__t { font-size: var(--step-1); font-weight: 700; color: var(--ink); }
 .lab__skip { align-self: center; }
 
 /* guess */
@@ -356,12 +370,13 @@ onUnmounted(() => session.stopClock())
 .guess__sent { font-family: var(--font-word); font-size: var(--step-1); line-height: 1.5; text-align: center; }
 .guess__sent :deep(mark), .ex__en :deep(mark) { background: var(--sun-wash); color: inherit; padding: 0 4px; border-radius: 6px; font-weight: 700; box-shadow: inset 0 -2px 0 var(--sun); }
 .guess__opts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
-.gopt { min-height: 64px; padding: 8px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--rule-strong); font-weight: 600; font-size: var(--step-0); line-height: 1.3; transition: transform 0.1s, opacity 0.2s; }
+.gopt { min-height: 64px; padding: 8px; border-radius: var(--radius); background: var(--surface); border: 0; box-shadow: var(--shadow-1); font-weight: 600; font-size: var(--step-0); line-height: 1.3; transition: transform 0.1s, opacity 0.2s; }
 .gopt:active:not(:disabled) { transform: scale(0.97); }
-.gopt--right { border-color: var(--jade); background: var(--jade-wash); color: var(--jade-ink); animation: pop-in 0.25s; }
-.gopt--wrong { border-color: var(--rose); background: var(--rose-wash); color: var(--rose); animation: shake 0.3s; }
+.gopt--right { background: var(--hl-green); color: var(--ink); animation: pop-in 0.25s; }
+.gopt--wrong { background: var(--redpen-wash); color: var(--redpen); text-decoration: line-through; animation: shake 0.3s; }
 .gopt--mute { opacity: 0.4; }
 .guess__skip { align-self: center; }
+.guess__ans { font-size: var(--step-1); }
 
 /* meet */
 .meet { padding: var(--sp-4) var(--sp-4) var(--sp-5); display: flex; flex-direction: column; gap: var(--sp-4); }

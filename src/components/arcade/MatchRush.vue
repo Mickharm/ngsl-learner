@@ -3,14 +3,14 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuth } from '@/stores/auth'
 import { useGamePool } from '@/composables/useGamePool'
 import { shuffle } from '@/lib/game'
-import { readBest, saveBest } from '@/lib/arcade'
+import { readBest, saveBest, dealDeck } from '@/lib/arcade'
 import { sfx } from '@/lib/sfx'
 import GameShell from './GameShell.vue'
 import MatchPairs from '@/components/games/MatchPairs.vue'
 
 /** 極速連連看 — three rounds of five pairs against the clock. */
 const auth = useAuth()
-const { pool } = useGamePool(15)
+const { pool, todayIds, inPhase } = useGamePool(15)
 const ROUNDS = 3
 
 const round = ref(0)
@@ -41,7 +41,7 @@ function finish () {
 }
 function start () {
   clearInterval(clock)
-  deck.value = shuffle(pool.value, Date.now()).slice(0, ROUNDS * 5)
+  deck.value = dealDeck(pool.value, inPhase.value ? todayIds.value : null).slice(0, ROUNDS * 5)
   round.value = 0; secs.value = 0; mistakes.value = 0; over.value = false; newBest.value = false
   clock = setInterval(() => { secs.value++ }, 1000)
 }

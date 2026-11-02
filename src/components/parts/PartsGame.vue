@@ -1,4 +1,5 @@
 <script setup>
+import AnswerSheet from '@/components/ui/AnswerSheet.vue'
 import { ref, computed, watch, onUnmounted } from 'vue'
 import { PARTS } from '@/data/morphology'
 import { cutsMatch } from '@/lib/partsGames'
@@ -48,7 +49,6 @@ function settle (ok) {
   if (!ok) buzz(40)
   say(props.item.word)
   emit('answer', { correct: ok })
-  if (ok) timer = setTimeout(() => emit('next'), 1400)
 }
 
 function choose (o) {
@@ -108,7 +108,6 @@ const label = computed(() => ({
   <section class="pg" :class="done && (correct ? 'pg--right' : 'pg--wrong')">
     <div class="pg__tag">
       <span class="chip chip--violet zh">{{ label }}</span>
-      <span v-if="done" class="pg__verdict zh" :class="correct ? 'ok' : 'no'">{{ correct ? '答對！' : '再看一次' }}</span>
     </div>
 
     <div class="pg__prompt card">
@@ -173,15 +172,12 @@ const label = computed(() => ({
     <button v-if="item.kind === 'split' && !done" class="btn btn--primary btn--block zh" :disabled="!cuts.size" @click="checkSplit">切好了</button>
     <p v-if="item.kind === 'split' && !done" class="pg__hint zh">點字母之間的空隙切開，再點一次取消</p>
 
-    <Transition name="slide-up">
-      <div v-if="done" class="fb card">
-        <div v-if="item.kind === 'split' || item.kind === 'build'" class="pg__tiles">
-          <span v-for="(t, i) in splitPieces.length ? splitPieces : item.tiles" :key="i" class="lt" :class="`lt--${t.kind}`">{{ t.text }}</span>
-        </div>
-        <p class="fb__explain zh">{{ item.explain }}</p>
-        <button class="btn btn--block zh" :class="correct ? 'btn--ghost' : 'btn--primary'" @click="emit('next')">繼續</button>
+    <AnswerSheet v-if="done" :right="correct" :chars="(item.explain || '').length + 10" @next="emit('next')">
+      <div v-if="item.tiles" class="pg__tiles pg__tiles--fb">
+        <span v-for="(t, i) in item.tiles" :key="i" class="lt" :class="`lt--${t.kind}`">{{ t.text }}</span>
       </div>
-    </Transition>
+      <p class="fb__explain zh">{{ item.explain }}</p>
+    </AnswerSheet>
   </section>
 </template>
 
@@ -192,9 +188,7 @@ const label = computed(() => ({
 .pg__verdict.ok { color: var(--jade); }
 .pg__verdict.no { color: var(--rose); }
 
-.pg__prompt { padding: var(--sp-5) var(--sp-4); display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); text-align: center; border-top: 4px solid var(--violet); }
-.pg--right .pg__prompt { border-top-color: var(--jade); }
-.pg--wrong .pg__prompt { border-top-color: var(--rose); }
+.pg__prompt { padding: var(--sp-5) var(--sp-4); display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); text-align: center; border-top: 0; }
 .pg__q { font-size: var(--step-1); font-weight: 700; line-height: 1.45; }
 .pg__tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 .pg__tiles .lt { font-size: var(--step-2); }
@@ -216,10 +210,10 @@ const label = computed(() => ({
 .pg__hint { text-align: center; font-size: var(--step--1); color: var(--ink-3); margin-top: -8px; }
 
 .pg__opts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
-.popt { min-height: 60px; padding: 8px 10px; border-radius: var(--radius); background: var(--surface); border: 1.5px solid var(--rule-strong); font-weight: 600; line-height: 1.3; transition: transform 0.1s, opacity 0.2s; }
+.popt { min-height: 60px; padding: 8px 10px; border-radius: var(--radius); background: var(--surface); border: 0; box-shadow: var(--shadow-1); font-weight: 600; line-height: 1.3; transition: transform 0.1s, opacity 0.2s; }
 .popt:active:not(:disabled) { transform: scale(0.97); }
-.popt--right { border-color: var(--jade); background: var(--jade-wash); color: var(--jade-ink); animation: pop-in 0.25s; }
-.popt--wrong { border-color: var(--rose); background: var(--rose-wash); color: var(--rose); animation: shake 0.3s; }
+.popt--right { background: var(--hl-green); color: var(--ink); animation: pop-in 0.25s; }
+.popt--wrong { background: var(--redpen-wash); color: var(--redpen); text-decoration: line-through; animation: shake 0.3s; }
 .popt--mute { opacity: 0.4; }
 
 .fb { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }

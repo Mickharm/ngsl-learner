@@ -230,6 +230,30 @@ page.on('pageerror', e => errors.push('PAGEERROR: ' + e.message))
 if (process.env.TRACE_FAIL) page.on('requestfailed', r => console.log('  REQFAIL', r.failure()?.errorText, r.url().slice(0, 120)))
 if (process.env.TRACE_NAV) page.on('framenavigated', f => { if (f === page.mainFrame()) console.log('  NAV', f.url()) })
 
+// --- real Chinese faces, offline ---
+// The container cannot reach Google Fonts, so without this every screenshot
+// shows a fallback face and the design review is of the wrong thing. If the
+// @fontsource packages are present (npm i --no-save @fontsource/lxgw-wenkai-tc
+// @fontsource/noto-sans-tc, or SMOKE_FONTS=<dir containing @fontsource>), the
+// Google Fonts stylesheet is answered from them.
+{
+  const dirs = [process.env.SMOKE_FONTS, join(ROOT, 'node_modules')].filter(Boolean)
+  const fsrc = dirs.map(d => join(d, '@fontsource')).find(d => existsSync(join(d, 'lxgw-wenkai-tc')))
+  if (fsrc) {
+    const css = async (pkg, w) => (await readFile(join(fsrc, pkg, `${w}.css`), 'utf8'))
+      .replace(/url\(\.\/files\//g, `url(https://fonts.local/${pkg}/files/`)
+    const sheet = (await Promise.all([
+      css('lxgw-wenkai-tc', 400), css('lxgw-wenkai-tc', 700),
+      css('noto-sans-tc', 400), css('noto-sans-tc', 500), css('noto-sans-tc', 700)
+    ])).join('\n')
+    await ctx.route('**/fonts.googleapis.com/**', route => route.fulfill({ status: 200, contentType: 'text/css', body: sheet }))
+    await ctx.route('https://fonts.local/**', async route => {
+      const rel = new URL(route.request().url()).pathname.slice(1)
+      try { route.fulfill({ status: 200, contentType: 'font/woff2', body: await readFile(join(fsrc, rel)) }) } catch { route.fulfill({ status: 404, body: '' }) }
+    })
+  }
+}
+
 // --- no service worker ---
 // The precache answers from disk, so with a service worker in the way no
 // asset request reaches the network and nothing here can decide what a
@@ -357,9 +381,9 @@ await shot('01-login')
 
 // sign in through the real form (the stub answers /auth/v1/token)
 // the login screen opens on the profile chooser, so pick one first
-await page.locator('.who').first().waitFor({ state: 'visible', timeout: 8000 })
+await page.locator('.book').first().waitFor({ state: 'visible', timeout: 8000 })
 await shot('01a-profile-picker')
-await page.locator('.who').first().click()
+await page.locator('.book').first().click()
 await page.waitForTimeout(350)
 await page.fill('#pw', 'stub-password')
 await page.click('button[type="submit"]')
@@ -478,7 +502,7 @@ checks.push([
 // of the two pairs.
 const stepLabels = (await page.locator('.step__label, .step__title, .step h3, .step').allInnerTexts().catch(() => []))
   .join(' ').replace(/\s+/g, ' ')
-const trackA = /Grammar Studio/.test(stepLabels) && /Story Time/.test(stepLabels)
+const trackA = /文法/.test(stepLabels) && /讀故事/.test(stepLabels)
 const trackB = /基礎知識/.test(stepLabels) && /造句/.test(stepLabels)
 checks.push([
   'the day runs one track, not both',
@@ -486,8 +510,9 @@ checks.push([
   `A=${trackA} B=${trackB} · ${stepLabels.slice(0, 120)}`
 ])
 const stepCount = await page.locator('.steps > li').count().catch(() => 0)
-// v3: review, words, word parts, one taught pair, listening, summary
-checks.push(['the quest is seven steps: both daily strands plus one taught pair', stepCount === 7, `${stepCount} steps`])
+// v4: review, words, word parts, one taught pair, game, listening, summary
+checks.push(['the quest is eight periods: daily strands, one taught pair, a game', stepCount === 8, `${stepCount} steps`])
+checks.push(['a game is on the day', /遊戲時間/.test(stepLabels), stepLabels.slice(0, 160)])
 checks.push(['word parts run on the day', /字首字尾/.test(stepLabels), stepLabels.slice(0, 160)])
 checks.push(['listening is on the day, every day', /聽力/.test(stepLabels), stepLabels.slice(0, 120)])
 
@@ -517,7 +542,7 @@ checks.push([
 
 await page.goto(URL_BASE + '#/', { waitUntil: 'networkidle' })
 await page.waitForTimeout(700)
-const learnStep = await page.locator('.step:has-text("Word Lab")').first().innerText().catch(() => '')
+const learnStep = await page.locator('.step:has-text("新單字")').first().innerText().catch(() => '')
 checks.push(['dashboard reflects the new count', /20 個新字/.test(learnStep), learnStep.replace(/\s+/g, ' ')])
 
 /* ------------------------------------------------------------------ *
@@ -547,6 +572,7 @@ async function solveMatch () {
   return false
 }
 
+let wrongWaited = null
 /** Answer whatever WordGame is on screen. `wrong` deliberately misses. */
 async function playWordGame ({ wrong = false } = {}) {
   const tag = (await page.locator('.wg__tag .chip').first().innerText().catch(() => '')).trim()
@@ -568,7 +594,12 @@ async function playWordGame ({ wrong = false } = {}) {
     await page.locator('.wg__cloze button[type="submit"]').click().catch(() => {})
   }
   await page.waitForTimeout(300)
-  const cont = page.locator('.reveal button:has-text("繼續")').first()
+  const cont = page.locator('.as__next').first()
+  // A wrong answer must wait for the learner: still there after 2.6 s.
+  if (wrong && wrongWaited === null) {
+    await page.waitForTimeout(2600)
+    wrongWaited = await cont.isVisible().catch(() => false)
+  }
   if (await cont.isVisible({ timeout: 1500 }).catch(() => false)) await cont.click().catch(() => {})
   await page.waitForTimeout(250)
   return tag
@@ -587,7 +618,11 @@ checks.push([
   'no guess step, or the card was already open'
 ])
 await page.locator('.guess .gopt').first().click().catch(() => {})
-await page.waitForTimeout(1400)
+await page.waitForTimeout(700)
+await shot('06a-wordlab-guess-feedback')
+checks.push(['a guess waits on its feedback instead of jumping to the card', await page.locator('.guess .as__next').isVisible().catch(() => false) || await page.locator('.as__next').isVisible().catch(() => false), 'no answer sheet after guessing'])
+await page.locator('.as__next').first().click().catch(() => {})
+await page.waitForTimeout(500)
 await shot('06b-wordlab-card')
 checks.push([
   'the word card shows how the word is built, with a legend for its colours',
@@ -614,8 +649,10 @@ for (let i = 0; i < 160; i++) {
     continue
   }
   if (await page.locator('.guess .gopt').first().isVisible({ timeout: 200 }).catch(() => false)) {
-    await page.locator('.guess .gopt').first().click().catch(() => {})
-    await page.waitForTimeout(1300)
+    await page.locator('.guess .gopt:not([disabled])').first().click().catch(() => {})
+    await page.waitForTimeout(300)
+    await page.locator('.as__next').first().click().catch(() => {})
+    await page.waitForTimeout(300)
     continue
   }
   // the last word may still be followed by a final 連連看 before recall starts
@@ -651,6 +688,7 @@ for (let i = 0; i < 60; i++) {
 }
 await page.waitForTimeout(900)
 await shot('09-wordlab-done')
+checks.push(['a wrong answer waits for 繼續 instead of moving on by itself', wrongWaited === true, `still showing after 2.6 s: ${wrongWaited}`])
 
 {
   const posted = db.card_progress.slice(postedBeforeLearn).filter(r => r.word_id < 2300)
@@ -726,6 +764,7 @@ await shot('11-grammar-discover')
 
   const kinds = new Set()
   let mixLabel = false
+  let sortWaited = false
   let sawMix = false
   let shotN = 0
   for (let i = 0; i < 30; i++) {
@@ -738,9 +777,15 @@ await shot('11-grammar-discover')
     else if (await page.locator('.tapw').first().isVisible().catch(() => false)) { kinds.add('tap'); await page.locator('.tapw').first().click() }
     else if (await page.locator('.sortbtn').first().isVisible().catch(() => false)) {
       kinds.add('sort')
-      for (let k = 0; k < 6; k++) {
+      for (let k = 0; k < 8; k++) {
+        // a wrong judgement now waits for 下一句 instead of moving on by itself
+        if (await page.locator('.sortnext').isVisible().catch(() => false)) {
+          sortWaited = true
+          await page.locator('.sortnext').click().catch(() => {}); await page.waitForTimeout(250)
+          continue
+        }
         if (!(await page.locator('.sortbtn--ok').isVisible().catch(() => false))) break
-        await page.locator('.sortbtn--ok').click().catch(() => {}); await page.waitForTimeout(1600)
+        await page.locator('.sortbtn--ok').click().catch(() => {}); await page.waitForTimeout(900)
       }
     } else if (await page.locator('.bank .wtile').first().isVisible().catch(() => false)) {
       kinds.add(await page.locator('.slots').first().isVisible().catch(() => false) ? 'blocks' : 'order')
@@ -752,8 +797,8 @@ await shot('11-grammar-discover')
     }
     await page.waitForTimeout(300)
     if (shotN < 2) { await shot(`13-grammar-game-${shotN}`); shotN++ }
-    if (inMix && await page.locator('.fb .chip:has-text("這題考")').first().isVisible().catch(() => false)) mixLabel = true
-    const cont = page.locator('.fb button:has-text("繼續")').first()
+    if (inMix && await page.locator('.fb__point:has-text("這題考")').first().isVisible().catch(() => false)) mixLabel = true
+    const cont = page.locator('.as__next').first()
     if (await cont.isVisible({ timeout: 2500 }).catch(() => false)) await cont.click().catch(() => {})
     await page.waitForTimeout(250)
   }
@@ -1059,7 +1104,7 @@ await page.waitForTimeout(400)
       await page.locator('button:has-text("切好了")').click().catch(() => {})
     }
     await page.waitForTimeout(350)
-    const cont = page.locator('.fb button:has-text("繼續")').first()
+    const cont = page.locator('.as__next').first()
     if (await cont.isVisible({ timeout: 1600 }).catch(() => false)) await cont.click().catch(() => {})
     await page.waitForTimeout(250)
   }
@@ -1130,7 +1175,7 @@ await page.waitForTimeout(700)
   const lv = await page.locator('.lvl__badge').innerText().catch(() => '')
   checks.push(['the dashboard shows a word-power level', /^Lv\.\d+$/.test(lv.trim()), `badge="${lv}"`])
   const order = await page.locator('.step__label').allInnerTexts().catch(() => [])
-  checks.push(['review comes before new words in the day', order[0] === '複習挑戰' && order[1] === 'Word Lab', order.join(' → ')])
+  checks.push(['review comes before new words in the day', order[0] === '複習挑戰' && order[1] === '新單字', order.join(' → ')])
   checks.push(['the day carries a word part of the day', await page.locator('.wotd .ana').isVisible().catch(() => false), 'no 今日零件'])
   await shot('16q-dashboard-v2')
 }

@@ -1,4 +1,7 @@
 <script setup>
+import AnswerSheet from '@/components/ui/AnswerSheet.vue'
+import Stamp from '@/components/ui/Stamp.vue'
+import AudioButton from '@/components/AudioButton.vue'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWords } from '@/stores/words'
@@ -261,19 +264,20 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
           </div>
         </template>
 
-        <Transition name="slide-up">
-          <div v-if="settled" class="fb" :class="results.at(-1)?.correct ? 'fb--ok' : 'fb--no'">
-            <div class="fb__head zh">{{ results.at(-1)?.correct ? '答對了' : '答錯了' }}</div>
-            <p class="fb__answer">
-              {{ item.reveal }}
-              <span v-if="item.ipa" class="fb__ipa num">{{ item.ipa }}</span>
-            </p>
-            <p v-if="item.zh" class="fb__zh zh">{{ item.zh }}</p>
-            <button class="btn btn--primary btn--block zh" @click="next">
-              {{ index + 1 < items.length ? '下一題' : '看結果' }}
-            </button>
-          </div>
-        </Transition>
+        <AnswerSheet
+          v-if="settled" :key="'fb' + index"
+          :right="!!results.at(-1)?.correct"
+          :chars="(item.reveal || '').length + (item.zh || '').length"
+          :next-label="index + 1 < items.length ? '下一題' : '看結果'"
+          @next="next"
+        >
+          <p class="fb__answer">
+            {{ item.reveal }}
+            <span v-if="item.ipa" class="fb__ipa">{{ item.ipa }}</span>
+            <AudioButton v-if="item.reveal" :text="item.reveal" size="sm" />
+          </p>
+          <p v-if="item.zh" class="fb__zh kai">{{ item.zh }}</p>
+        </AnswerSheet>
 
         <button class="btn btn--quiet btn--sm lis__skip zh" @click="skipPhase">跳過這個階段</button>
       </template>
@@ -281,10 +285,8 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
       <!-- result -->
       <template v-else>
         <div class="res">
-          <div class="res__ring" :style="{ '--pct': items.length ? (correctCount / items.length) * 100 : 0 }">
-            <span class="res__pct num">{{ correctCount }}<small>/{{ items.length }}</small></span>
-          </div>
-          <h2 class="res__title zh">聽力練習完成</h2>
+          <Stamp :ratio="items.length ? correctCount / items.length : 0" :size="120" />
+          <h2 class="res__title kai">聽力練習完成，答對 {{ correctCount }} / {{ items.length }}</h2>
           <p class="res__note zh">
             <template v-if="items.length && correctCount / items.length >= 0.8">
               聽得出來了。之後題目會慢慢從單字換成整句。
@@ -381,7 +383,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
   display: flex; align-items: baseline; gap: var(--sp-2); flex-wrap: wrap;
 }
 .fb__ipa { font-size: var(--step--2); color: var(--ink-3); }
-.fb__zh { font-size: var(--step--1); color: var(--ink-2); }
+.fb__zh { font-size: var(--step-1); color: var(--ink-2); }
 
 .res { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); padding: var(--sp-6) 0 var(--sp-4); text-align: center; }
 .res__ring {

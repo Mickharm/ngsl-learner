@@ -35,16 +35,17 @@ const links = computed(() => [
 
 <template>
   <main class="shell me">
-    <header class="me__head">
-      <span class="me__lv num">Lv.{{ power.level }}</span>
-      <div>
-        <h1 class="page-title zh">{{ auth.displayName }}</h1>
+    <header class="me__card">
+      <div class="me__id">
+        <span class="me__school zh">英文作業簿　學生證</span>
+        <h1 class="page-title me__name">{{ auth.displayName }}</h1>
         <p class="me__title zh">{{ titleOf(power.level) }}，字力 <b class="num">{{ power.xp }}</b>，連續 <b class="num">{{ progress.streak }}</b> 天</p>
       </div>
+      <span class="me__lv num">Lv.{{ power.level }}</span>
     </header>
 
     <section class="card ladder">
-      <h2 class="sec zh">你的字在哪一階</h2>
+      <h2 class="sec kai">你的字在哪一階</h2>
       <p class="ladder__lead zh">每個字會一階一階往上考：先認得、再聽得懂、想得起、拼得出，最後在句子裡用得出來。</p>
       <ul class="ladder__rows">
         <li v-for="l in ladder" :key="l.key" class="lr">
@@ -76,28 +77,33 @@ const links = computed(() => [
 
 <style scoped>
 .me { display: flex; flex-direction: column; gap: var(--sp-5); }
-.me__head { display: flex; align-items: center; gap: var(--sp-4); }
-.me__lv { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 16px; background: var(--slab); color: var(--sun); font-weight: 800; font-size: var(--step-1); box-shadow: 0 4px 0 #0006; flex-shrink: 0; }
-.me__title { color: var(--ink-2); font-size: var(--step--1); margin-top: 2px; }
-.sec { font-size: var(--step-0); font-weight: 800; }
+.me__card { position: relative; display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-4); background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-1); border-top: 6px solid var(--pen); }
+.me__id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.me__school { font-size: var(--step--2); color: var(--ink-3); letter-spacing: 0.1em; }
+.me__name { font-size: var(--step-4); }
+.me__title { color: var(--ink-2); font-size: var(--step--1); }
+.me__lv { width: 76px; height: 76px; flex-shrink: 0; display: grid; place-items: center; border: 2.5px solid var(--redpen); border-radius: 50%; color: var(--redpen); font-weight: 700; font-size: var(--step-1); transform: rotate(-12deg); }
+.sec { font-size: var(--step-1); font-weight: 700; }
 .ladder { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
 .ladder__lead { font-size: var(--step--1); color: var(--ink-2); line-height: 1.6; }
 .ladder__rows { display: flex; flex-direction: column; gap: 8px; }
 .lr { display: grid; grid-template-columns: 4.5em 1fr 3em; gap: var(--sp-2); align-items: center; }
 .lr__l { font-size: var(--step--1); font-weight: 700; }
-.lr__bar { height: 14px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
-.lr__bar span { display: block; height: 100%; background: var(--t-prefix); border-radius: 4px; min-width: 2px; }
-.lr__n { text-align: right; color: var(--ink-2); font-size: var(--step--1); }
-.mini { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-2); }
-.mini__c { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: var(--sp-3) 4px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--rule); }
-.mini__c b { font-size: var(--step-1); }
+.lr__bar { height: 14px; border-radius: 2px; background: var(--surface-2); overflow: hidden; }
+.lr__bar span { display: block; height: 100%; background: var(--hl-blue); min-width: 2px; }
+.lr__n { text-align: right; color: var(--ink-2); font-size: var(--step--1); font-family: var(--font-word); }
+.mini { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule-strong); }
+.mini__c { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 2px; }
+.mini__c + .mini__c { border-left: 1px solid var(--rule); }
+.mini__c b { font-size: var(--step-1); font-family: var(--font-word); }
 .mini__c span { font-size: var(--step--2); color: var(--ink-3); }
-.links { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); overflow: hidden; }
-.links li + li { border-top: 1px solid var(--rule); }
-.link { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-4); }
+.links { display: flex; flex-direction: column; }
+.links li { border-bottom: 1px solid var(--rule); }
+.links li:first-child { border-top: 1px solid var(--rule); }
+.link { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-4) 2px; }
 .link__body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-.link__t { font-weight: 700; }
+.link__t { font-weight: 700; font-family: var(--font-kai); font-size: var(--step-1); }
 .link__s { font-size: var(--step--2); color: var(--ink-3); }
-.link__badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--rose); color: #fff; font-size: var(--step--2); display: grid; place-items: center; }
+.link__badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--redpen); color: #fff; font-size: var(--step--2); display: grid; place-items: center; }
 .link svg { width: 18px; height: 18px; color: var(--ink-3); }
 </style>
