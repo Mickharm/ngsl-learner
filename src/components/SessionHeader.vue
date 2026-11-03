@@ -52,7 +52,7 @@ const pct = computed(() => props.total ? Math.min(100, (props.current / props.to
   position: relative; overflow: hidden;
 }
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .shead__bar { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); }
+  .shead__bar { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(115%); backdrop-filter: blur(24px) saturate(115%); }
 }
 @media (prefers-reduced-transparency: reduce) { .shead__bar { background: var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 

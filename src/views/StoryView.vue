@@ -374,7 +374,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 .book { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--sp-3) var(--sp-2); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-1); }
 .book__cover { font-size: 2.2rem; }
 .book__title { font-family: var(--font-word); font-size: var(--step--1); text-align: center; line-height: 1.25; }
-.book__stars { font-size: var(--step--1); color: #ffb800; letter-spacing: 1px; }
+.book__stars { font-size: var(--step--1); color: var(--sun-edge); letter-spacing: 1px; }
 
 .scene { font-size: clamp(2.6rem, 14vw, 4rem); text-align: center; padding: var(--sp-5) var(--sp-3); letter-spacing: 0.12em; background: linear-gradient(180deg, var(--surface), var(--surface-2)); }
 .lines { display: flex; flex-direction: column; gap: var(--sp-3); }
@@ -410,7 +410,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 
 .res { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); text-align: center; padding-top: var(--sp-6); }
 .res__cover { font-size: 4rem; }
-.res__stars { font-size: var(--step-4); color: #ffb800; letter-spacing: 4px; text-shadow: 0 4px 14px rgba(255, 170, 0, 0.35); }
+.res__stars { font-size: var(--step-4); color: var(--sun-edge); letter-spacing: 4px; }
 .res__title { font-family: var(--font-word); font-size: var(--step-2); }
 .res__line { font-size: var(--step--1); color: var(--ink-2); }
 .res__note { font-size: var(--step--1); color: var(--ink-3); line-height: 1.7; max-width: 34ch; }

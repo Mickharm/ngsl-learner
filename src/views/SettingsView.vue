@@ -459,6 +459,15 @@ const buildSha = __BUILD_SHA__
         >{{ opt.l }}</button>
       </div>
 
+      <h3 class="grp__sub zh">玻璃效果</h3>
+      <div class="seg">
+        <button
+          v-for="opt in [{ k: 'auto', l: '自動' }, { k: 'full', l: '完整' }, { k: 'lite', l: '簡化' }]"
+          :key="opt.k" class="seg__btn zh" :class="{ 'seg__btn--on': settings.glass === opt.k }"
+          @click="settings.setGlass(opt.k)"
+        >{{ opt.l }}</button>
+      </div>
+      <p class="note zh">簡化會關掉即時模糊、改成實色卡片：捲動卡頓或比較耗電的手機可以選它。只影響這台裝置。</p>
     </section>
 
     <!-- ---------- account & data ---------- -->
@@ -590,4 +599,5 @@ const buildSha = __BUILD_SHA__
   color: var(--ink-4, var(--ink-3));
   opacity: 0.6;
 }
+.grp__sub { font-size: var(--step--1); font-weight: 600; color: var(--ink-2); margin-top: var(--sp-4); margin-bottom: var(--sp-2); }
 </style>

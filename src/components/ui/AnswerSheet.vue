@@ -130,7 +130,7 @@ onUnmounted(() => {
   animation: sheet-up 0.42s cubic-bezier(0.2, 1.05, 0.3, 1);
 }
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .as { background: var(--glass-thick); -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%); }
+  .as { background: var(--glass-thick); -webkit-backdrop-filter: blur(30px) saturate(115%); backdrop-filter: blur(30px) saturate(115%); }
 }
 @media (prefers-reduced-transparency: reduce) { .as { background: var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 /* a tint along the top edge says right / wrong before any word is read */

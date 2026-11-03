@@ -49,7 +49,7 @@ const uid = Math.random().toString(36).slice(2, 8)
 .medal { overflow: visible; filter: drop-shadow(0 10px 22px rgba(30, 30, 70, 0.18)); animation: spring-in 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
 .medal__disc { fill: var(--surface); stroke: rgba(255, 255, 255, 0.6); stroke-width: 0.5; }
 .medal__track { fill: none; stroke: var(--surface-3); stroke-width: 9; }
-.medal__arc { filter: saturate(1.6) brightness(0.92);
+.medal__arc {
   fill: none; stroke-width: 9; stroke-linecap: round;
   stroke-dasharray: var(--c); stroke-dashoffset: var(--c);
   animation: ring-fill 1.1s 0.2s cubic-bezier(0.3, 0.9, 0.3, 1) forwards;

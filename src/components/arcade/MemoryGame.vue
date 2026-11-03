@@ -109,7 +109,7 @@ onUnmounted(() => clearInterval(clock))
 .card3__in { position: relative; display: block; width: 100%; height: 100%; transition: transform 0.35s; transform-style: preserve-3d; }
 .card3--open .card3__in { transform: rotateY(180deg); }
 .card3__back, .card3__face { position: absolute; inset: 0; display: grid; place-items: center; border-radius: var(--radius); backface-visibility: hidden; -webkit-backface-visibility: hidden; padding: 6px; text-align: center; line-height: 1.2; }
-.card3__back { background: var(--slab); color: var(--slab-ink); font-family: var(--font-word); font-weight: 700; font-size: 1.6rem; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 18px -10px rgba(0, 0, 0, 0.5); background-image: radial-gradient(120% 90% at 30% 10%, rgba(255, 255, 255, 0.16), transparent 50%), linear-gradient(150deg, var(--pen), #5856d6); color: #fff; }
+.card3__back { background: var(--slab); color: var(--slab-ink); font-family: var(--font-word); font-weight: 700; font-size: 1.6rem; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 18px -10px rgba(0, 0, 0, 0.5); background-color: var(--pen); color: #fff; background-image: radial-gradient(circle at 50% 100%, transparent 9px, rgba(255, 255, 255, 0.1) 10px, transparent 11px, transparent 15px, rgba(255, 255, 255, 0.1) 16px, transparent 17px); background-size: 28px 14px; }
 .card3__face { transform: rotateY(180deg); background: var(--surface); font-family: var(--font-kai); font-weight: 700; font-size: clamp(0.95rem, 4.2vw, 1.15rem); box-shadow: var(--shadow-1); }
 .card3__face--en { font-family: var(--font-word); font-size: clamp(0.95rem, 4.4vw, 1.2rem); }
 .card3--done .card3__face { background: var(--hl-green); }

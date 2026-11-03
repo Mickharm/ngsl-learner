@@ -103,8 +103,8 @@ const style = computed(() => {
   position: fixed;
   /* floats over the text, so it is control glass */
   background: var(--glass-thick);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
-  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(115%);
+  backdrop-filter: blur(30px) saturate(115%);
   border: 0;
   border-radius: var(--radius-lg);
   box-shadow: var(--glass-rim), var(--shadow-3);

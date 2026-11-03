@@ -305,7 +305,7 @@ function showTip (payload, evt) {
 .tile {
   background: var(--surface); border: 1px solid var(--rule);
   border-radius: var(--radius); padding: var(--sp-3) var(--sp-2); text-align: center;
-}
+ -webkit-backdrop-filter: blur(20px) saturate(112%); backdrop-filter: blur(20px) saturate(112%); }
 .tile__v { font-size: var(--step-1); line-height: 1.15; }
 .tile__v small { font-size: var(--step--2); color: var(--ink-3); }
 .tile__l { font-size: 10px; color: var(--ink-3); margin-top: 2px; }

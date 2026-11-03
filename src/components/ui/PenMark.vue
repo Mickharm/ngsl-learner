@@ -24,7 +24,7 @@ defineProps({
 <style scoped>
 .pm { flex-shrink: 0; overflow: visible; animation: spring-in 0.42s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
 .pm__disc { fill: var(--green); }
-.pm--wrong .pm__disc { fill: #ff3b30; }
+.pm--wrong .pm__disc { fill: var(--red-fill); }
 .pm path { fill: none; stroke: #fff; stroke-width: 4.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 0.34s 0.12s cubic-bezier(0.5, 0, 0.3, 1) forwards; }
 .pm__2 { animation-delay: 0.26s !important; }
 @media (prefers-reduced-motion: reduce) { .pm, .pm path { animation: none; stroke-dashoffset: 0; } }

@@ -244,7 +244,8 @@ if (process.env.TRACE_NAV) page.on('framenavigated', f => { if (f === page.mainF
       .replace(/url\(\.\/files\//g, `url(https://fonts.local/${pkg}/files/`)
     const sheet = (await Promise.all([
       css('lxgw-wenkai-tc', 400), css('lxgw-wenkai-tc', 700),
-      css('noto-sans-tc', 400), css('noto-sans-tc', 500), css('noto-sans-tc', 700)
+      css('noto-sans-tc', 400), css('noto-sans-tc', 500), css('noto-sans-tc', 700),
+      ...(existsSync(join(fsrc, 'noto-serif-tc')) ? [css('noto-serif-tc', 600), css('noto-serif-tc', 700)] : [])
     ])).join('\n')
     await ctx.route('**/fonts.googleapis.com/**', route => route.fulfill({ status: 200, contentType: 'text/css', body: sheet }))
     await ctx.route('https://fonts.local/**', async route => {
@@ -313,7 +314,14 @@ await ctx.route('**/generativelanguage.googleapis.com/**', async route => {
   const body = req.postData() || ''
   // Route by the response schema the app asked for — that is what actually
   // distinguishes the calls, and it does not drift when prompt wording changes.
-  if (body.includes('goals_done')) {
+  if (body.includes('partner_role_en')) {
+    // 自己出題
+    payload = {
+      title: '藥妝店', scene_zh: '你在藥妝店找防曬乳，也想問能不能免稅。', partner_name: 'Yuki', partner_role_en: 'drugstore staff', partner_role_zh: '藥妝店店員',
+      goals: [{ zh: '問防曬乳在哪裡', en: 'ask where the sunscreen is' }, { zh: '問有沒有小瓶的', en: 'ask for a small bottle' }, { zh: '問能不能免稅', en: 'ask about tax-free' }],
+      opener_en: 'Hello! Are you looking for something?', opener_zh: '你好！在找什麼嗎？', frames: ['Where is …?', 'Do you have …?', 'Can I …?', 'How much …?']
+    }
+  } else if (body.includes('goals_done')) {
     // 主題對話 turn: count the learner lines so the goals fill up as it goes
     const n = (body.match(/學生: /g) || []).length
     payload = {
@@ -858,6 +866,16 @@ await page.waitForTimeout(1200)
 await shot('14d-talk-brief')
 const briefOk = await page.locator('.brief .goal').count().catch(() => 0)
 checks.push(['the talk brief shows a scenario with three goals', briefOk === 3, `goals=${briefOk}`])
+// 自己出題 replaces today's scenario with one built from a description
+await page.locator('button:has-text("自己出題")').click().catch(() => {})
+await page.locator('#idea').fill('在藥妝店問防曬乳和免稅').catch(() => {})
+await page.locator('button:has-text("產生情境")').click().catch(() => {})
+await page.waitForTimeout(900)
+const customTitle = (await page.locator('.brief__title').innerText().catch(() => '')).trim()
+checks.push(['自己出題 builds a scenario from a Chinese description', customTitle === '藥妝店', `title="${customTitle}"`])
+await shot('14d2-talk-custom')
+await page.locator('button:has-text("回到今天的情境")').click().catch(() => {})
+await page.waitForTimeout(300)
 await page.locator('button:has-text("開始對話")').click().catch(() => {})
 await page.waitForTimeout(500)
 for (const line of ['I want big latte', 'A muffin, please.', 'To go. How much is it?']) {

@@ -258,7 +258,7 @@ onUnmounted(() => session.stopClock())
 .step--empty .step__label { text-decoration: line-through; text-decoration-color: var(--ink-3); }
 .step--current .step__label { font-size: var(--step-1); font-weight: 700; }
 .step--current .step__meta { white-space: normal; color: var(--ink-2); font-size: var(--step--1); }
-.step__go { background: var(--pen); color: var(--pen-ink); font-weight: 600; padding: 8px 18px; border-radius: 999px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 6px 16px -8px var(--pen); }
+.step__go { background: var(--pen); color: var(--pen-ink); font-weight: 600; padding: 8px 18px; border-radius: 999px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18); }
 
 .sec__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-2); padding: 0 4px; }
 .sec__t { font-size: var(--step-1); font-weight: 700; letter-spacing: -0.01em; }
@@ -272,11 +272,11 @@ onUnmounted(() => session.stopClock())
 .pl { display: flex; flex-direction: column; gap: 2px; padding: 14px 12px 12px; border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); min-height: 112px; transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
 .pl:active { transform: scale(0.96); }
 /* app-icon squares: a squircle-ish tile with a system-colour gradient */
-.pl__i { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; color: #fff; margin-bottom: 8px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 10px -5px rgba(0, 0, 0, 0.35); }
+.pl__i { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; color: #fff; margin-bottom: 8px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25); }
 .pl__i svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
-.pl__i--a { background: linear-gradient(160deg, #34c759, #248a3d); }
-.pl__i--b { background: linear-gradient(160deg, #5ac8fa, #007aff); }
-.pl__i--c { background: linear-gradient(160deg, #ffcc00, #ff9500); }
+.pl__i--a { background: #6f9e86; }
+.pl__i--b { background: #6f95a6; }
+.pl__i--c { background: #b99a52; }
 .pl__t { font-weight: 650; font-size: var(--step--1); }
 .pl__s { font-size: var(--step--2); color: var(--ink-2); line-height: 1.4; }
 
@@ -284,7 +284,7 @@ onUnmounted(() => session.stopClock())
 .power { display: flex; flex-direction: column; gap: 8px; padding: var(--sp-4); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); }
 .power__t { font-weight: 600; }
 .power__bar { height: 8px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
-.power__bar span { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--a1), var(--pen)); }
+.power__bar span { display: block; height: 100%; border-radius: 4px; background: var(--pen); }
 .power__hint { font-size: var(--step--2); color: var(--ink-2); }
 .metrics { display: grid; grid-template-columns: repeat(4, 1fr); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); }
 .metric { display: flex; flex-direction: column; align-items: center; padding: 14px 2px 12px; }

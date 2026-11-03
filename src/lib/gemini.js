@@ -640,13 +640,13 @@ const TALK_SYSTEM = `你在英文口說練習 app 裡扮演對話角色，對象
  * @param {Array}  targets      today's words to weave in, if they fit
  * @param {number} knownWords   rough vocabulary size, to pitch the partner
  */
-export async function talkTurn ({ topic, history = [], learner, turnsLeft, targets = [], knownWords = 0, key, model = DEFAULT_MODEL, signal } = {}) {
+export async function talkTurn ({ topic, twist = '', history = [], learner, turnsLeft, targets = [], knownWords = 0, key, model = DEFAULT_MODEL, signal } = {}) {
   const transcript = history.map(h => `${h.who === 'ai' ? topic.partner.name : '學生'}: ${h.en}`).join('\n')
   const prompt = `情境：${topic.scene_zh}
 你的角色：${topic.partner.name}，${topic.partner.role_en}
 學生要完成的目標：
 ${topic.goals.map((g, i) => `${i + 1}. ${g.en}（${g.zh}）`).join('\n')}
-${targets.length ? `今天學的字（適合時可以自然地用上，讓學生聽到）：${targets.join(', ')}\n` : ''}${knownWords ? `學生大約認得 ${knownWords} 個英文字。\n` : ''}
+${twist ? `這次的狀況（在第一或第二次回應時自然地帶進來，讓學生要處理它）：${twist}\n` : ''}${targets.length ? `今天學的字（適合時可以自然地用上，讓學生聽到）：${targets.join(', ')}\n` : ''}${knownWords ? `學生大約認得 ${knownWords} 個英文字。\n` : ''}
 到目前為止的對話：
 ${transcript}
 
@@ -683,11 +683,15 @@ function sameSentence (a, b) {
   return !n(a) || n(a) === n(b)
 }
 function cleanHint (h) {
-  const t = String(h || '').trim()
+  let t = String(h || '').trim()
   if (!t) return ''
-  const words = t.replace(/[….]+$/, '').trim().split(/\s+/)
-  if (words.length > 6 || /[.!?]$/.test(t.replace(/…$/, ''))) return ''
-  return /…$/.test(t) ? t : `${t.replace(/\.+$/, '')} …`
+  // no ellipsis and ends like a sentence: a full answer, not a starter
+  if (!t.includes('…')) {
+    if (/[.!?]$/.test(t)) return ''
+    t = `${t.replace(/\.+$/, '')} …`
+  }
+  const words = t.replace(/[…?.!,]/g, ' ').trim().split(/\s+/)
+  return words.length > 6 ? '' : t
 }
 
 const TALK_REPORT_SCHEMA = {
@@ -731,12 +735,12 @@ upgrade 給一個這個情境很實用、學生還沒用過的說法（en、zh�
 所有中文都用繁體中文。`
 
 /** The end-of-talk evaluation. */
-export async function talkReport ({ topic, history = [], key, model = DEFAULT_MODEL, signal } = {}) {
+export async function talkReport ({ topic, twist = '', history = [], key, model = DEFAULT_MODEL, signal } = {}) {
   const transcript = history.map(h => `${h.who === 'ai' ? topic.partner.name : '學生'}: ${h.en}`).join('\n')
   const prompt = `情境：${topic.scene_zh}（對方：${topic.partner.role_en}）
 學生的目標：
 ${topic.goals.map((g, i) => `${i + 1}. ${g.en}（${g.zh}）`).join('\n')}
-
+${twist ? `這次另外加了一個狀況：${twist}（處理得好可以反映在 task 與 interaction）\n` : ''}
 完整對話：
 ${transcript}
 
@@ -758,6 +762,71 @@ ${transcript}
     strengths: (r.strengths || []).slice(0, 2).filter(x => x?.quote),
     fixes: (r.fixes || []).slice(0, 3).filter(x => x?.said && x?.better && !sameSentence(x.better, x.said)),
     upgrade: r.upgrade?.en ? r.upgrade : null
+  }
+}
+
+/* 自己出題: the learner describes a situation in Chinese, the model writes a
+ * scenario in the same shape as data/talk-topics.js. Validated here — a
+ * scenario without three goals or with a full-sentence "frame" is rejected
+ * rather than shown. */
+const TALK_TOPIC_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    title: { type: 'STRING', description: 'Traditional Chinese, at most 8 characters' },
+    scene_zh: { type: 'STRING', description: 'Traditional Chinese, one sentence: where the learner is and what they want' },
+    partner_name: { type: 'STRING', description: 'an English first name' },
+    partner_role_en: { type: 'STRING' },
+    partner_role_zh: { type: 'STRING' },
+    goals: {
+      type: 'ARRAY',
+      items: { type: 'OBJECT', properties: { zh: { type: 'STRING' }, en: { type: 'STRING' } }, required: ['zh', 'en'] },
+      description: 'exactly three concrete things the learner must say or ask'
+    },
+    opener_en: { type: 'STRING', description: "the partner's first line, at most 14 words, CEFR A1-A2" },
+    opener_zh: { type: 'STRING' },
+    frames: { type: 'ARRAY', items: { type: 'STRING' }, description: 'four partial sentence starters of 2-5 words, each ending with "…"' }
+  },
+  required: ['title', 'scene_zh', 'partner_name', 'partner_role_en', 'partner_role_zh', 'goals', 'opener_en', 'opener_zh', 'frames']
+}
+
+export async function buildTalkTopic ({ idea, key, model = DEFAULT_MODEL, signal } = {}) {
+  const prompt = `學生想練習的情境（中文描述）：${String(idea || '').slice(0, 80)}
+
+把它設計成一段英文會話練習：學生是初學者（CEFR A1-A2），對方是情境中的一個人。
+- goals 剛好三個，具體到學生知道要說什麼（例如「問有沒有素食」），由簡單到稍難。
+- opener_en 是對方開口的第一句。
+- frames 是學生可以用的句子開頭，不是完整句子。
+- 情境要安全、日常；如果描述不適合或看不懂，就改成最接近的日常情境。`
+  const text = await withRetry(() => callGemini({
+    key, model, signal,
+    systemInstruction: '你是為台灣英文初學者設計會話練習情境的老師。英文限 CEFR A1-A2，所有中文用繁體中文。',
+    prompt,
+    schema: TALK_TOPIC_SCHEMA,
+    temperature: 0.7
+  }))
+  return normalizeTalkTopic(parseJson(text), idea)
+}
+
+export function normalizeTalkTopic (r, idea = '') {
+  const goals = (r?.goals || []).filter(g => g?.zh && g?.en).slice(0, 3)
+  const frames = (r?.frames || []).map(cleanHint).filter(Boolean).slice(0, 4)
+  const opener = String(r?.opener_en || '').trim()
+  if (goals.length < 3 || !opener || opener.split(/\s+/).length > 20 || !r?.partner_name) {
+    throw new GeminiError('這個情境沒有產生成功，換個說法再試一次')
+  }
+  let h = 0
+  for (const ch of String(idea)) h = (Math.imul(h, 31) + ch.codePointAt(0)) | 0
+  return {
+    id: `custom-${(h >>> 0).toString(36)}`,
+    area: 'custom',
+    custom: true,
+    title: String(r.title || '自訂情境').slice(0, 12),
+    scene_zh: String(r.scene_zh || idea),
+    partner: { name: String(r.partner_name).split(/\s+/)[0], role_en: String(r.partner_role_en || ''), role_zh: String(r.partner_role_zh || '') },
+    goals: goals.map(g => ({ zh: String(g.zh), en: String(g.en) })),
+    opener: { en: opener, zh: String(r.opener_zh || '') },
+    frames: frames.length ? frames : ['I would like …', 'Can I …?', 'How much …?'],
+    script: [], samples: [], twists: []
   }
 }
 

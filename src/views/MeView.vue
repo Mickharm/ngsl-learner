@@ -82,7 +82,7 @@ const links = computed(() => [
 .me__school { font-size: var(--step--2); color: var(--ink-3); letter-spacing: 0.1em; }
 .me__name { font-size: var(--step-4); }
 .me__title { color: var(--ink-2); font-size: var(--step--1); }
-.me__lv { width: 76px; height: 76px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; color: #fff; font-weight: 700; font-size: var(--step-1); background: radial-gradient(120% 120% at 28% 20%, rgba(255, 255, 255, 0.5), transparent 42%), linear-gradient(150deg, var(--a1), var(--a3)); box-shadow: inset 0 -6px 14px rgba(0, 0, 0, 0.08), 0 10px 22px -10px var(--a1); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); }
+.me__lv { width: 76px; height: 76px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; color: #fff; font-weight: 700; font-size: var(--step-1); background: linear-gradient(160deg, var(--a1), var(--a3)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 8px 18px -12px rgba(40, 35, 30, 0.5); }
 .sec { font-size: var(--step-1); font-weight: 700; }
 .ladder { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
 .ladder__lead { font-size: var(--step--1); color: var(--ink-2); line-height: 1.6; }

@@ -51,7 +51,7 @@ const isActive = t => t.to === '/' ? route.path === '/' : t.match.some(m => rout
   box-shadow: var(--glass-rim), var(--shadow-2);
 }
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .tabbar { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(190%); backdrop-filter: blur(24px) saturate(190%); }
+  .tabbar { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(115%); backdrop-filter: blur(24px) saturate(115%); }
 }
 @media (prefers-reduced-transparency: reduce) { .tabbar { background: var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 .tab {
@@ -64,5 +64,5 @@ const isActive = t => t.to === '/' ? route.path === '/' : t.match.some(m => rout
 .tab__icon svg { width: 24px; height: 24px; }
 .tab--on { color: var(--pen); background: var(--surface-2); }
 .tab__label { font-size: 10.5px; font-weight: 600; font-family: var(--font-zh); letter-spacing: 0; }
-.tab__badge { position: absolute; top: 3px; left: 50%; margin-left: 7px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #ff3b30; color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; line-height: 1; box-shadow: 0 0 0 2px var(--glass-solid); }
+.tab__badge { position: absolute; top: 3px; left: 50%; margin-left: 7px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--red-fill); color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; line-height: 1; box-shadow: 0 0 0 2px var(--glass-solid); }
 </style>

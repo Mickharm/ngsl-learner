@@ -69,32 +69,33 @@ const list = computed(() => GAMES.filter(g => g.id !== 'wordle').map(g => ({
 .games__lead { color: var(--ink-2); font-size: var(--step--1); line-height: 1.6; margin-top: 6px; }
 
 /* today's puzzle: the one dark, thick-material panel on the page */
-.daily { display: grid; grid-template-columns: auto 1fr auto; gap: var(--sp-3); align-items: center; padding: var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-5); color: #f5f5f7; border-radius: var(--radius-xl); text-align: left;
-  background: radial-gradient(120% 140% at 0% 0%, rgba(52, 199, 89, 0.35), transparent 55%), linear-gradient(150deg, #1c1c1e, #2c2c30);
-  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12), var(--shadow-2);
+.daily { display: grid; grid-template-columns: auto 1fr auto; gap: var(--sp-3); align-items: center; padding: var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-5); color: #f1f0ec; border-radius: var(--radius-xl); text-align: left;
+  background: var(--slab);
+  -webkit-backdrop-filter: blur(24px) saturate(110%); backdrop-filter: blur(24px) saturate(110%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 0 0.5px rgba(255, 255, 255, 0.08), var(--shadow-2);
   transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
 .daily:active { transform: scale(0.97); }
 .daily__tiles { display: grid; grid-template-columns: repeat(5, 22px); gap: 3px; }
 .dt { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 6px; background: rgba(255, 255, 255, 0.12); font-family: var(--font-word); font-weight: 700; font-size: 0.75rem; color: #f5f5f7; }
-.dt--hit { background: #34c759; color: #fff; }
-.dt--near { background: #ffcc00; color: #1d1d1f; }
+.dt--hit { background: #6f9e86; color: #fff; }
+.dt--near { background: #c9ad5e; color: #282725; }
 .daily__body { display: flex; flex-direction: column; gap: 2px; }
 .daily__t { font-weight: 700; font-size: var(--step-1); }
 .daily__s { font-size: var(--step--2); opacity: 0.75; }
-.daily__go { background: #fff; color: #1d1d1f; font-weight: 600; padding: 8px 16px; border-radius: 999px; }
+.daily__go { background: #f1f0ec; color: #282725; font-weight: 600; padding: 8px 16px; border-radius: 999px; }
 
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
 .game { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 6px 6px var(--sp-3); background: var(--surface); border-radius: var(--radius-lg); text-align: left; box-shadow: var(--rim), var(--shadow-1); overflow: hidden; transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
 .game:active:not(:disabled) { transform: scale(0.96); }
 .game:disabled { opacity: 0.5; }
 /* each game's art sits in its own tinted well (concentric: card 22 − 6 = 16) */
-.game__art { --w: #5ac8fa; position: relative; height: 80px; align-self: stretch; display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 8px; overflow: hidden; border-radius: 16px;
-  background: radial-gradient(90% 120% at 20% 0%, color-mix(in srgb, var(--w) 40%, transparent), transparent 70%), color-mix(in srgb, var(--w) 14%, var(--surface)); }
-.game--rain .game__art { --w: #5ac8fa; }
-.game--bubbles .game__art { --w: #af52de; }
-.game--builder .game__art { --w: #ffcc00; }
-.game--memory .game__art { --w: #34c759; }
-.game--match .game__art { --w: #ff2d55; }
+.game__art { --w: #8fadb9; position: relative; height: 80px; align-self: stretch; display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 8px; overflow: hidden; border-radius: 16px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--w) 24%, transparent), color-mix(in srgb, var(--w) 9%, transparent)); }
+.game--rain .game__art { --w: #8fadb9; }
+.game--bubbles .game__art { --w: #a99aae; }
+.game--builder .game__art { --w: #c4a862; }
+.game--memory .game__art { --w: #7ebea5; }
+.game--match .game__art { --w: #c4979b; }
 .game__art .lt { font-size: 0.85rem; min-height: 1.8em; }
 .game__t, .game__s, .game__meta { padding: 0 10px; }
 .game__t { font-weight: 700; font-size: var(--step-1); }
@@ -103,12 +104,12 @@ const list = computed(() => GAMES.filter(g => g.id !== 'wordle').map(g => ({
 
 .a1 { position: absolute; top: 6px; left: 22%; }
 .a2 { position: absolute; top: 30px; right: 22%; }
-.ga-ground { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #ff3b30, #ff9500); opacity: 0.5; }
+.ga-ground { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--line-base); opacity: 0.6; }
 .bb { position: absolute; border-radius: 50%; border: 1.5px solid var(--t-suffix-edge); background: color-mix(in srgb, var(--hl-blue) 70%, transparent); }
 .b1 { width: 34px; height: 34px; left: 22%; bottom: 8px; }
 .b2 { width: 26px; height: 26px; left: 48%; bottom: 30px; }
 .b3 { width: 30px; height: 30px; right: 18%; bottom: 14px; }
-.mc { width: 32px; height: 40px; border-radius: 8px; display: grid; place-items: center; background: linear-gradient(150deg, var(--pen), #5856d6); color: #fff; font-weight: 700; font-family: var(--font-word); font-size: 0.8rem; }
+.mc { width: 32px; height: 40px; border-radius: 8px; display: grid; place-items: center; background: var(--pen); color: #fff; font-weight: 700; font-family: var(--font-word); font-size: 0.8rem; }
 .mc--open { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
 .ml { width: 22px; height: 2px; border-radius: 1px; background: var(--pen); }
 </style>

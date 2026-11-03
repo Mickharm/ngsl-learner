@@ -23,6 +23,8 @@ function writeLocal (value) {
   try { localStorage.setItem(LOCAL_KEY, JSON.stringify(value)) } catch { /* private mode */ }
 }
 
+const GLASS_KEY = 'ngsl.glass'
+
 export const useSettings = defineStore('settings', () => {
   const auth = useAuth()
   const state = ref(readLocal())
@@ -31,12 +33,30 @@ export const useSettings = defineStore('settings', () => {
 
   let saveTimer = null
 
+  /**
+   * Glass is a property of the device, not the account (a slow phone wants
+   * the lite mode, the same learner's iPad does not), so it lives in this
+   * browser only. auto = full glass unless the OS asks to reduce transparency.
+   */
+  const glass = ref(readGlass())
+  function readGlass () {
+    try { return localStorage.getItem(GLASS_KEY) || 'auto' } catch { return 'auto' }
+  }
+  function setGlass (v) {
+    glass.value = v
+    try { localStorage.setItem(GLASS_KEY, v) } catch { /* private mode: this session only */ }
+    applyTheme()
+  }
+
   /** Theme is applied to <html> so CSS tokens resolve before first paint. */
   function applyTheme (theme = state.value.theme) {
     const root = document.documentElement
     if (theme === 'light') root.setAttribute('data-theme', 'light')
     else if (theme === 'dark') root.setAttribute('data-theme', 'dark')
     else root.removeAttribute('data-theme')
+    const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-transparency: reduce)').matches
+    if (glass.value === 'lite' || (glass.value === 'auto' && reduce)) root.setAttribute('data-glass', 'lite')
+    else root.removeAttribute('data-glass')
   }
 
   async function load () {
@@ -105,5 +125,5 @@ export const useSettings = defineStore('settings', () => {
    */
   const target = computed(() => state.value.targetWords || TOTAL_WORDS)
 
-  return { state, loaded, saving, hasGeminiKey, target, load, set, reset, applyTheme, persist }
+  return { state, loaded, saving, hasGeminiKey, target, load, set, reset, applyTheme, persist, glass, setGlass }
 })

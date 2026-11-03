@@ -7,12 +7,12 @@ import { useSession } from '@/stores/session'
 import { useSettings } from '@/stores/settings'
 import { useAuth } from '@/stores/auth'
 import { useToast } from '@/stores/toast'
-import { talkTurn, talkReport } from '@/lib/gemini'
+import { talkTurn, talkReport, buildTalkTopic } from '@/lib/gemini'
 import { speak, stopSpeaking } from '@/lib/tts'
 import { sfx } from '@/lib/sfx'
 import { wordTokens } from '@/lib/lexicon'
 import { glossOf } from '@/lib/game'
-import { TALK_BY_ID, TALK_TURNS, TALK_MAX_CHARS, TALK_MIN_TURNS, pickTopic } from '@/data/talk-topics'
+import { TALK_TOPICS, TALK_TURNS, TALK_MAX_CHARS, TALK_MIN_TURNS, planTalk, upgradeHistory } from '@/data/talk-topics'
 import SessionHeader from '@/components/SessionHeader.vue'
 import AudioButton from '@/components/AudioButton.vue'
 import Stamp from '@/components/ui/Stamp.vue'
@@ -39,16 +39,21 @@ import Stamp from '@/components/ui/Stamp.vue'
  *
  * Without a Gemini key the partner reads an authored script and the learner
  * compares their replies with sample answers afterwards.
+ *
+ * v5.1: 30 scenarios; one met about a week ago comes back with a twist, and
+ * the report compares the two scores. 自己出題 builds a scenario from a
+ * Chinese description (needs the key).
  */
 
-const RECENT_KEY = 'ngsl.talk.recent'
+const HISTORY_KEY = 'ngsl.talk.history'
+const LEGACY_KEY = 'ngsl.talk.recent'
 const RUBRIC = [
   { key: 'task', label: '任務達成', desc: ['一個目標都沒做到', '做到一個目標', '大部分做到', '目標全部做到', '全部做到，還有細節'] },
   { key: 'vocabulary', label: '用字', desc: ['幾乎都是中文', '只有零星單字', '基本字夠用', '用字貼切', '用字多樣又精準'] },
   { key: 'accuracy', label: '正確度', desc: ['看不太懂', '錯很多，影響理解', '有錯但看得懂', '只有少數小錯', '幾乎沒有錯'] },
   { key: 'interaction', label: '互動', desc: ['沒有回應到對方', '只有單字或片段', '能用短句回應', '完整句回應，也會發問', '自然地一來一往'] }
 ]
-const AREA_ZH = { travel: '旅遊', daily: '日常', work: '職場' }
+const AREA_ZH = { travel: '旅遊', daily: '日常', work: '職場', tech: '職場・科技', custom: '自己出題' }
 
 const words = useWords()
 const progress = useProgress()
@@ -74,26 +79,58 @@ const reporting = ref(false)
 const reportError = ref('')
 const selfCheck = ref([])
 const showLog = ref(false)
+const customTopic = ref(null)
+const customIdea = ref('')
+const customOpen = ref(false)
+const building = ref(false)
+const plan = ref({ topic: TALK_TOPICS[0], twist: -1, repeatOf: null })
 const box = ref(null)
 let seq = 0
 
 /* ---- topic ---- */
-function readRecent () {
-  try { return JSON.parse(localStorage.getItem(`${RECENT_KEY}.${auth.user?.email || ''}`) || '[]') } catch { return [] }
-}
-function noteRecent (id) {
+const storeKey = k => `${k}.${auth.user?.email || ''}`
+function readHistory () {
   try {
-    const list = [...readRecent().filter(x => x !== id), id].slice(-8)
-    localStorage.setItem(`${RECENT_KEY}.${auth.user?.email || ''}`, JSON.stringify(list))
-  } catch { /* private mode: topics may repeat, nothing else breaks */ }
+    const h = JSON.parse(localStorage.getItem(storeKey(HISTORY_KEY)) || 'null')
+    if (Array.isArray(h)) return upgradeHistory(h)
+    return upgradeHistory(JSON.parse(localStorage.getItem(storeKey(LEGACY_KEY)) || '[]'))
+  } catch { return [] }
 }
-const topic = computed(() => pickTopic({
-  day: progress.today.day,
-  user: auth.user?.email || '',
-  areas: settings.state.articleTopics || [],
-  recent: readRecent(),
-  shift: shift.value
-}))
+function noteHistory (entry) {
+  try {
+    const list = [...readHistory(), entry].slice(-60)
+    localStorage.setItem(storeKey(HISTORY_KEY), JSON.stringify(list))
+  } catch { /* private mode: rotation falls back to the day hash */ }
+}
+function replan () {
+  plan.value = planTalk({
+    day: progress.today.day,
+    user: auth.user?.email || '',
+    areas: settings.state.articleTopics || [],
+    history: readHistory(),
+    shift: shift.value
+  })
+}
+const topic = computed(() => customTopic.value || plan.value.topic)
+/** The twist only exists when the AI plays the partner; the script has none. */
+const twist = computed(() => (!customTopic.value && online.value && plan.value.twist >= 0) ? plan.value.topic.twists[plan.value.twist] : null)
+const repeatOf = computed(() => (!customTopic.value && plan.value.repeatOf) || null)
+
+async function makeCustom () {
+  const idea = customIdea.value.trim()
+  if (!idea || building.value) return
+  building.value = true
+  try {
+    customTopic.value = await buildTalkTopic({ idea, key: settings.state.geminiKey, model: settings.state.geminiModel })
+    customOpen.value = false
+    sfx('good')
+  } catch (e) {
+    toast.error(e?.message || '情境沒有產生成功')
+  } finally {
+    building.value = false
+  }
+}
+function dropCustom () { customTopic.value = null; customIdea.value = '' }
 
 /**
  * Up to three of today's words worth steering a conversation towards: content
@@ -135,7 +172,7 @@ function start () {
   setHint(topic.value.frames[0])
   nextTick(() => box.value?.focus({ preventScroll: true }))
 }
-function reroll () { sfx('tap'); shift.value++ }
+function reroll () { sfx('tap'); customTopic.value = null; shift.value++; replan() }
 
 function addAi (en, zh) {
   messages.value = [...messages.value, { id: ++seq, who: 'ai', en, zh, showZh: false }]
@@ -203,6 +240,7 @@ async function send () {
   try {
     const r = await talkTurn({
       topic: topic.value,
+      twist: twist.value?.en || '',
       history,
       learner: text,
       turnsLeft: turnsLeft.value,
@@ -246,9 +284,12 @@ const replyFixes = computed(() => mine.value.filter(m => m.fix))
 async function finishTalk () {
   stopSpeaking()
   stage.value = 'report'
-  noteRecent(topic.value.id)
   window.scrollTo({ top: 0 })
-  if (!online.value) { report.value = { offline: true }; return }
+  if (!online.value) {
+    report.value = { offline: true }
+    noteTalk(null)
+    return
+  }
   await makeReport()
 }
 
@@ -258,6 +299,7 @@ async function makeReport () {
   try {
     const r = await talkReport({
       topic: topic.value,
+      twist: twist.value?.en || '',
       history: messages.value.map(m => ({ who: m.who, en: m.en })),
       key: settings.state.geminiKey,
       model: settings.state.geminiModel
@@ -269,6 +311,7 @@ async function makeReport () {
     }
     const ok = mine.value.filter(m => m.understood !== false && !m.fix).length
     progress.bumpDay({ grammar_correct: ok, grammar_total: mine.value.length })
+    noteTalk(total.value)
   } catch (e) {
     reportError.value = e?.message || '評分沒有完成'
   } finally {
@@ -276,7 +319,19 @@ async function makeReport () {
   }
 }
 
-function again () { start(); window.scrollTo({ top: 0 }) }
+/** One history row per finished talk; custom scenarios are not rotated. */
+let noted = false
+function noteTalk (score) {
+  if (noted || customTopic.value) return
+  noted = true
+  const p = plan.value
+  noteHistory({
+    id: topic.value.id, day: progress.today.day, twist: p.twist, total: score,
+    repeat: !!p.repeatOf, of: p.repeatOf?.day || undefined
+  })
+}
+
+function again () { noted = false; start(); window.scrollTo({ top: 0 }) }
 function done () {
   session.markDone('write')
   router.push(session.nextRoute('write'))
@@ -286,7 +341,7 @@ function skip () {
   router.push(session.nextRoute('write'))
 }
 
-onMounted(() => { session.startClock() })
+onMounted(() => { session.startClock(); replan() })
 onUnmounted(() => { session.stopClock(); stopSpeaking() })
 </script>
 
@@ -298,7 +353,10 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
       <!-- ============ brief ============ -->
       <template v-if="stage === 'brief'">
         <section class="brief card">
-          <p class="brief__area zh">{{ AREA_ZH[topic.area] || '情境' }}</p>
+          <p class="brief__area zh">
+            {{ AREA_ZH[topic.area] || '情境' }}
+            <span v-if="repeatOf" class="brief__again">一週前聊過<template v-if="repeatOf.total != null">（{{ repeatOf.total }}/16）</template>，{{ twist ? '這次多一個狀況' : '再練一次' }}</span>
+          </p>
           <h1 class="brief__title">{{ topic.title }}</h1>
           <p class="brief__scene zh">{{ topic.scene_zh }}</p>
 
@@ -308,6 +366,11 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
               <b>{{ topic.partner.name }}</b>
               <span class="zh">{{ topic.partner.role_zh }}</span>
             </div>
+          </div>
+
+          <div v-if="twist" class="twist">
+            <p class="twist__l zh">這次的狀況</p>
+            <p class="twist__t zh">{{ twist.zh }}</p>
           </div>
 
           <h2 class="brief__h zh">這次要做到</h2>
@@ -333,8 +396,21 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
         <button class="btn btn--primary btn--block zh" @click="start">開始對話</button>
         <div class="brief__alt">
           <button class="btn btn--quiet btn--sm zh" @click="reroll">換一個情境</button>
+          <button v-if="online && !customTopic" class="btn btn--quiet btn--sm zh" :aria-expanded="customOpen" @click="customOpen = !customOpen">自己出題</button>
+          <button v-if="customTopic" class="btn btn--quiet btn--sm zh" @click="dropCustom">回到今天的情境</button>
           <button class="btn btn--quiet btn--sm zh" @click="skip">今天跳過</button>
         </div>
+
+        <section v-if="customOpen && !customTopic" class="mine card">
+          <label class="mine__l zh" for="idea">用中文寫一個你想練的情境</label>
+          <textarea
+            id="idea" v-model="customIdea" class="input mine__box zh" rows="2" maxlength="60"
+            placeholder="例如：在日本藥妝店問防曬乳在哪裡、有沒有免稅"
+          />
+          <button class="btn btn--ink btn--block zh" :disabled="!customIdea.trim() || building" @click="makeCustom">
+            {{ building ? '正在設計情境…' : '產生情境' }}
+          </button>
+        </section>
       </template>
 
       <!-- ============ chat ============ -->
@@ -447,6 +523,10 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
             <p class="rep__head">{{ headline }}</p>
             <p class="rep__sum zh">{{ report.summary_zh }}</p>
             <p v-if="report.level" class="rep__lv zh">這段對話大約是 CEFR {{ report.level }} 的表現</p>
+            <p v-if="repeatOf && repeatOf.total != null" class="rep__cmp zh">
+              上次（{{ repeatOf.day.slice(5).replace('-', '/') }}）<b class="num">{{ repeatOf.total }}</b> 分 → 這次 <b class="num">{{ total }}</b> 分
+              <span :class="total >= repeatOf.total ? 'up' : 'down'">{{ total > repeatOf.total ? `進步 ${total - repeatOf.total} 分` : total === repeatOf.total ? '持平' : '這次的狀況比較難' }}</span>
+            </p>
           </header>
 
           <section class="grp">
@@ -561,7 +641,14 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 .brief__title { font-family: var(--font-kai); font-size: var(--step-4); font-weight: 700; line-height: 1.1; letter-spacing: -0.015em; margin-top: -4px; }
 .brief__scene { font-size: var(--step-0); color: var(--ink-2); line-height: 1.6; }
 .brief__h { font-size: var(--step--1); font-weight: 600; color: var(--ink-2); margin-top: var(--sp-2); }
-.brief__alt { display: flex; justify-content: center; gap: var(--sp-2); margin-top: -8px; }
+.brief__alt { display: flex; justify-content: center; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2); margin-top: -8px; }
+.brief__again { margin-left: 8px; font-weight: 500; color: var(--ink-2); }
+.twist { padding: 12px 14px; border-radius: var(--radius); background: var(--amber-wash); display: flex; flex-direction: column; gap: 2px; }
+.twist__l { font-size: var(--step--2); font-weight: 600; color: var(--amber); }
+.twist__t { font-size: var(--step-0); line-height: 1.5; }
+.mine { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
+.mine__l { font-size: var(--step--1); font-weight: 600; color: var(--ink-2); }
+.mine__box { min-height: 72px; font-size: var(--step-0); }
 
 .who { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-3); border-radius: var(--radius); background: var(--surface-2); }
 .who__t { display: flex; flex-direction: column; line-height: 1.3; }
@@ -571,9 +658,9 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
   width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
   display: grid; place-items: center;
   font-family: var(--font-kai); font-weight: 700; font-size: 1.15rem; color: #fff;
-  background: linear-gradient(140deg, var(--a1), var(--a3));
+  background: linear-gradient(160deg, var(--a1), var(--a3));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 4px 12px -6px rgba(0, 0, 0, 0.35);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  
 }
 .ava--sm { width: 30px; height: 30px; font-size: 0.85rem; align-self: flex-start; margin-top: 2px; }
 
@@ -648,7 +735,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
   box-shadow: var(--glass-rim), var(--shadow-2);
 }
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .comp { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); }
+  .comp { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(115%); backdrop-filter: blur(24px) saturate(115%); }
 }
 @media (prefers-reduced-transparency: reduce) { .comp { background: var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 .comp__tools { display: flex; gap: 6px; padding: 0 2px; }
@@ -693,6 +780,10 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 .rep__head { font-family: var(--font-kai); font-size: var(--step-3); font-weight: 700; letter-spacing: -0.015em; margin-top: var(--sp-2); }
 .rep__sum { font-size: var(--step-0); color: var(--ink-2); line-height: 1.6; max-width: 34ch; }
 .rep__lv { font-size: var(--step--1); color: var(--ink-3); }
+.rep__cmp { font-size: var(--step--1); color: var(--ink-2); padding: 6px 14px; border-radius: 999px; background: var(--surface-2); }
+.rep__cmp b { color: var(--ink); }
+.rep__cmp .up { color: var(--jade); font-weight: 600; margin-left: 6px; }
+.rep__cmp .down { color: var(--ink-3); margin-left: 6px; }
 
 /* inset grouped list */
 .grp { border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); overflow: hidden; }
@@ -729,7 +820,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 .fixc__row { display: flex; align-items: flex-start; gap: 6px; }
 .fixc__better { flex: 1; font-family: var(--font-word); font-size: var(--step-0); line-height: 1.5; color: var(--jade); font-weight: 700; }
 .fixc__why { font-size: var(--step--1); color: var(--ink-2); line-height: 1.55; }
-.up { padding: 16px; display: flex; flex-direction: column; gap: 4px; background: linear-gradient(140deg, color-mix(in srgb, var(--a1) 22%, var(--surface)), color-mix(in srgb, var(--a3) 22%, var(--surface))); }
+.up { padding: 16px; display: flex; flex-direction: column; gap: 4px; background: color-mix(in srgb, var(--a2) 40%, var(--surface)); }
 .up__row { display: flex; align-items: flex-start; gap: 6px; }
 .up__en { flex: 1; font-family: var(--font-word); font-size: var(--step-1); font-weight: 700; line-height: 1.35; }
 .up__zh { font-size: var(--step-0); }

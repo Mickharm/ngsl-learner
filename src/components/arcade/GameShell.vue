@@ -116,24 +116,23 @@ function next () { router.push(session.nextRoute('play')) }
   background: var(--glass-solid); box-shadow: var(--glass-rim), var(--shadow-1);
 }
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .gs__hud { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); }
+  .gs__hud { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(115%); backdrop-filter: blur(24px) saturate(115%); }
 }
 .gs__back { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: var(--ink); background: var(--surface-2); }
 .gs__back svg { width: 20px; height: 20px; }
 .gs__title { font-size: var(--step-0); font-weight: 650; }
 .gs__lives { display: flex; gap: 3px; }
-.gs__heart { width: 20px; height: 20px; fill: #ff3b30; transition: transform 0.2s, opacity 0.2s; }
+.gs__heart { width: 20px; height: 20px; fill: var(--red-fill); transition: transform 0.2s, opacity 0.2s; }
 .gs__heart--off { fill: none; stroke: var(--rule-strong); stroke-width: 1.6; transform: scale(0.85); }
 .gs__score { display: flex; align-items: baseline; gap: 3px; font-size: var(--step-1); min-width: 56px; justify-content: flex-end; }
 .gs__score small { font-size: var(--step--2); color: var(--ink-3); }
 .gs__timer { height: 5px; margin: 8px 24px 0; border-radius: 3px; background: var(--surface-3); overflow: hidden; max-width: 560px; align-self: center; width: calc(100% - 48px); }
 .gs__timer span { display: block; height: 100%; border-radius: 3px; background: var(--pen); transform-origin: left; transition: transform 0.2s linear; }
-.gs__timer--low span { background: #ff3b30; }
+.gs__timer--low span { background: var(--red-fill); }
 .gs__goal { text-align: center; font-size: var(--step--1); color: var(--ink-2); padding-top: 8px; }
 .gs__combo {
   position: fixed; top: calc(env(safe-area-inset-top) + 76px); left: 50%; transform: translateX(-50%);
   background: var(--sun); color: var(--sun-ink); font-weight: 700; padding: 4px 16px; border-radius: 999px;
-  box-shadow: 0 8px 20px -8px rgba(255, 170, 0, 0.6);
   z-index: 60; animation: pop-in 0.2s;
 }
 .gs__field { flex: 1; width: 100%; max-width: 600px; margin: 0 auto; padding: var(--sp-4); padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-5)); display: flex; flex-direction: column; }

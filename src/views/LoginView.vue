@@ -213,16 +213,16 @@ async function submit () {
   transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 .book:active { transform: scale(0.95); }
-.book--pink { --o1: #ff7aa8; --o2: #c39bff; }
-.book--blue { --o1: #5fb6ff; --o2: #6fdcc6; }
-.book--yellow { --o1: #ffc93d; --o2: #ff9f7a; }
+.book--pink { --o1: #c99599; --o2: #a99aae; }
+.book--blue { --o1: #7398a8; --o2: #8ea79a; }
+.book--yellow { --o1: #c2a35a; --o2: #b2977a; }
 .book__orb {
   width: clamp(56px, 18vw, 72px); aspect-ratio: 1; border-radius: 50%;
   display: grid; place-items: center;
   font-family: var(--font-kai); font-weight: 700; font-size: clamp(1.4rem, 6vw, 1.8rem); color: #fff;
-  background: radial-gradient(120% 120% at 28% 20%, rgba(255, 255, 255, 0.55), transparent 42%), linear-gradient(150deg, var(--o1), var(--o2));
-  box-shadow: inset 0 -6px 14px rgba(0, 0, 0, 0.08), 0 10px 22px -10px var(--o1);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  background: radial-gradient(120% 120% at 30% 18%, rgba(255, 255, 255, 0.35), transparent 45%), linear-gradient(160deg, var(--o1), var(--o2));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -4px 10px rgba(0, 0, 0, 0.06), 0 8px 18px -12px rgba(40, 35, 30, 0.5);
+  text-shadow: none;
 }
 .book__name { font-size: var(--step-0); font-weight: 650; letter-spacing: -0.01em; }
 

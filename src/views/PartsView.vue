@@ -311,7 +311,7 @@ onUnmounted(() => session.stopClock())
 .tp__w { font-family: var(--font-word); font-weight: 700; }
 .tp__wzh { color: var(--ink-2); font-size: var(--step--1); flex: 1; }
 
-.note { display: flex; flex-direction: column; gap: 6px; padding: var(--sp-4); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); border-radius: var(--radius-lg); line-height: 1.6; font-size: var(--step--1); }
+.note { display: flex; flex-direction: column; gap: 6px; padding: var(--sp-4); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); border-radius: var(--radius-lg); line-height: 1.6; font-size: var(--step--1);  -webkit-backdrop-filter: blur(20px) saturate(112%); backdrop-filter: blur(20px) saturate(112%); }
 .note--trap { border-left-color: var(--rose); }
 .note__t { font-family: var(--font-kai); font-size: var(--step-0); font-weight: 700; }
 

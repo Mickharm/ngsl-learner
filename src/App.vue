@@ -10,6 +10,7 @@ import { useEssentials } from '@/stores/essentials'
 import { useParts } from '@/stores/parts'
 import { useToast } from '@/stores/toast'
 import TabBar from '@/components/TabBar.vue'
+import Backdrop from '@/components/Backdrop.vue'
 import { PROFILES } from '@/config'
 import ToastHost from '@/components/ToastHost.vue'
 
@@ -52,6 +53,7 @@ watch(() => auth.user?.email, email => {
 </script>
 
 <template>
+  <Backdrop />
   <!-- Enter-only page transition: the old page leaves at once, the new one
        settles in over 140 ms. v3 faded out, waited, then faded in — 360 ms of
        blank screen on every tap. -->

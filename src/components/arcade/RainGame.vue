@@ -153,7 +153,7 @@ onUnmounted(() => { cancelAnimationFrame(raf); clearTimeout(nextTimer) })
   position: relative; height: min(44dvh, 360px); overflow: hidden;
   border-radius: var(--radius-xl);
   /* a pane of glass the words fall down; the ground is the bottom edge */
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--a2) 14%, var(--surface)), var(--surface));
+  background: var(--surface); -webkit-backdrop-filter: blur(20px) saturate(112%); backdrop-filter: blur(20px) saturate(112%);
   box-shadow: var(--rim), var(--shadow-1);
 }
 .drop { position: absolute; left: 0; right: 0; top: 6px; display: flex; justify-content: center; will-change: transform; }
@@ -164,7 +164,7 @@ onUnmounted(() => { cancelAnimationFrame(raf); clearTimeout(nextTimer) })
 }
 .sky--hit .drop__w { border-color: var(--jade); box-shadow: 3px 3px 0 var(--jade); color: var(--jade-ink); }
 .sky--miss .drop__w { border-color: var(--redpen); box-shadow: 3px 3px 0 var(--redpen); color: var(--redpen); animation: shake 0.3s; }
-.ground { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: linear-gradient(90deg, #ff3b30, #ff9500); opacity: 0.55; }
+.ground { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--line-base); opacity: 0.7; }
 .opts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); margin-top: var(--sp-4); }
 .opt { min-height: 68px; padding: 8px; border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-1); font-weight: 700; font-size: var(--step-1); line-height: 1.25; }
 .opt:active:not(:disabled) { transform: translateY(1px); }

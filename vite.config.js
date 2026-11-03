@@ -34,8 +34,8 @@ export default defineConfig({
         name: 'NGSL Learner',
         short_name: 'NGSL',
         description: 'NGSL 2801 單字 · 文法 · 閱讀 每日闖關',
-        theme_color: '#eceef4',
-        background_color: '#eceef4',
+        theme_color: '#e6e4e1',
+        background_color: '#edece8',
         display: 'standalone',
         orientation: 'portrait',
         scope: '/ngsl-learner/',
@@ -59,7 +59,7 @@ export default defineConfig({
           {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
             handler: 'CacheFirst',
-            options: { cacheName: 'google-fonts', expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 } }
+            options: { cacheName: 'google-fonts', expiration: { maxEntries: 150, maxAgeSeconds: 60 * 60 * 24 * 365 } }
           }
         ]
       }
