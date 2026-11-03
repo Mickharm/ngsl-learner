@@ -2,10 +2,11 @@
 import { computed } from 'vue'
 
 /**
- * A teacher's ink stamp — the reward at the end of a round. 甲上 / 甲 / 乙 /
- * 加油 by accuracy, with the date on the ring, pressed on with a thump.
- * Rougher than a vector circle on purpose: a displacement filter wobbles the
- * edge and a noise mask drops ink like a real rubber stamp.
+ * The end-of-round medal: a ring that fills to the round's accuracy, the way
+ * an Activity ring closes, with the grade in the middle (甲上 / 甲 / 乙 / 加油 —
+ * the marks a Taiwanese classroom gives). The ring filling is the one
+ * orchestrated moment of a result screen; everything around it stays still.
+ * Kept under its v4 name so every result page picks it up.
  */
 const props = defineProps({
   ratio: { type: Number, default: 1 },
@@ -15,38 +16,50 @@ const props = defineProps({
 const grade = computed(() => props.text || (props.ratio >= 0.9 ? '甲上' : props.ratio >= 0.75 ? '甲' : props.ratio >= 0.55 ? '乙' : '加油'))
 const date = computed(() => {
   const d = new Date()
-  return `${d.getMonth() + 1}.${String(d.getDate()).padStart(2, '0')}`
+  return `${d.getMonth() + 1}/${d.getDate()}`
 })
+const R = 50
+const C = 2 * Math.PI * R
+const fill = computed(() => Math.max(0.04, Math.min(1, props.ratio)))
 const uid = Math.random().toString(36).slice(2, 8)
 </script>
 
 <template>
-  <svg class="stamp" :width="size" :height="size" viewBox="0 0 120 120" role="img" :aria-label="`評等：${grade}`">
+  <svg class="medal" :width="size" :height="size" viewBox="0 0 120 120" role="img" :aria-label="`評等：${grade}`">
     <defs>
-      <filter :id="`rough-${uid}`" x="-10%" y="-10%" width="120%" height="120%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n" />
-        <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" />
-      </filter>
-      <mask :id="`ink-${uid}`">
-        <rect width="120" height="120" fill="#fff" />
-        <filter :id="`speck-${uid}`"><feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="1" seed="9" /><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.2 1.25" /></filter>
-        <rect width="120" height="120" :filter="`url(#speck-${uid})`" />
-      </mask>
+      <linearGradient :id="`ring-${uid}`" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" class="medal__s1" />
+        <stop offset="1" class="medal__s2" />
+      </linearGradient>
     </defs>
-    <g :filter="`url(#rough-${uid})`" :mask="`url(#ink-${uid})`" class="stamp__ink">
-      <circle cx="60" cy="60" r="54" fill="none" stroke-width="5" />
-      <circle cx="60" cy="60" r="45" fill="none" stroke-width="1.6" />
-      <text x="60" :y="grade.length > 1 ? 72 : 76" text-anchor="middle" class="stamp__g" :class="{ 'stamp__g--long': grade.length > 1 }">{{ grade }}</text>
-      <text x="60" y="33" text-anchor="middle" class="stamp__d">{{ date }}</text>
-    </g>
+    <circle class="medal__disc" cx="60" cy="60" r="58" />
+    <circle class="medal__track" cx="60" cy="60" :r="R" />
+    <circle
+      class="medal__arc" cx="60" cy="60" :r="R"
+      :stroke="`url(#ring-${uid})`"
+      :style="{ '--c': C, '--off': C * (1 - fill) }"
+      transform="rotate(-90 60 60)"
+    />
+    <text x="60" :y="grade.length > 1 ? 66 : 70" text-anchor="middle" class="medal__g" :class="{ 'medal__g--long': grade.length > 1, 'medal__g--xl': grade.length > 3 }">{{ grade }}</text>
+    <text x="60" y="86" text-anchor="middle" class="medal__d">{{ date }}</text>
   </svg>
 </template>
 
 <style scoped>
-.stamp { animation: stamp 0.42s cubic-bezier(0.3, 1.4, 0.6, 1) both; transform: rotate(-9deg); }
-.stamp__ink { stroke: var(--redpen); fill: var(--redpen); }
-.stamp__g { font-family: var(--font-kai); font-weight: 700; font-size: 40px; stroke: none; letter-spacing: 1px; }
-.stamp__g--long { font-size: 32px; }
-.stamp__d { font-family: var(--font-word); font-weight: 700; font-size: 11px; stroke: none; letter-spacing: 1px; }
-@media (prefers-reduced-motion: reduce) { .stamp { animation: none; } }
+.medal { overflow: visible; filter: drop-shadow(0 10px 22px rgba(30, 30, 70, 0.18)); animation: spring-in 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
+.medal__disc { fill: var(--surface); stroke: rgba(255, 255, 255, 0.6); stroke-width: 0.5; }
+.medal__track { fill: none; stroke: var(--surface-3); stroke-width: 9; }
+.medal__arc { filter: saturate(1.6) brightness(0.92);
+  fill: none; stroke-width: 9; stroke-linecap: round;
+  stroke-dasharray: var(--c); stroke-dashoffset: var(--c);
+  animation: ring-fill 1.1s 0.2s cubic-bezier(0.3, 0.9, 0.3, 1) forwards;
+}
+.medal__s1 { stop-color: var(--a1); }
+.medal__s2 { stop-color: var(--a3); }
+.medal__g { font-family: var(--font-kai); font-weight: 700; font-size: 30px; fill: var(--ink); letter-spacing: 0; }
+.medal__g--long { font-size: 26px; }
+.medal__g--xl { font-size: 19px; }
+.medal__d { font-family: var(--font-sys); font-weight: 600; font-size: 10px; fill: var(--ink-3); }
+@keyframes ring-fill { to { stroke-dashoffset: var(--off); } }
+@media (prefers-reduced-motion: reduce) { .medal { animation: none; } .medal__arc { animation: none; stroke-dashoffset: var(--off); } }
 </style>

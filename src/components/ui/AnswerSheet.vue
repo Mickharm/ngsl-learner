@@ -116,34 +116,44 @@ onUnmounted(() => {
 
 <style scoped>
 .as__spacer { flex-shrink: 0; }
+/* a glass sheet inset from the screen edges, as iOS 26 partial sheets are;
+   thick variant, because it carries text (HIG: regular glass for text) */
 .as {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 260;
-  background: var(--surface);
-  box-shadow: 0 -1px 0 var(--rule), 0 -18px 40px -24px rgba(0, 0, 0, 0.35);
-  border-radius: 16px 16px 0 0;
-  padding: var(--sp-4) var(--sp-4) calc(env(safe-area-inset-bottom) + var(--sp-4));
-  max-height: 62dvh; overflow-y: auto;
-  animation: sheet-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
+  position: fixed; z-index: 260;
+  left: 8px; right: 8px; bottom: calc(env(safe-area-inset-bottom) + 8px);
+  max-width: 600px; margin: 0 auto;
+  border-radius: 32px;
+  padding: var(--sp-4) var(--sp-4) var(--sp-4);
+  max-height: 62dvh; overflow-y: auto; overscroll-behavior: contain;
+  background: var(--glass-solid);
+  box-shadow: var(--glass-rim), var(--shadow-3);
+  animation: sheet-up 0.42s cubic-bezier(0.2, 1.05, 0.3, 1);
 }
-/* a red margin line down the left, like the exercise-book margin */
-.as::before { content: ''; position: absolute; left: 14px; top: 0; bottom: 0; width: 1.5px; background: var(--line-base); opacity: 0.5; }
-.as__in { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--sp-3); padding-left: 12px; }
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .as { background: var(--glass-thick); -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%); }
+}
+@media (prefers-reduced-transparency: reduce) { .as { background: var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; } }
+/* a tint along the top edge says right / wrong before any word is read */
+.as::before { content: ''; position: absolute; inset: 0 0 auto; height: 72px; border-radius: 32px 32px 0 0; pointer-events: none; opacity: 0.9; }
+.as--right::before { background: linear-gradient(var(--jade-wash), transparent); }
+.as--wrong::before { background: linear-gradient(var(--redpen-wash), transparent); }
+.as__in { position: relative; display: flex; flex-direction: column; gap: var(--sp-3); padding: 0 4px; }
 .as__head { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
-.as__verdict { font-size: var(--step-2); font-weight: 700; color: var(--redpen); }
-.as--right .as__verdict { color: var(--ink); }
+.as__verdict { font-size: var(--step-1); font-weight: 700; letter-spacing: -0.01em; color: var(--redpen); }
+.as--right .as__verdict { color: var(--jade); }
 .as__paused { font-size: var(--step--2); color: var(--ink-3); margin-left: auto; }
-.as__body { display: flex; flex-direction: column; gap: var(--sp-2); font-size: var(--step-0); line-height: 1.65; }
+.as__body { display: flex; flex-direction: column; gap: var(--sp-2); font-size: var(--step-0); line-height: 1.6; }
 .as__body:empty { display: none; }
 .as__next {
   position: relative; overflow: hidden;
-  min-height: 52px; border-radius: var(--radius);
-  background: var(--pen); color: var(--pen-ink); font-weight: 700; font-size: var(--step-0);
-  box-shadow: 0 2px 0 color-mix(in srgb, var(--pen) 60%, #000);
+  min-height: 52px; border-radius: 999px;
+  background: var(--pen); color: var(--pen-ink); font-weight: 600; font-size: var(--step-0);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
-.as__next:active { transform: translateY(2px); box-shadow: none; }
-.as__next--wrong { background: var(--ink); color: var(--paper); box-shadow: 0 2px 0 #0006; }
-.as__bar { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.22); transform-origin: left; }
+.as__next:active { transform: scale(0.97); }
+.as__next--wrong { background: var(--ink); color: var(--paper); }
+.as__bar { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.24); transform-origin: left; }
 .as__label { position: relative; }
-@keyframes sheet-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { .as { animation: none; } }
 </style>

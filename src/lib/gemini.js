@@ -585,79 +585,180 @@ function normalizeDrill (d) {
  * and grades what comes back.
  * ------------------------------------------------------------------ */
 
-const PRODUCTION_SCHEMA = {
+/* ------------------------------------------------------------------ *
+ * 主題對話 — a bounded role-play
+ *
+ * v4 asked for one sentence per word and showed a finished example, which
+ * learners copied. Now the model plays a partner in a fixed situation for at
+ * most five learner replies. Two calls:
+ *
+ *   talkTurn    per reply: the partner's next line (with an implicit recast
+ *               of what the learner meant), a minimal fix, which goals are
+ *               done, and a partial sentence starter — never a full answer.
+ *   talkReport  once, at the end: a four-criterion rubric, an honest CEFR
+ *               estimate, what went well, at most three fixes, one phrase to
+ *               learn next.
+ *
+ * The transcript travels as text in one prompt rather than as chat turns, so
+ * every reply is a single schema-checked JSON object.
+ * ------------------------------------------------------------------ */
+
+const TALK_TURN_SCHEMA = {
   type: 'OBJECT',
   properties: {
-    ok: { type: 'BOOLEAN', description: 'true if it is a usable English sentence that fulfils the task' },
-    score: { type: 'INTEGER', description: '0-3: 0 unusable, 1 understandable but wrong, 2 correct, 3 correct and natural' },
-    usedTarget: { type: 'BOOLEAN', description: 'did they actually use the target word/pattern correctly' },
-    corrected: { type: 'STRING', description: 'their sentence with the minimum fixes; empty if already correct' },
-    explain_zh: { type: 'STRING', description: 'Traditional Chinese. What was wrong, or what was good. One or two sentences.' },
-    better: { type: 'STRING', description: 'a more natural way a native speaker would say roughly the same thing' }
+    reply_en: { type: 'STRING', description: "the partner's next line: at most 18 words, CEFR A1-A2, one question at most" },
+    reply_zh: { type: 'STRING', description: 'Traditional Chinese translation of reply_en' },
+    understood: { type: 'BOOLEAN', description: 'a patient listener would understand what the learner meant' },
+    fix: { type: 'STRING', description: "the learner's message with the minimum changes to be correct English; empty string if already fine" },
+    note_zh: { type: 'STRING', description: 'Traditional Chinese, at most 30 characters: the one thing to notice; empty if nothing' },
+    goals_done: { type: 'ARRAY', items: { type: 'BOOLEAN' }, description: 'one per goal, cumulative over the whole conversation' },
+    hint_en: { type: 'STRING', description: 'a 2-5 word sentence starter for answering reply_en, ending with "…"; never a complete sentence' },
+    end: { type: 'BOOLEAN', description: 'true when reply_en closes the conversation' }
   },
-  required: ['ok', 'score', 'usedTarget', 'explain_zh']
+  required: ['reply_en', 'reply_zh', 'understood', 'fix', 'note_zh', 'goals_done', 'hint_en', 'end']
 }
 
-const PRODUCTION_SYSTEM = `你是英文寫作教練，學生是台灣工程師，程度 CEFR A2-B1，目標是能開口說英文。
+const TALK_SYSTEM = `你在英文口說練習 app 裡扮演對話角色，對象是台灣的英文初學者（字彙量只有幾百到一千多字、文法很弱）。
 
-批改原則：
-1. 標準是「這句話說出去，母語者聽得懂而且不覺得奇怪」，不是完美無瑕。
-2. score：0 = 無法理解或根本沒用英文；1 = 看得懂但有明顯文法錯；2 = 正確；3 = 正確且自然。
-3. 只要句子正確且完成任務就給 ok = true，即使很簡單。不要因為句子短就扣分。
-4. corrected 只做**最小必要修改**，不要重寫整句、不要換掉學生選的字。
-5. better 給一個更自然的說法，讓學生看到母語者會怎麼講；如果原句已經很自然，就重複原句。
-6. explain_zh 一律繁體中文，具體指出問題，不要只說「很好」。
-7. 中式英文（直譯自中文的句子）即使文法對也要指出來，並在 better 給自然說法。`
+角色規則：
+1. 永遠待在角色裡，用簡短、自然、CEFR A1-A2 的英文回應，每次最多 18 個字、最多問一個問題。
+2. 學生的英文有錯時，回應裡自然地用正確說法重述一次他的意思（recast），例如學生說 "I want big latte"，你回 "A large latte? Sure!"。不要在 reply_en 裡講解文法或糾正。
+3. 學生用了中文或中英混雜，就當作你聽懂了，照常往下聊；fix 給出整句的英文說法。
+4. 學生離題或答非所問，簡短回應一句，然後把話題帶回下一個還沒完成的目標。
+5. 所有目標都完成，或 turns_left 是 0，就用一句話自然地結束對話，end = true；否則 end = false。
+6. fix 只做最小必要修改，保留學生自己的用字；已經正確或只是不夠道地就給空字串。
+7. note_zh 只講最重要的一點（例如「動詞 go 的過去式是 went」），沒有要提醒的就給空字串。
+8. hint_en 是給學生回答你這句話用的開頭（2-5 個字加 "…"），不可以是完整句子，不可以直接給答案。
+9. goals_done 依整段對話累計判斷，學生真的做到才算。`
 
 /**
- * Grade a sentence the learner wrote.
- * @param {string} task     what they were asked to do, in Chinese
- * @param {string} target   the word or pattern they had to use
- * @param {string} learner  what they wrote
+ * One partner turn.
+ * @param {object} topic        an entry of data/talk-topics.js
+ * @param {Array}  history      [{ who: 'ai'|'me', en }]
+ * @param {string} learner      the learner's newest message
+ * @param {number} turnsLeft    learner replies still allowed after this one
+ * @param {Array}  targets      today's words to weave in, if they fit
+ * @param {number} knownWords   rough vocabulary size, to pitch the partner
  */
-export async function judgeProduction ({ task, target, learner, key, model = DEFAULT_MODEL, signal } = {}) {
-  const prompt = `任務：${task}
-必須用到：${target}
-學生寫的句子：${learner}
+export async function talkTurn ({ topic, history = [], learner, turnsLeft, targets = [], knownWords = 0, key, model = DEFAULT_MODEL, signal } = {}) {
+  const transcript = history.map(h => `${h.who === 'ai' ? topic.partner.name : '學生'}: ${h.en}`).join('\n')
+  const prompt = `情境：${topic.scene_zh}
+你的角色：${topic.partner.name}，${topic.partner.role_en}
+學生要完成的目標：
+${topic.goals.map((g, i) => `${i + 1}. ${g.en}（${g.zh}）`).join('\n')}
+${targets.length ? `今天學的字（適合時可以自然地用上，讓學生聽到）：${targets.join(', ')}\n` : ''}${knownWords ? `學生大約認得 ${knownWords} 個英文字。\n` : ''}
+到目前為止的對話：
+${transcript}
 
-批改這個句子。`
+學生剛剛說：${learner}
+turns_left：${turnsLeft}
+
+以 ${topic.partner.name} 的身分回應，並依 schema 回傳。goals_done 要有 ${topic.goals.length} 個值。`
 
   const text = await withRetry(() => callGemini({
     key, model, signal,
-    systemInstruction: PRODUCTION_SYSTEM,
+    systemInstruction: TALK_SYSTEM,
     prompt,
-    schema: PRODUCTION_SCHEMA,
-    temperature: 0.2
+    schema: TALK_TURN_SCHEMA,
+    temperature: 0.6
   }))
-  return parseJson(text)
+  const r = parseJson(text)
+  const goals = Array.isArray(r.goals_done) ? r.goals_done.slice(0, topic.goals.length).map(Boolean) : []
+  while (goals.length < topic.goals.length) goals.push(false)
+  return {
+    reply_en: String(r.reply_en || '').trim(),
+    reply_zh: String(r.reply_zh || '').trim(),
+    understood: r.understood !== false,
+    fix: sameSentence(r.fix, learner) ? '' : String(r.fix || '').trim(),
+    note_zh: String(r.note_zh || '').trim(),
+    goals_done: goals,
+    // a starter that is really a full sentence defeats the point; drop it
+    hint_en: cleanHint(r.hint_en),
+    end: !!r.end
+  }
 }
 
-/** A writing task for a word, phrased so there is something real to say. */
-const TASK_SCHEMA = {
+function sameSentence (a, b) {
+  const n = s => String(s || '').toLowerCase().replace(/[^a-z0-9']+/g, ' ').trim()
+  return !n(a) || n(a) === n(b)
+}
+function cleanHint (h) {
+  const t = String(h || '').trim()
+  if (!t) return ''
+  const words = t.replace(/[….]+$/, '').trim().split(/\s+/)
+  if (words.length > 6 || /[.!?]$/.test(t.replace(/…$/, ''))) return ''
+  return /…$/.test(t) ? t : `${t.replace(/\.+$/, '')} …`
+}
+
+const TALK_REPORT_SCHEMA = {
   type: 'OBJECT',
   properties: {
-    task_zh: { type: 'STRING', description: 'Traditional Chinese instruction, one sentence, concrete and answerable' },
-    hint_en: { type: 'STRING', description: 'a short English sentence frame or starter, e.g. "I usually ___ when ..."' }
+    task: { type: 'INTEGER', description: '0-4 goals achieved' },
+    vocabulary: { type: 'INTEGER', description: '0-4 range and fit of words' },
+    accuracy: { type: 'INTEGER', description: '0-4 grammar and word form' },
+    interaction: { type: 'INTEGER', description: '0-4 responding, asking, keeping it going' },
+    level: { type: 'STRING', description: 'one of Pre-A1, A1, A2, B1, B2 — CEFR estimate of this performance, not of the person' },
+    summary_zh: { type: 'STRING', description: 'Traditional Chinese, one or two sentences, specific to this conversation' },
+    strengths: {
+      type: 'ARRAY',
+      items: { type: 'OBJECT', properties: { quote: { type: 'STRING' }, why_zh: { type: 'STRING' } }, required: ['quote', 'why_zh'] }
+    },
+    fixes: {
+      type: 'ARRAY',
+      items: { type: 'OBJECT', properties: { said: { type: 'STRING' }, better: { type: 'STRING' }, why_zh: { type: 'STRING' } }, required: ['said', 'better', 'why_zh'] }
+    },
+    upgrade: {
+      type: 'OBJECT',
+      properties: { en: { type: 'STRING' }, zh: { type: 'STRING' }, when_zh: { type: 'STRING' } },
+      required: ['en', 'zh', 'when_zh']
+    }
   },
-  required: ['task_zh', 'hint_en']
+  required: ['task', 'vocabulary', 'accuracy', 'interaction', 'level', 'summary_zh', 'strengths', 'fixes', 'upgrade']
 }
 
-export async function generateWritingTask ({ word, meaning, key, model = DEFAULT_MODEL, signal } = {}) {
-  const prompt = `為單字「${word}」（意思：${meaning}）設計一個造句任務。
+const TALK_REPORT_SYSTEM = `你是英文口說評量老師，評的是台灣初學者剛完成的一段情境對話。依下面的量表給分，要誠實：做不到就給低分，但評語要具體、讓人知道下一步。
 
-要求：
-- task_zh 用繁體中文，一句話，要具體到學生馬上知道要寫什麼（例如「用 achieve 描述你今年完成的一件事」），不要出「請用 achieve 造句」這種空洞題目。
-- 情境限定日常、旅遊或職場。
-- hint_en 給一個很短的句型起頭，幫助程度不高的學生開口。`
+量表（每項 0-4）：
+- task 任務達成：0 一個目標都沒做到；1 做到一個；2 大部分做到但要對方幫忙；3 全部做到；4 全部做到而且說得清楚、有補充細節。
+- vocabulary 用字：0 幾乎都是中文；1 只有零星單字；2 基本字夠用；3 用字貼切、有用到情境需要的字；4 用字多樣又精準。
+- accuracy 正確度：0 看不懂；1 錯很多、影響理解；2 有錯但看得懂；3 只有少數小錯；4 幾乎沒錯。
+- interaction 互動：0 沒有回應到對方；1 只有單字或片段；2 用短句回應；3 用完整句回應，也會主動問問題；4 自然地一來一往、讓對話延續。
+
+level 是這段表現大約的 CEFR 等級（Pre-A1 / A1 / A2 / B1 / B2），只看這段對話。
+strengths 最多 2 個，quote 要引用學生原句。
+fixes 最多 3 個，挑最影響溝通的；said 是學生原句，better 是最小修改後的正確說法，why_zh 一句話說明。學生句子都正確就給空陣列。
+upgrade 給一個這個情境很實用、學生還沒用過的說法（en、zh、when_zh 說明什麼時候用）。
+所有中文都用繁體中文。`
+
+/** The end-of-talk evaluation. */
+export async function talkReport ({ topic, history = [], key, model = DEFAULT_MODEL, signal } = {}) {
+  const transcript = history.map(h => `${h.who === 'ai' ? topic.partner.name : '學生'}: ${h.en}`).join('\n')
+  const prompt = `情境：${topic.scene_zh}（對方：${topic.partner.role_en}）
+學生的目標：
+${topic.goals.map((g, i) => `${i + 1}. ${g.en}（${g.zh}）`).join('\n')}
+
+完整對話：
+${transcript}
+
+依量表評這位學生（只評「學生」說的話）。`
 
   const text = await withRetry(() => callGemini({
     key, model, signal,
-    systemInstruction: DRILL_SYSTEM,
+    systemInstruction: TALK_REPORT_SYSTEM,
     prompt,
-    schema: TASK_SCHEMA,
-    temperature: 0.9
+    schema: TALK_REPORT_SCHEMA,
+    temperature: 0.2
   }))
-  return parseJson(text)
+  const r = parseJson(text)
+  const clamp = v => Math.max(0, Math.min(4, Math.round(Number(v) || 0)))
+  return {
+    scores: { task: clamp(r.task), vocabulary: clamp(r.vocabulary), accuracy: clamp(r.accuracy), interaction: clamp(r.interaction) },
+    level: ['Pre-A1', 'A1', 'A2', 'B1', 'B2'].includes(r.level) ? r.level : '',
+    summary_zh: String(r.summary_zh || ''),
+    strengths: (r.strengths || []).slice(0, 2).filter(x => x?.quote),
+    fixes: (r.fixes || []).slice(0, 3).filter(x => x?.said && x?.better && !sameSentence(x.better, x.said)),
+    upgrade: r.upgrade?.en ? r.upgrade : null
+  }
 }
 
 /* ------------------------------------------------------------------ *

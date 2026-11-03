@@ -25,49 +25,52 @@ const pct = computed(() => props.total ? Math.min(100, (props.current / props.to
       <div class="shead__title zh">{{ title }}</div>
       <div v-if="total" class="shead__count num">{{ current }}<span class="shead__slash">/</span>{{ total }}</div>
       <div v-else class="shead__count" />
-    </div>
-    <div class="shead__track">
-      <div class="shead__fill" :style="{ width: pct + '%' }" />
+      <div class="shead__fill" :style="{ width: `calc((100% - 44px) * ${pct / 100})` }" />
     </div>
   </header>
 </template>
 
 <style scoped>
+/* A floating glass bar: circular back button, title, count, and the round's
+   progress as a thin capsule inside the bar. */
 .shead {
-  position: sticky;
-  top: 0;
-  z-index: 90;
-  background: var(--nav-bg);
-  backdrop-filter: saturate(180%) blur(18px);
-  -webkit-backdrop-filter: saturate(180%) blur(18px);
-  padding-top: env(safe-area-inset-top);
-  border-bottom: 1px solid var(--rule);
+  position: sticky; top: 0; z-index: 90;
+  padding: calc(env(safe-area-inset-top) + 6px) 10px 6px;
 }
-
 .shead__bar {
   display: grid;
-  grid-template-columns: 40px 1fr 64px;
+  grid-template-columns: 44px 1fr 64px;
   align-items: center;
   gap: var(--sp-2);
-  height: 50px;
-  padding: 0 var(--sp-2);
+  height: 52px;
+  padding: 0 6px;
   max-width: 680px;
   margin: 0 auto;
+  border-radius: 999px;
+  background: var(--glass-solid);
+  box-shadow: var(--glass-rim), var(--shadow-1);
+  position: relative; overflow: hidden;
 }
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .shead__bar { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); }
+}
+@media (prefers-reduced-transparency: reduce) { .shead__bar { background: var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 
 .shead__exit {
-  width: 38px; height: 38px;
+  width: 40px; height: 40px;
   display: grid; place-items: center;
-  border-radius: var(--radius-sm);
-  color: var(--ink-2);
+  border-radius: 50%;
+  color: var(--ink);
+  background: var(--surface-2);
+  transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
-.shead__exit svg { width: 22px; height: 22px; }
-.shead__exit:active { background: var(--surface-2); }
+.shead__exit svg { width: 20px; height: 20px; }
+.shead__exit:active { transform: scale(0.9); }
 
 .shead__title {
-  font-family: var(--font-kai);
-  font-size: var(--step-1);
-  font-weight: 700;
+  font-size: var(--step-0);
+  font-weight: 650;
+  letter-spacing: -0.01em;
   text-align: center;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
@@ -76,14 +79,14 @@ const pct = computed(() => props.total ? Math.min(100, (props.current / props.to
   font-size: var(--step--1);
   color: var(--ink-2);
   text-align: right;
-  padding-right: var(--sp-2);
+  padding-right: var(--sp-3);
 }
 .shead__slash { color: var(--ink-3); margin: 0 1px; }
 
-.shead__track { height: 4px; background: transparent; border-top: 1px solid var(--rule); }
 .shead__fill {
-  height: 100%;
-  background: var(--hl-yellow);
-  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute; left: 22px; bottom: 6px; height: 3px; border-radius: 2px;
+  max-width: calc(100% - 44px);
+  background: var(--pen);
+  transition: width 0.45s cubic-bezier(0.3, 1, 0.4, 1);
 }
 </style>

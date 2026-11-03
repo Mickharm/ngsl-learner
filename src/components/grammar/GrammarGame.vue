@@ -7,7 +7,7 @@ import TenseTimeline from './TenseTimeline.vue'
 import SentenceSlots from './SentenceSlots.vue'
 import { TENSES, ROLES } from '@/data/grammar-studio'
 import { GRAMMAR_BY_ID } from '@/data/grammar'
-import { shuffle } from '@/lib/game'
+import { shuffle, scramble } from '@/lib/game'
 import { inlineMd } from '@/lib/format'
 
 /**
@@ -57,8 +57,8 @@ function reset () {
   built.value = []; tapped.value = null
   sortIdx.value = 0; sortRight.value = 0; sortLast.value = null
   const it = props.item
-  if (it.type === 'order') bank.value = shuffle(it.tokens.map((t, i) => ({ text: t, key: `${t}${i}` })), props.seed)
-  else if (it.type === 'blocks') bank.value = shuffle(it.blocks.map(([text, role], i) => ({ text, role, key: `${i}` })), props.seed)
+  if (it.type === 'order') bank.value = scramble(it.tokens.map((t, i) => ({ text: t, key: `${t}${i}` })), props.seed, b => b.text)
+  else if (it.type === 'blocks') bank.value = scramble(it.blocks.map(([text, role], i) => ({ text, role, key: `${i}` })), props.seed, b => b.text)
   else bank.value = []
   if (it.type === 'timeline') {
     const others = shuffle(Object.keys(TENSES).filter(k => k !== it.answer), props.seed).slice(0, 3)
@@ -338,7 +338,7 @@ onMounted(reset)
 .sortbtn--no { border-color: var(--rose); color: var(--rose); background: var(--rose-wash); }
 .sortbtn:active { transform: scale(0.97); }
 
-.fb__point { align-self: flex-start; font-size: var(--step--2); color: var(--ink-2); background: var(--hl-yellow); padding: 1px 8px; border-radius: 3px; }
+.fb__point { align-self: flex-start; font-size: var(--step--2); color: var(--ink-2); background: var(--sun-wash); padding: 2px 10px; border-radius: 999px; }
 .fb__ans { font-family: var(--font-word); font-size: var(--step-1); color: var(--jade-ink); }
 .fb__ex { font-size: var(--step-0); color: var(--ink-2); line-height: 1.65; }
 

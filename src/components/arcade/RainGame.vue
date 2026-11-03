@@ -151,27 +151,26 @@ onUnmounted(() => { cancelAnimationFrame(raf); clearTimeout(nextTimer) })
 <style scoped>
 .sky {
   position: relative; height: min(44dvh, 360px); overflow: hidden;
-  border-radius: var(--radius);
-  background:
-    repeating-linear-gradient(to bottom, transparent 0 31px, var(--line) 31px 32px),
-    var(--surface);
-  box-shadow: var(--shadow-1);
+  border-radius: var(--radius-xl);
+  /* a pane of glass the words fall down; the ground is the bottom edge */
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--a2) 14%, var(--surface)), var(--surface));
+  box-shadow: var(--rim), var(--shadow-1);
 }
 .drop { position: absolute; left: 0; right: 0; top: 6px; display: flex; justify-content: center; will-change: transform; }
 .drop__w {
   font-family: var(--font-word); font-weight: 700; font-size: clamp(1.7rem, 8vw, 2.2rem);
-  padding: 0.15em 0.6em; background: var(--surface); border: 1.5px solid var(--ink); border-radius: 6px;
-  box-shadow: 3px 3px 0 var(--ink);
+  padding: 0.15em 0.7em; background: var(--surface-solid); border-radius: 18px;
+  box-shadow: var(--rim), 0 10px 24px -10px rgba(30, 30, 70, 0.35);
 }
 .sky--hit .drop__w { border-color: var(--jade); box-shadow: 3px 3px 0 var(--jade); color: var(--jade-ink); }
 .sky--miss .drop__w { border-color: var(--redpen); box-shadow: 3px 3px 0 var(--redpen); color: var(--redpen); animation: shake 0.3s; }
-.ground { position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: var(--line-base); opacity: 0.6; }
+.ground { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: linear-gradient(90deg, #ff3b30, #ff9500); opacity: 0.55; }
 .opts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); margin-top: var(--sp-4); }
 .opt { min-height: 68px; padding: 8px; border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-1); font-weight: 700; font-size: var(--step-1); line-height: 1.25; }
 .opt:active:not(:disabled) { transform: translateY(1px); }
 .opt--right { background: var(--hl-green); }
 .opt--wrong { background: var(--redpen-wash); color: var(--redpen); text-decoration: line-through; }
-.missbox { margin-top: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-4); background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-1); border-left: 4px solid var(--redpen); animation: rise 0.18s ease-out; }
+.missbox { margin-top: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-4); background: var(--surface); border-radius: var(--radius); box-shadow: var(--rim), var(--shadow-1); background: var(--redpen-wash); animation: rise 0.18s ease-out; }
 .missbox__w { display: flex; align-items: center; gap: var(--sp-2); font-family: var(--font-word); font-size: var(--step-2); }
 .missbox__zh { font-size: var(--step-1); color: var(--ink-2); }
 </style>

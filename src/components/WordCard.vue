@@ -117,8 +117,6 @@ watch(() => props.word.id, autoplay)
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-2);
   overflow: hidden;
-  /* An index-card edge: a hairline of accent at the top, nothing else loud. */
-  border-top: 3px solid var(--jade);
 }
 
 .wcard__front {

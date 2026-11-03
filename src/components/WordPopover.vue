@@ -101,11 +101,13 @@ const style = computed(() => {
 
 .pop {
   position: fixed;
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-top: 3px solid var(--jade);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-3);
+  /* floats over the text, so it is control glass */
+  background: var(--glass-thick);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+  border: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-rim), var(--shadow-3);
   padding: var(--sp-3);
   display: flex; flex-direction: column; gap: var(--sp-2);
   max-height: 62vh;

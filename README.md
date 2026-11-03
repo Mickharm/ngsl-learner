@@ -7,6 +7,23 @@
 
 ---
 
+## v5：琉璃（Apple 毛玻璃）、主題對話、排句題真的打亂
+
+| 回饋 | 診斷 | v5 做法 |
+|---|---|---|
+| 排句子的字磚順序和正確句子一樣，照順序點就對 | `DrillRunner` 的「洗牌」key 是 `i × 2654435761 mod 997`，而 2654435761 mod 997 = 30，所以 key = 30·i，對 i < 34 單調遞增——**從來沒打亂過**（39 題 order 全中） | 新的 `scramble()`（`lib/game.js`）：洗 48 次取「最難直接讀出答案」的一組——禁止原順序、懲罰保留原本相鄰的字對（3 分）、倒著也能讀的字對（1 分）、整句倒序（4 分）、首尾字不動（2／1 分），以文字比對所以重複的 the 也騙不過。套用到基礎知識排序、Grammar Studio 的 order／blocks、故事排順序、拼字字母。`test-scramble.mjs` 對資料裡全部 47 個重排題 × 60 個種子驗證：沒有一次是原順序，保留的原相鄰字對 0% |
+| 造句關給完整範例，照打即可 | 「先給答案再要學生產出」只測抄寫 | **主題對話**（`TalkView`）：10 個情境（咖啡店、飯店、問路、餐廳、買衣服、聊週末、新同事、回報問題、約吃飯、藥局），每個有角色、三個具體目標、開場白。**最多 5 回合、每次 140 字元**，目標全達成或回合用完由對方收尾。提示是**拉出來的**：按「給我開頭」才給 2–5 個字的句首（模型回傳完整句會被程式丟掉），今天的字是可點的 chip，不會的字可以打中文 |
+| 問答後要有回饋與評判 | — | 兩段回饋：**對話中**——對方的回覆自然重述正確說法（recast），學生泡泡下方給最小修正與一句提醒、目標燈號即時亮起；**對話後**——四項量表各 0–4（任務達成／用字／正確度／互動，取自 CEFR 口說評量的面向）＋這段對話的 CEFR 估計、做得好的原句、最值得改的 3 句（存進錯題本）、一個下次可以用的說法；本地統計回合數、英文字數、今天的字用到哪些、提示次數。沒有 Gemini Key 時對方照劇本說，結束後與參考說法對照、自評目標 |
+| 作業簿好，但想要 Apple 毛玻璃、漂亮有質感 | 毛玻璃要底下有顏色才有意義；全畫面每張卡都即時 blur 在中階手機會掉幀 | 依 Apple HIG〈Materials〉的兩層模型：**內容層**是半透明「材質」卡片（不做即時 blur，背景本身就柔，省 GPU）；**控制層**才是真玻璃（`backdrop-filter: blur(24px) saturate(180%)`＋高光邊）——懸浮膠囊分頁列、膠囊標題列、內縮的回饋 sheet、遊戲 HUD、對話輸入列、單字 popover、toast。背景是固定不動的**極光**，用學習者自己的顏色點亮（Dai 粉、Xin 藍、玟廷 黃；登入頁三色並列）。系統字（SF／PingFang TC，其他裝置 Noto Sans TC），Apple 系統色（含無障礙深色版）、iOS 開關、inset grouped 清單、膠囊按鈕、彈簧按壓回饋；印章改成像 Activity 圓環的成績章。保留有教學功能的：英文四線格、字首字尾螢光筆標記、Andika 字體。`prefers-reduced-transparency` 與不支援 `backdrop-filter` 時退回實色，`prefers-contrast: more` 加邊框 |
+
+```
+B 日：複習挑戰 → 新單字 → 字首字尾 → 基礎知識 → 主題對話 → 遊戲時間 → 聽力 → 結算
+```
+
+依據：Apple Human Interface Guidelines — [Materials](https://developer.apple.com/design/human-interface-guidelines/materials)（Liquid Glass 只用於控制與導覽層、standard materials 用於內容層、regular 變體用於文字多的元件）。
+
+---
+
 ## v4：作業簿／黑板、等你看完的回饋、三位學習者
 
 | 回饋 | v4 做法 |
@@ -34,7 +51,7 @@ v2 用了一陣子後的回饋與對應的改法：
 Word Lab 另外加上**先猜再看**：每個新字先從零件或例句猜意思（不計分），再看完整字卡——猜過再看比直接看記得牢（pretesting effect：Richland, Kornell & Kao 2009；Potts & Shanks 2014）。
 
 ```
-每天：複習挑戰 → Word Lab → 字首字尾 → (A) Grammar Studio → Story Time ／ (B) 基礎知識 → 造句 → 聽力 → 結算
+每天：複習挑戰 → Word Lab → 字首字尾 → (A) Grammar Studio → Story Time ／ (B) 基礎知識 → 主題對話 → 聽力 → 結算
 ```
 
 部署：push `main` 即由 GitHub Actions 測試、建置並推到 `gh-pages`（見 `deploy/README.md`）。
@@ -60,7 +77,7 @@ Word Lab 另外加上**先猜再看**：每個新字先從零件或例句猜意�
 
 ```
 A 日：複習挑戰 → Word Lab → Grammar Studio → Story Time → 聽力 → 結算
-B 日：複習挑戰 → Word Lab → 基礎知識      → 造句       → 聽力 → 結算
+B 日：複習挑戰 → Word Lab → 基礎知識      → 主題對話   → 聽力 → 結算
 ```
 
 複習改到新字前面：先把快忘的字撈回來，再學新的。
@@ -235,8 +252,8 @@ src/
 | 每日短文 | `generateArticle` | 用當天單字寫文章 + 6 題理解測驗 |
 | 出新題 | `generateDrills` | 針對任何文法/基礎單元無限生成練習，避開已出過的句子 |
 | 文法批改 | `judgeSentence` | 判斷「另一種正確寫法」是否該算對 |
-| 造句批改 | `judgeProduction` | 文法、用字、自然度三個維度 + 母語者說法 |
-| 造句題目 | `generateWritingTask` | 針對單字設計具體到能馬上下筆的任務 |
+| 主題對話（每回合） | `talkTurn` | 扮演情境角色、隱性重述、最小修正、目標判定、句首提示（不給完整句） |
+| 主題對話（結束） | `talkReport` | 四項 0–4 量表、CEFR 估計、優點原句、最多 3 句修正、下次可用的說法 |
 | 旅遊對話 | `generateDialogue` | 20 個情境的角色扮演 |
 
 生成的題目一律經過 `normalizeDrill()` 驗證才會顯示：選項不是 4 個、order 的 tokens

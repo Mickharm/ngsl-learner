@@ -265,8 +265,8 @@ onUnmounted(() => session.stopClock())
 .parts__lead { color: var(--ink-2); line-height: 1.65; }
 
 .units { display: flex; flex-direction: column; }
-.units li { border-top: 1px solid var(--line); }
-.units li:last-child { border-bottom: 1px solid var(--line); }
+.units li { border-top: 0.5px solid var(--rule); }
+.units li:last-child { border-bottom: 0; }
 .unit { width: 100%; display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: var(--sp-3); padding: 12px 2px; text-align: left; }
 .unit__n { font-family: var(--font-word); font-size: var(--step-1); color: var(--ink-3); text-align: center; }
 .unit--learning .unit__n, .unit--mastered .unit__n { color: var(--jade); }
@@ -311,13 +311,13 @@ onUnmounted(() => session.stopClock())
 .tp__w { font-family: var(--font-word); font-weight: 700; }
 .tp__wzh { color: var(--ink-2); font-size: var(--step--1); flex: 1; }
 
-.note { display: flex; flex-direction: column; gap: 6px; padding: var(--sp-3) var(--sp-4); border-left: 4px solid var(--hl-blue); background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0; line-height: 1.6; font-size: var(--step--1); }
+.note { display: flex; flex-direction: column; gap: 6px; padding: var(--sp-4); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); border-radius: var(--radius-lg); line-height: 1.6; font-size: var(--step--1); }
 .note--trap { border-left-color: var(--rose); }
 .note__t { font-family: var(--font-kai); font-size: var(--step-0); font-weight: 700; }
 
 .hud { display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
 .hud__score { font-size: var(--step--1); color: var(--ink-2); }
-.hud__combo { font-weight: 700; color: var(--ink); background: var(--hl-yellow); padding: 1px 10px; border-radius: 2px; transform: rotate(-2deg); animation: pop-in 0.2s; font-size: var(--step--1); }
+.hud__combo { font-weight: 700; color: var(--sun-ink); background: var(--sun); padding: 2px 12px; border-radius: 999px; animation: pop-in 0.2s; font-size: var(--step--1); }
 
 .res { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); text-align: center; padding-top: var(--sp-6); }
 .res__stars { display: flex; justify-content: center; }

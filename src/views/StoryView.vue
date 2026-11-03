@@ -7,7 +7,7 @@ import { useSession } from '@/stores/session'
 import { useSettings } from '@/stores/settings'
 import { useAuth } from '@/stores/auth'
 import STORIES, { LEVEL_LABEL } from '@/data/stories'
-import { shuffle } from '@/lib/game'
+import { shuffle, scramble } from '@/lib/game'
 import { speak, stopSpeaking } from '@/lib/tts'
 import SessionHeader from '@/components/SessionHeader.vue'
 import AudioButton from '@/components/AudioButton.vue'
@@ -147,9 +147,7 @@ function closePop () { popWord.value = null }
 /* ---- sequence ---- */
 function startSeq () {
   const pages = story.value.pages.map((p, i) => ({ i, scene: p.scene, first: p.lines[0].en }))
-  let b = shuffle(pages, story.value.id.length * 17 + Date.now() % 997)
-  if (b.every((p, k) => p.i === k)) b = [...b.slice(1), b[0]]
-  seqBank.value = b
+  seqBank.value = scramble(pages, story.value.id.length * 17 + Date.now() % 997, p => p.i)
   seqBuilt.value = []
   seqDone.value = false
   seqMistakes.value = 0
@@ -366,7 +364,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 .hint { font-size: var(--step--2); color: var(--ink-3); text-align: center; }
 
 .hub__lead { font-size: var(--step--1); color: var(--ink-2); line-height: 1.6; }
-.rec { display: flex; align-items: center; gap: var(--sp-4); padding: var(--sp-4); text-align: left; border-top: 3px solid var(--amber); }
+.rec { display: flex; align-items: center; gap: var(--sp-4); padding: var(--sp-4); text-align: left; }
 .rec__cover { font-size: 3rem; }
 .rec__body { display: flex; flex-direction: column; gap: 2px; }
 .rec__title { font-family: var(--font-word); font-size: var(--step-2); font-weight: 600; }
@@ -376,7 +374,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 .book { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--sp-3) var(--sp-2); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-1); }
 .book__cover { font-size: 2.2rem; }
 .book__title { font-family: var(--font-word); font-size: var(--step--1); text-align: center; line-height: 1.25; }
-.book__stars { font-size: var(--step--1); color: var(--amber); letter-spacing: 1px; }
+.book__stars { font-size: var(--step--1); color: #ffb800; letter-spacing: 1px; }
 
 .scene { font-size: clamp(2.6rem, 14vw, 4rem); text-align: center; padding: var(--sp-5) var(--sp-3); letter-spacing: 0.12em; background: linear-gradient(180deg, var(--surface), var(--surface-2)); }
 .lines { display: flex; flex-direction: column; gap: var(--sp-3); }
@@ -395,7 +393,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 .seqcard__scene { font-size: 1.6rem; flex-shrink: 0; letter-spacing: 0.05em; }
 .seqcard__line { font-family: var(--font-word); font-size: var(--step--1); line-height: 1.35; color: var(--ink-2); }
 
-.qcard { padding: var(--sp-5) var(--sp-4); text-align: center; border-top: 3px solid var(--violet); }
+.qcard { padding: var(--sp-5) var(--sp-4); text-align: center; }
 .qcard__q { font-family: var(--font-word); font-size: var(--step-2); }
 .qcard__zh { font-size: var(--step--1); color: var(--ink-3); margin-top: 4px; }
 .qopts { display: flex; flex-direction: column; gap: var(--sp-2); }
@@ -412,7 +410,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 
 .res { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); text-align: center; padding-top: var(--sp-6); }
 .res__cover { font-size: 4rem; }
-.res__stars { font-size: var(--step-4); color: var(--amber); letter-spacing: 4px; }
+.res__stars { font-size: var(--step-4); color: #ffb800; letter-spacing: 4px; text-shadow: 0 4px 14px rgba(255, 170, 0, 0.35); }
 .res__title { font-family: var(--font-word); font-size: var(--step-2); }
 .res__line { font-size: var(--step--1); color: var(--ink-2); }
 .res__note { font-size: var(--step--1); color: var(--ink-3); line-height: 1.7; max-width: 34ch; }

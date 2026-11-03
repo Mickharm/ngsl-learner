@@ -10,6 +10,7 @@ import { useEssentials } from '@/stores/essentials'
 import { useParts } from '@/stores/parts'
 import { useToast } from '@/stores/toast'
 import TabBar from '@/components/TabBar.vue'
+import { PROFILES } from '@/config'
 import ToastHost from '@/components/ToastHost.vue'
 
 const route = useRoute()
@@ -41,6 +42,13 @@ onMounted(async () => {
 })
 
 watch(() => auth.userId, async id => { if (id) await bootUserData() })
+
+// The backdrop is lit by the signed-in learner's colour; signed out, all three.
+watch(() => auth.user?.email, email => {
+  const accent = PROFILES.find(p => p.email === email)?.accent
+  if (accent) document.documentElement.dataset.learner = accent
+  else delete document.documentElement.dataset.learner
+}, { immediate: true })
 </script>
 
 <template>

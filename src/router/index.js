@@ -15,7 +15,8 @@ const routes = [
   { path: '/review', name: 'review', component: () => import('@/views/ReviewView.vue'), meta: { chrome: false } },
   { path: '/grammar', name: 'grammar', component: () => import('@/views/GrammarView.vue'), meta: { chrome: false } },
   { path: '/essentials', name: 'essentials', component: () => import('@/views/EssentialsView.vue'), meta: { chrome: false } },
-  { path: '/write', name: 'write', component: () => import('@/views/WriteView.vue'), meta: { chrome: false } },
+  // v5: 造句 became 主題對話; /write stays as an alias for old links
+  { path: '/talk', alias: '/write', name: 'write', component: () => import('@/views/TalkView.vue'), meta: { chrome: false } },
   { path: '/listen', name: 'listen', component: () => import('@/views/ListenView.vue'), meta: { chrome: false } },
   { path: '/article', name: 'article', component: () => import('@/views/ArticleView.vue'), meta: { chrome: false } },
   { path: '/story', name: 'story', component: () => import('@/views/StoryView.vue'), meta: { chrome: false } },

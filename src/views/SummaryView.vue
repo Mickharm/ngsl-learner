@@ -70,9 +70,9 @@ onMounted(() => {
           <h1 class="page-title">今天的課上完了</h1>
         </div>
       </header>
-      <p class="sum__verdict kai">老師評語：{{ verdict }}</p>
+      <p class="sum__verdict zh">{{ verdict }}</p>
 
-      <!-- a report card: label column, value column, ruled -->
+      <!-- the report card as an inset grouped list -->
       <table class="report">
         <tbody>
           <tr v-for="r in rows" :key="r.label">
@@ -123,14 +123,14 @@ onMounted(() => {
 
 .sum__head { display: flex; align-items: center; gap: var(--sp-4); padding-top: var(--sp-3); }
 .sum__stamp { flex-shrink: 0; }
-.sum__date { color: var(--ink-3); }
-.sum__head .page-title { font-size: var(--step-3); line-height: 1.25; }
-.sum__verdict { font-size: var(--step-1); color: var(--redpen); line-height: 1.6; }
-.report { width: 100%; border-collapse: collapse; border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); }
-.report th { text-align: left; font-weight: 500; color: var(--ink-2); padding: 10px 4px; font-size: var(--step--1); }
-.report td { text-align: right; padding: 10px 4px; font-family: var(--font-word); }
-.report tr + tr th, .report tr + tr td { border-top: 1px solid var(--rule); }
-.report td b { font-size: var(--step-1); }
+.sum__date { color: var(--ink-2); font-size: var(--step--1); font-weight: 600; }
+.sum__head .page-title { font-size: var(--step-3); line-height: 1.2; }
+.sum__verdict { font-size: var(--step-0); color: var(--ink); line-height: 1.6; padding: 14px 16px; border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); }
+.report { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); overflow: hidden; }
+.report th { text-align: left; font-weight: 500; color: var(--ink); padding: 13px 16px; font-size: var(--step-0); }
+.report td { text-align: right; padding: 13px 16px; }
+.report tr + tr th, .report tr + tr td { box-shadow: inset 0 0.5px 0 var(--rule); }
+.report td b { font-size: var(--step-0); font-weight: 600; color: var(--ink-2); }
 .report td small { color: var(--ink-3); margin-left: 3px; font-size: var(--step--2); }
 .v--jade b { color: var(--jade); } .v--amber b { color: var(--amber); } .v--rose b { color: var(--redpen); }
 

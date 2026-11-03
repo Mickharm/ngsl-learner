@@ -27,7 +27,7 @@ import { STATE } from '@/lib/srs'
  * budget. Alternating halves that to 27-30 and hands the difference back to
  * review, which is the part that actually decides whether anything sticks.
  *
- *   A 日：文法 + 閱讀      B 日：基礎知識 + 造句
+ *   A 日：文法 + 閱讀      B 日：基礎知識 + 主題對話
  *
  * Both tracks keep a reading or production task, so no day is recognition-only.
  */
@@ -48,7 +48,8 @@ export const PHASES = [
   { key: 'parts',      label: '字首字尾',   route: '/parts?phase=1',   minutes: 7,  track: TRACK.BOTH },
   { key: 'grammar',    label: '文法',       route: '/grammar',   minutes: 14, track: TRACK.A },
   { key: 'essentials', label: '基礎知識',   route: '/essentials',      minutes: 12, track: TRACK.B },
-  { key: 'write',      label: '造句',       route: '/write',           minutes: 12, track: TRACK.B },
+  // v5: a bounded role-play with the AI instead of one sentence per word
+  { key: 'write',      label: '主題對話',   route: '/talk',            minutes: 12, track: TRACK.B },
   { key: 'read',       label: '讀故事',     route: '/story?phase=1',   minutes: 12, track: TRACK.A },
   // v4: a game on today's words, near the end of the day so it is a spaced
   // second retrieval rather than more of the same minute. The game rotates

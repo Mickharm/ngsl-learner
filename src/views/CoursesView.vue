@@ -44,7 +44,7 @@ const courses = computed(() => [
 
 const practice = [
   { title: '聽力', sub: '只聽不看，再看答案', to: '/listen' },
-  { title: '造句', sub: '用今天的字寫句子，AI 批改', to: '/write' },
+  { title: '主題對話', sub: '和 AI 角色用英文聊一個情境', to: '/talk' },
   { title: '旅遊會話', sub: '20 個出國情境', to: '/travel' },
   { title: '每日文章', sub: 'AI 用你今天的字寫一篇短文', to: '/article' }
 ]
@@ -114,7 +114,7 @@ function openCourse (c) { router.push(c.to) }
 .toc__bar span { display: block; height: 100%; background: var(--pen); }
 .toc__more { margin-top: 8px; font-size: var(--step--1); color: var(--pen); }
 .points { display: flex; flex-direction: column; margin-top: 8px; }
-.point { width: 100%; display: grid; grid-template-columns: 26px 1fr auto; gap: var(--sp-2); align-items: center; padding: 9px 2px; text-align: left; border-bottom: 1px dashed var(--rule); }
+.point { width: 100%; display: grid; grid-template-columns: 26px 1fr auto; gap: var(--sp-2); align-items: center; padding: 9px 2px; text-align: left; border-bottom: 0.5px solid var(--rule); }
 .point:disabled { opacity: 0.4; }
 .point--today .point__t { background: linear-gradient(transparent 55%, var(--hl-yellow) 55%); }
 .point__n { color: var(--ink-3); font-size: var(--step--1); }

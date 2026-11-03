@@ -4,6 +4,7 @@ import AudioButton from './AudioButton.vue'
 import { matchesAnswer, worthJudging } from '@/lib/answer'
 import { judgeSentence } from '@/lib/gemini'
 import { useSettings } from '@/stores/settings'
+import { scramble, hashSeed } from '@/lib/game'
 
 /**
  * Runs a list of drills and reports the result.
@@ -42,6 +43,7 @@ const typed = ref('')
 
 /* ---- sort ---- */
 const placed = ref({})          // itemIndex -> bucket
+const salt = Date.now() % 104729
 
 function reset () {
   settled.value = false
@@ -52,9 +54,9 @@ function reset () {
   built.value = []
   placed.value = {}
   const d = drill.value
+  // salt per visit: the same drill is scrambled differently next time
   bank.value = d?.type === 'order'
-    ? [...d.tokens].map((t, i) => ({ t, i }))
-        .sort((a, b) => ((a.i * 2654435761) % 997) - ((b.i * 2654435761) % 997))
+    ? scramble(d.tokens.map((t, i) => ({ t, i })), hashSeed(d.tokens.join(' ')) + salt + index.value, b => b.t)
     : []
 }
 watch(drill, reset, { immediate: true })

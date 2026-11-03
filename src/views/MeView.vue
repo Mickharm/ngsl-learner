@@ -82,14 +82,14 @@ const links = computed(() => [
 .me__school { font-size: var(--step--2); color: var(--ink-3); letter-spacing: 0.1em; }
 .me__name { font-size: var(--step-4); }
 .me__title { color: var(--ink-2); font-size: var(--step--1); }
-.me__lv { width: 76px; height: 76px; flex-shrink: 0; display: grid; place-items: center; border: 2.5px solid var(--redpen); border-radius: 50%; color: var(--redpen); font-weight: 700; font-size: var(--step-1); transform: rotate(-12deg); }
+.me__lv { width: 76px; height: 76px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; color: #fff; font-weight: 700; font-size: var(--step-1); background: radial-gradient(120% 120% at 28% 20%, rgba(255, 255, 255, 0.5), transparent 42%), linear-gradient(150deg, var(--a1), var(--a3)); box-shadow: inset 0 -6px 14px rgba(0, 0, 0, 0.08), 0 10px 22px -10px var(--a1); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); }
 .sec { font-size: var(--step-1); font-weight: 700; }
 .ladder { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
 .ladder__lead { font-size: var(--step--1); color: var(--ink-2); line-height: 1.6; }
 .ladder__rows { display: flex; flex-direction: column; gap: 8px; }
 .lr { display: grid; grid-template-columns: 4.5em 1fr 3em; gap: var(--sp-2); align-items: center; }
 .lr__l { font-size: var(--step--1); font-weight: 700; }
-.lr__bar { height: 14px; border-radius: 2px; background: var(--surface-2); overflow: hidden; }
+.lr__bar { height: 12px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
 .lr__bar span { display: block; height: 100%; background: var(--hl-blue); min-width: 2px; }
 .lr__n { text-align: right; color: var(--ink-2); font-size: var(--step--1); font-family: var(--font-word); }
 .mini { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule-strong); }

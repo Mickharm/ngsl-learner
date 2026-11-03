@@ -68,41 +68,47 @@ const list = computed(() => GAMES.filter(g => g.id !== 'wordle').map(g => ({
 .games { display: flex; flex-direction: column; gap: var(--sp-5); }
 .games__lead { color: var(--ink-2); font-size: var(--step--1); line-height: 1.6; margin-top: 6px; }
 
-/* today's puzzle: written in chalk on the board */
-.daily { display: grid; grid-template-columns: auto 1fr auto; gap: var(--sp-3); align-items: center; padding: var(--sp-4); background: var(--slab); color: var(--slab-ink); border-radius: var(--radius); text-align: left; box-shadow: inset 0 0 0 6px rgba(120, 84, 48, 0.55), var(--shadow-1); }
+/* today's puzzle: the one dark, thick-material panel on the page */
+.daily { display: grid; grid-template-columns: auto 1fr auto; gap: var(--sp-3); align-items: center; padding: var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-5); color: #f5f5f7; border-radius: var(--radius-xl); text-align: left;
+  background: radial-gradient(120% 140% at 0% 0%, rgba(52, 199, 89, 0.35), transparent 55%), linear-gradient(150deg, #1c1c1e, #2c2c30);
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.12), var(--shadow-2);
+  transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
+.daily:active { transform: scale(0.97); }
 .daily__tiles { display: grid; grid-template-columns: repeat(5, 22px); gap: 3px; }
-.dt { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 3px; border: 1.5px solid rgba(238, 241, 234, 0.6); font-family: var(--font-word); font-weight: 700; font-size: 0.75rem; color: #eef1ea; }
-.dt--hit { background: #9fd89a; color: #1c2a23; border-color: #9fd89a; }
-.dt--near { background: #f1d35d; color: #1c2a23; border-color: #f1d35d; }
+.dt { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 6px; background: rgba(255, 255, 255, 0.12); font-family: var(--font-word); font-weight: 700; font-size: 0.75rem; color: #f5f5f7; }
+.dt--hit { background: #34c759; color: #fff; }
+.dt--near { background: #ffcc00; color: #1d1d1f; }
 .daily__body { display: flex; flex-direction: column; gap: 2px; }
 .daily__t { font-weight: 700; font-size: var(--step-1); }
-.daily__s { font-size: var(--step--2); opacity: 0.8; }
-.daily__go { background: #f1d35d; color: #1c2a23; font-weight: 700; padding: 8px 14px; border-radius: 6px; }
+.daily__s { font-size: var(--step--2); opacity: 0.75; }
+.daily__go { background: #fff; color: #1d1d1f; font-weight: 600; padding: 8px 16px; border-radius: 999px; }
 
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
-.game { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 0 0 var(--sp-3); background: var(--surface); border-radius: var(--radius); text-align: left; box-shadow: var(--shadow-1); overflow: hidden; transition: transform 0.1s; }
-.game:active:not(:disabled) { transform: translateY(1px); }
+.game { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 6px 6px var(--sp-3); background: var(--surface); border-radius: var(--radius-lg); text-align: left; box-shadow: var(--rim), var(--shadow-1); overflow: hidden; transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
+.game:active:not(:disabled) { transform: scale(0.96); }
 .game:disabled { opacity: 0.5; }
-.game__art { position: relative; height: 76px; align-self: stretch; display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 8px; overflow: hidden; background: repeating-linear-gradient(to bottom, transparent 0 15px, var(--line) 15px 16px); border-bottom: 1px solid var(--rule); }
-.game--rain .game__art { border-top: 5px solid var(--hl-pink); }
-.game--bubbles .game__art { border-top: 5px solid var(--hl-blue); }
-.game--builder .game__art { border-top: 5px solid var(--hl-yellow); }
-.game--memory .game__art { border-top: 5px solid var(--hl-green); }
-.game--match .game__art { border-top: 5px solid var(--hl-pink); }
+/* each game's art sits in its own tinted well (concentric: card 22 − 6 = 16) */
+.game__art { --w: #5ac8fa; position: relative; height: 80px; align-self: stretch; display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 8px; overflow: hidden; border-radius: 16px;
+  background: radial-gradient(90% 120% at 20% 0%, color-mix(in srgb, var(--w) 40%, transparent), transparent 70%), color-mix(in srgb, var(--w) 14%, var(--surface)); }
+.game--rain .game__art { --w: #5ac8fa; }
+.game--bubbles .game__art { --w: #af52de; }
+.game--builder .game__art { --w: #ffcc00; }
+.game--memory .game__art { --w: #34c759; }
+.game--match .game__art { --w: #ff2d55; }
 .game__art .lt { font-size: 0.85rem; min-height: 1.8em; }
-.game__t, .game__s, .game__meta { padding: 0 var(--sp-3); }
+.game__t, .game__s, .game__meta { padding: 0 10px; }
 .game__t { font-weight: 700; font-size: var(--step-1); }
 .game__s { font-size: var(--step--2); color: var(--ink-2); line-height: 1.45; flex: 1; }
 .game__meta { font-size: var(--step--2); color: var(--ink-3); }
 
 .a1 { position: absolute; top: 6px; left: 22%; }
 .a2 { position: absolute; top: 30px; right: 22%; }
-.ga-ground { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--line-base); opacity: 0.6; }
+.ga-ground { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #ff3b30, #ff9500); opacity: 0.5; }
 .bb { position: absolute; border-radius: 50%; border: 1.5px solid var(--t-suffix-edge); background: color-mix(in srgb, var(--hl-blue) 70%, transparent); }
 .b1 { width: 34px; height: 34px; left: 22%; bottom: 8px; }
 .b2 { width: 26px; height: 26px; left: 48%; bottom: 30px; }
 .b3 { width: 30px; height: 30px; right: 18%; bottom: 14px; }
-.mc { width: 32px; height: 40px; border-radius: 4px; display: grid; place-items: center; background: var(--slab); color: var(--slab-ink); font-weight: 700; font-family: var(--font-word); font-size: 0.8rem; }
+.mc { width: 32px; height: 40px; border-radius: 8px; display: grid; place-items: center; background: linear-gradient(150deg, var(--pen), #5856d6); color: #fff; font-weight: 700; font-family: var(--font-word); font-size: 0.8rem; }
 .mc--open { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
-.ml { width: 22px; height: 0; border-top: 2px dashed var(--redpen); }
+.ml { width: 22px; height: 2px; border-radius: 1px; background: var(--pen); }
 </style>

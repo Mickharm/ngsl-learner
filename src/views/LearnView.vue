@@ -386,7 +386,7 @@ onUnmounted(() => session.stopClock())
 .meet__means { display: flex; flex-direction: column; gap: 6px; align-items: center; }
 .meet__means li { display: flex; gap: 8px; align-items: baseline; font-size: var(--step-1); font-weight: 700; }
 .pos { font-size: var(--step--1); color: var(--ink-3); font-weight: 500; font-family: var(--font-word); }
-.meet__ex { display: flex; flex-direction: column; gap: var(--sp-3); padding-top: var(--sp-4); border-top: 1px dashed var(--rule-strong); }
+.meet__ex { display: flex; flex-direction: column; gap: var(--sp-3); padding-top: var(--sp-4); border-top: 0.5px solid var(--rule); }
 .ex__row { display: flex; align-items: flex-start; gap: var(--sp-2); justify-content: space-between; }
 .ex__en { font-family: var(--font-word); font-size: var(--step-1); line-height: 1.5; }
 .ex__zh { font-size: var(--step--1); color: var(--ink-2); margin-top: 2px; }

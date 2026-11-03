@@ -39,20 +39,30 @@ const isActive = t => t.to === '/' ? route.path === '/' : t.match.some(m => rout
 </template>
 
 <style scoped>
+/* iOS 26 tab bar: a floating glass capsule; the selected tab sits in a lens */
 .tabbar {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 200;
+  position: fixed; z-index: 200;
+  left: max(12px, calc(50% - 300px)); right: max(12px, calc(50% - 300px));
+  bottom: calc(env(safe-area-inset-bottom) + 10px);
   display: grid; grid-template-columns: repeat(5, 1fr);
-  background: var(--nav-bg);
-  backdrop-filter: saturate(140%) blur(14px); -webkit-backdrop-filter: saturate(140%) blur(14px);
-  border-top: 1px solid var(--rule);
-  padding: 2px 4px env(safe-area-inset-bottom);
+  padding: 5px;
+  border-radius: 999px;
+  background: var(--glass-solid);
+  box-shadow: var(--glass-rim), var(--shadow-2);
 }
-.tab { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 8px 2px 7px; color: var(--ink-3); min-height: 56px; }
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .tabbar { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(190%); backdrop-filter: blur(24px) saturate(190%); }
+}
+@media (prefers-reduced-transparency: reduce) { .tabbar { background: var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; } }
+.tab {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  min-height: 54px; padding: 4px 2px; border-radius: 999px; color: var(--ink);
+  transition: color 0.2s, background 0.25s, transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.tab:active { transform: scale(0.92); }
 .tab__icon { width: 26px; height: 26px; display: grid; place-items: center; }
-.tab__icon svg { width: 23px; height: 23px; }
-.tab--on { color: var(--ink); }
-.tab__label { position: relative; font-size: 11px; font-weight: 700; font-family: var(--font-zh); padding: 0 3px; z-index: 0; }
-/* the active tab is underlined with a highlighter stroke, as on paper */
-.tab--on .tab__label::before { content: ''; position: absolute; z-index: -1; left: -3px; right: -3px; top: 52%; bottom: -1px; background: var(--hl-yellow); border-radius: 2px 4px 3px 5px; transform: skewX(-8deg) rotate(-1deg); }
-.tab__badge { position: absolute; top: 3px; left: 50%; margin-left: 9px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--redpen); color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; line-height: 1; }
+.tab__icon svg { width: 24px; height: 24px; }
+.tab--on { color: var(--pen); background: var(--surface-2); }
+.tab__label { font-size: 10.5px; font-weight: 600; font-family: var(--font-zh); letter-spacing: 0; }
+.tab__badge { position: absolute; top: 3px; left: 50%; margin-left: 7px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #ff3b30; color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; line-height: 1; box-shadow: 0 0 0 2px var(--glass-solid); }
 </style>

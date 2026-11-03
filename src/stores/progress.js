@@ -463,7 +463,7 @@ export const useProgress = defineStore('progress', () => {
 
   /** Open mistakes that are questions rather than words. */
   const questionErrors = computed(() =>
-    errors.value.filter(e => e.kind === 'grammar' || e.kind === 'article')
+    errors.value.filter(e => e.kind === 'grammar' || e.kind === 'article' || (e.kind === 'write' && e.payload?.better))
   )
 
   /**

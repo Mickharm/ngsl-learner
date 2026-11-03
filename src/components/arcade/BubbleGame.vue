@@ -144,8 +144,9 @@ onUnmounted(() => clearTimeout(timer))
 <style scoped>
 .tank {
   position: relative; height: min(56dvh, 460px); overflow: hidden; border-radius: var(--radius);
-  background: repeating-linear-gradient(to bottom, transparent 0 31px, var(--line) 31px 32px), var(--surface);
-  box-shadow: var(--shadow-1);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--a2) 18%, var(--surface)), var(--surface));
+  box-shadow: var(--rim), var(--shadow-1);
 }
 .bub {
   position: absolute; bottom: -96px; width: 22%; aspect-ratio: 1; padding: 0;
@@ -167,7 +168,7 @@ onUnmounted(() => clearTimeout(timer))
 .bub--pop .bub__in { animation: popout 0.3s forwards; background: var(--hl-green); border-color: var(--jade); }
 .bub--bad .bub__in { background: var(--redpen-wash); border-color: var(--redpen); color: var(--redpen); }
 @keyframes popout { to { transform: scale(1.5); opacity: 0; } }
-.missbox { position: absolute; inset: auto var(--sp-3) var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-4); background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-2); border-left: 4px solid var(--redpen); animation: rise 0.18s ease-out; }
+.missbox { position: absolute; inset: auto var(--sp-3) var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-4); background: var(--surface); border-radius: var(--radius); box-shadow: var(--rim), var(--shadow-2); animation: rise 0.18s ease-out; }
 .missbox__lead { font-size: var(--step--1); color: var(--ink-3); }
 .missbox__w { display: flex; align-items: center; gap: var(--sp-2); font-family: var(--font-word); font-size: var(--step-2); }
 .missbox__zh { font-size: var(--step-1); color: var(--ink-2); }

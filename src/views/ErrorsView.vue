@@ -31,10 +31,12 @@ const trouble = computed(() =>
 const questionErrors = computed(() => progress.questionErrors)
 
 const grouped = computed(() => {
-  const g = { grammar: [], article: [], cloze: [], word: [] }
+  const g = { grammar: [], article: [], cloze: [], word: [], write: [] }
   for (const e of progress.errors) (g[e.kind] ||= []).push(e)
   return g
 })
+
+const talkErrors = computed(() => (grouped.value.write || []).filter(e => e.payload?.better).slice(0, 30))
 
 const current = computed(() => queue.value[step.value] || null)
 const pool = computed(() => words.getMany([...progress.cards.keys()].slice(-400)).filter(w => w.meanings?.length))
@@ -166,7 +168,17 @@ function next () {
           </div>
         </section>
 
-        <div v-if="!grouped.grammar?.length && !grouped.article?.length" class="empty">
+        <section v-if="talkErrors.length" class="stack stack-2">
+          <div class="eyebrow">主題對話裡要改的句子</div>
+          <div v-for="e in talkErrors" :key="e.id" class="qitem">
+            <p class="qitem__said">{{ e.payload.said }}</p>
+            <div class="qitem__fix"><p>{{ e.payload.better }}</p><AudioButton :text="e.payload.better" size="sm" /></div>
+            <p class="qitem__x zh">{{ e.payload.explain }}<template v-if="e.payload.topic">（{{ e.payload.topic }}）</template></p>
+            <button class="btn btn--quiet btn--sm zh" @click="progress.resolveError(e.id)">標記已懂</button>
+          </div>
+        </section>
+
+        <div v-if="!grouped.grammar?.length && !grouped.article?.length && !talkErrors.length" class="empty">
           <div class="empty__mark">○</div>
           <p class="zh">沒有待複習的題目</p>
         </div>
@@ -189,9 +201,8 @@ function next () {
 .tlist { display: flex; flex-direction: column; gap: var(--sp-2); }
 .titem {
   display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
-  background: var(--surface); border: 1px solid var(--rule);
-  border-left: 3px solid var(--rose);
-  border-radius: var(--radius); padding: var(--sp-3);
+  background: var(--surface); border: 0; box-shadow: var(--rim), var(--shadow-1);
+  border-radius: var(--radius-lg); padding: var(--sp-3) var(--sp-4);
 }
 .titem__main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .titem__row { display: flex; align-items: center; gap: var(--sp-2); }
@@ -201,8 +212,8 @@ function next () {
 .titem__ease { font-size: var(--step--2); color: var(--ink-3); }
 
 .qitem {
-  background: var(--surface); border: 1px solid var(--rule);
-  border-radius: var(--radius); padding: var(--sp-3);
+  background: var(--surface); border: 0; box-shadow: var(--rim), var(--shadow-1);
+  border-radius: var(--radius-lg); padding: var(--sp-3) var(--sp-4);
   display: flex; flex-direction: column; gap: var(--sp-2);
 }
 .qitem__top { display: flex; align-items: center; gap: var(--sp-2); }
@@ -212,4 +223,7 @@ function next () {
 .qitem__d strong { color: var(--jade); }
 .qitem__x { font-size: var(--step--2); color: var(--ink-3); line-height: 1.65; }
 .qitem__link { color: var(--jade); text-decoration: underline; }
+.qitem__said { font-family: var(--font-word); font-size: var(--step--1); color: var(--redpen); text-decoration: line-through; text-decoration-thickness: 1px; }
+.qitem__fix { display: flex; align-items: flex-start; gap: 6px; }
+.qitem__fix p { flex: 1; font-family: var(--font-word); font-weight: 700; color: var(--jade); line-height: 1.5; }
 </style>

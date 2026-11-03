@@ -313,14 +313,24 @@ await ctx.route('**/generativelanguage.googleapis.com/**', async route => {
   const body = req.postData() || ''
   // Route by the response schema the app asked for — that is what actually
   // distinguishes the calls, and it does not drift when prompt wording changes.
-  if (body.includes('usedTarget')) {
+  if (body.includes('goals_done')) {
+    // 主題對話 turn: count the learner lines so the goals fill up as it goes
+    const n = (body.match(/學生: /g) || []).length
     payload = {
-      ok: true, score: 2, usedTarget: true,
-      corrected: '', explain_zh: '句子文法正確，目標單字也用對了。',
-      better: 'I managed to finish the report before the deadline.'
+      reply_en: ['A large latte? Sure! Anything to eat?', 'We have muffins and sandwiches. For here or to go?', "That's seven dollars. Have a nice flight!"][Math.min(n, 2)],
+      reply_zh: '好的！', understood: true,
+      fix: n === 0 ? "I'd like a large latte, please." : '',
+      note_zh: n === 0 ? '點餐用 I\'d like，比 I want 客氣' : '',
+      goals_done: [true, n >= 1, n >= 2], hint_en: n === 0 ? 'I will have …' : 'To …', end: false
     }
-  } else if (body.includes('task_zh')) {
-    payload = { task_zh: '用 achieve 描述你今年完成的一件事', hint_en: 'This year I managed to ___' }
+  } else if (body.includes('"interaction"')) {
+    payload = {
+      task: 3, vocabulary: 2, accuracy: 2, interaction: 3, level: 'A1',
+      summary_zh: '三個目標都完成了，句子短但對方都聽得懂。',
+      strengths: [{ quote: 'A muffin, please.', why_zh: '簡短又有禮貌。' }],
+      fixes: [{ said: 'I want big latte', better: "I'd like a large latte, please.", why_zh: '點餐用 I\'d like；大杯是 large。' }],
+      upgrade: { en: 'Could I get that to go?', zh: '可以外帶嗎？', when_zh: '點完餐要外帶時' }
+    }
   } else if (body.includes('answerIndex')) {
     // generated drills — one of each shape, plus one deliberately broken
     payload = [
@@ -503,7 +513,7 @@ checks.push([
 const stepLabels = (await page.locator('.step__label, .step__title, .step h3, .step').allInnerTexts().catch(() => []))
   .join(' ').replace(/\s+/g, ' ')
 const trackA = /文法/.test(stepLabels) && /讀故事/.test(stepLabels)
-const trackB = /基礎知識/.test(stepLabels) && /造句/.test(stepLabels)
+const trackB = /基礎知識/.test(stepLabels) && /主題對話/.test(stepLabels)
 checks.push([
   'the day runs one track, not both',
   trackA !== trackB,
@@ -595,8 +605,10 @@ async function playWordGame ({ wrong = false } = {}) {
   }
   await page.waitForTimeout(300)
   const cont = page.locator('.as__next').first()
-  // A wrong answer must wait for the learner: still there after 2.6 s.
-  if (wrong && wrongWaited === null) {
+  // A wrong answer must wait for the learner: still there after 2.6 s. Only
+  // measured when the answer really was wrong — "last option" or the spelling
+  // hint path can land on the right answer, which is meant to move on.
+  if (wrong && wrongWaited === null && await page.locator('.as--wrong').first().isVisible().catch(() => false)) {
     await page.waitForTimeout(2600)
     wrongWaited = await cont.isVisible().catch(() => false)
   }
@@ -683,7 +695,7 @@ checks.push(['the recall round asks 中文 → English, not recognition', /看�
 for (let i = 0; i < 60; i++) {
   if (await page.locator('.done').first().isVisible({ timeout: 300 }).catch(() => false)) break
   if (!(await page.locator('.wg').first().isVisible({ timeout: 1500 }).catch(() => false))) break
-  await playWordGame({ wrong: i === 0 })
+  await playWordGame({ wrong: i === 0 || (wrongWaited === null && i < 4) })
   if (i === 0) await shot('08b-wordlab-reveal-after-miss')
 }
 await page.waitForTimeout(900)
@@ -840,21 +852,37 @@ if (await page.locator('button:has-text("開始練習")').first().isVisible().ca
   }
 }
 
-// production writing
-await page.goto(URL_BASE + '#/write', { waitUntil: 'networkidle' })
-await page.waitForTimeout(1600)
-await shot('14d-write-task')
-const boxVisible = await page.locator('.wr__box').isVisible().catch(() => false)
-if (boxVisible) {
-  await page.locator('.wr__box').fill('I managed to achieve my goal this year.')
-  await page.locator('button:has-text("送出批改")').click().catch(() => {})
-  await page.waitForTimeout(1200)
-  const graded = await page.locator('.fb__explain').first().isVisible().catch(() => false)
-  checks.push(['production sentence gets graded feedback', graded, 'no feedback shown'])
-  await shot('14e-write-feedback')
-} else {
-  checks.push(['production sentence gets graded feedback', false, 'writing box never appeared'])
+// 主題對話: brief → three replies → end → rubric report
+await page.goto(URL_BASE + '#/talk', { waitUntil: 'networkidle' })
+await page.waitForTimeout(1200)
+await shot('14d-talk-brief')
+const briefOk = await page.locator('.brief .goal').count().catch(() => 0)
+checks.push(['the talk brief shows a scenario with three goals', briefOk === 3, `goals=${briefOk}`])
+await page.locator('button:has-text("開始對話")').click().catch(() => {})
+await page.waitForTimeout(500)
+for (const line of ['I want big latte', 'A muffin, please.', 'To go. How much is it?']) {
+  await page.locator('.comp__box').fill(line).catch(() => {})
+  await page.locator('.comp__send').click().catch(() => {})
+  await page.waitForTimeout(900)
 }
+await shot('14e-talk-chat')
+const bubbles = await page.locator('.bub--ai').count().catch(() => 0)
+const fixShown = await page.locator('.fix .fix__en').first().isVisible().catch(() => false)
+const goalsLit = await page.locator('.strip__g--on').count().catch(() => 0)
+checks.push(['the partner answers every reply', bubbles === 4, `ai bubbles=${bubbles}`])
+checks.push(['a wrong reply gets a correction under it', fixShown, 'no .fix shown'])
+checks.push(['goals light up as they are met', goalsLit === 3, `goals on=${goalsLit}`])
+await page.locator('.pill--end').click().catch(() => {})
+await page.waitForTimeout(400)
+await page.locator('button:has-text("看評分與回饋")').click().catch(() => {})
+await page.waitForTimeout(1600)
+await shot('14f-talk-report')
+const crits = await page.locator('.crit').count().catch(() => 0)
+const fixCards = await page.locator('.fixc').count().catch(() => 0)
+checks.push(['the talk ends in a four-criterion report with fixes', crits === 4 && fixCards === 1, `crit=${crits} fixes=${fixCards}`])
+await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+await page.waitForTimeout(300)
+await shot('14g-talk-report-end')
 
 // article
 await page.goto(URL_BASE + '#/article', { waitUntil: 'networkidle' })

@@ -643,9 +643,9 @@ onUnmounted(() => session.stopClock())
 .review-list { display: flex; flex-direction: column; gap: var(--sp-2); }
 .rq {
   background: var(--surface);
-  border: 1px solid var(--rule);
-  border-left: 3px solid var(--jade);
-  border-radius: var(--radius);
+  border: 0;
+  box-shadow: var(--rim), var(--shadow-1);
+  border-radius: var(--radius-lg);
   padding: var(--sp-3);
   display: flex; flex-direction: column; gap: 5px;
 }

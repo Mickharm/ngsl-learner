@@ -528,8 +528,7 @@ const buildSha = __BUILD_SHA__
   font-size: var(--step--2);
   line-height: 1.7;
   padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--radius-sm);
-  border-left: 3px solid;
+  border-radius: var(--radius);
 }
 .effect strong { font-weight: 700; }
 .effect--now { color: var(--jade); background: var(--jade-wash); border-color: var(--jade); }

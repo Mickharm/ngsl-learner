@@ -103,19 +103,15 @@ async function submit () {
 
       <!-- ---------- profile chooser: one exercise book each ---------- -->
       <section v-if="!picked" class="pick">
-        <p class="pick__label kai">拿起你的作業簿</p>
+        <p class="pick__label zh">點你的名字</p>
         <div class="pick__grid">
           <button
             v-for="p in PROFILES" :key="p.email"
             class="book" :class="`book--${p.accent}`"
             @click="choose(p)"
           >
-            <span class="book__spine" aria-hidden="true" />
-            <span class="book__title en">English</span>
-            <span class="book__label">
-              <span class="book__field zh">姓名</span>
-              <span class="book__name kai">{{ p.name }}</span>
-            </span>
+            <span class="book__orb" aria-hidden="true">{{ p.name[0] }}</span>
+            <span class="book__name">{{ p.name }}</span>
           </button>
         </div>
       </section>
@@ -123,9 +119,9 @@ async function submit () {
       <!-- ---------- password ---------- -->
       <form v-else class="form card card--pad" @submit.prevent="submit">
         <header v-if="picked" class="who__head">
-          <span class="who__chip" :class="`book--${picked.accent}`" aria-hidden="true" />
+          <span class="book__orb who__orb" :class="`book--${picked.accent}`" aria-hidden="true">{{ picked.name[0] }}</span>
           <div class="who__meta">
-            <div class="who__hi kai">{{ picked.name }} 的作業簿</div>
+            <div class="who__hi">{{ picked.name }}</div>
             <div class="who__mail">{{ picked.email }}</div>
           </div>
           <button type="button" class="btn btn--quiet btn--sm zh" @click="back">換人</button>
@@ -195,42 +191,47 @@ async function submit () {
 }
 
 .brand { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
-.brand__kicker { font-size: var(--step-1); color: var(--ink-2); }
+.brand__kicker { font-size: var(--step-0); font-weight: 600; color: var(--ink-2); }
 .brand__title { font-size: clamp(3rem, 16vw, 4.2rem); font-weight: 700; line-height: 1; }
 .brand__staff { padding: 0 0.25em; }
 .brand__sub { font-size: var(--step-0); color: var(--ink-2); margin-top: var(--sp-2); }
+.brand__staff { --line: rgba(60, 60, 67, 0.22); }
 
 .pick { display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); }
-.pick__label { font-size: var(--step-1); color: var(--ink); }
+.pick__label { font-size: var(--step-0); font-weight: 600; color: var(--ink-2); }
 .pick__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); width: 100%; }
 
-/* an exercise-book cover: coloured board, spine tape, white name label */
+/* a glass tile per learner, lit by an orb in their own colour */
 .book {
-  --cover: #d98aa6;
-  position: relative; aspect-ratio: 3 / 4.1;
-  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-  padding: 16% 10% 12% 16%;
-  background: var(--cover);
-  border-radius: 3px 8px 8px 3px;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), 0 12px 20px -14px rgba(0, 0, 0, 0.55);
-  transition: transform 0.15s ease;
+  --o1: #ff8db8; --o2: #c8a6ff;
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 18px 8px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--rim), var(--shadow-1);
+  transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
-.book:active { transform: translateY(2px) rotate(-1deg); }
-.book--pink { --cover: #d98aa6; }
-.book--blue { --cover: #7fa7d6; }
-.book--yellow { --cover: #e5c25d; }
-.book__spine { position: absolute; left: 0; top: 0; bottom: 0; width: 11%; background: rgba(0, 0, 0, 0.18); border-radius: 3px 0 0 3px; }
-.book__title { font-family: var(--font-word); font-weight: 700; color: rgba(255, 255, 255, 0.92); font-size: clamp(0.9rem, 4vw, 1.1rem); letter-spacing: 0.02em; }
-.book__label { width: 100%; background: #fffdf7; border-radius: 2px; padding: 6px 6px 4px; display: flex; flex-direction: column; align-items: flex-start; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06); }
-.book__field { font-size: 0.62rem; color: #8a8f96; }
-.book__name { font-size: clamp(1rem, 5vw, 1.3rem); color: #1f2530; font-weight: 700; line-height: 1.15; border-bottom: 1px solid #c9cfd6; width: 100%; text-align: center; padding-bottom: 2px; }
+.book:active { transform: scale(0.95); }
+.book--pink { --o1: #ff7aa8; --o2: #c39bff; }
+.book--blue { --o1: #5fb6ff; --o2: #6fdcc6; }
+.book--yellow { --o1: #ffc93d; --o2: #ff9f7a; }
+.book__orb {
+  width: clamp(56px, 18vw, 72px); aspect-ratio: 1; border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--font-kai); font-weight: 700; font-size: clamp(1.4rem, 6vw, 1.8rem); color: #fff;
+  background: radial-gradient(120% 120% at 28% 20%, rgba(255, 255, 255, 0.55), transparent 42%), linear-gradient(150deg, var(--o1), var(--o2));
+  box-shadow: inset 0 -6px 14px rgba(0, 0, 0, 0.08), 0 10px 22px -10px var(--o1);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+.book__name { font-size: var(--step-0); font-weight: 650; letter-spacing: -0.01em; }
 
-.form { display: flex; flex-direction: column; gap: var(--sp-3); }
-.who__head { display: flex; align-items: center; gap: var(--sp-3); padding-bottom: var(--sp-3); border-bottom: 1px dashed var(--rule-strong); }
-.who__chip { width: 34px; height: 44px; border-radius: 2px 5px 5px 2px; background: var(--cover); flex-shrink: 0; box-shadow: inset 5px 0 0 rgba(0, 0, 0, 0.18); }
-.first { font-size: var(--step--1); line-height: 1.6; color: var(--ink-2); background: var(--hl-yellow); padding: 8px 10px; border-radius: 3px; }
+.form { display: flex; flex-direction: column; gap: var(--sp-3); padding: var(--sp-5); }
+.who__head { display: flex; align-items: center; gap: var(--sp-3); padding-bottom: var(--sp-3); box-shadow: inset 0 -0.5px 0 var(--rule); }
+.who__orb { width: 48px; font-size: 1.2rem; flex-shrink: 0; }
+.first { font-size: var(--step--1); line-height: 1.6; color: var(--ink-2); background: var(--pen-wash); padding: 10px 12px; border-radius: var(--radius); }
 .who__meta { flex: 1; min-width: 0; }
-.who__hi { font-size: var(--step-0); font-weight: 700; line-height: 1.2; }
+.who__hi { font-size: var(--step-1); font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
 .who__mail {
   font-family: var(--font-mono); font-size: var(--step--2); color: var(--ink-3);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -262,7 +263,6 @@ async function submit () {
   font-size: var(--step--1);
   color: var(--rose);
   background: var(--rose-wash);
-  border: 1px solid var(--rose-edge);
   border-radius: var(--radius);
   padding: var(--sp-3);
   line-height: 1.6;

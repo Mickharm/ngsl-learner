@@ -1,8 +1,8 @@
 <script setup>
 /**
- * The teacher's red pen: a loose circle for right, a cross for wrong, drawn
- * on as you watch (stroke-dashoffset). Shape carries the meaning, so it reads
- * without relying on red vs green.
+ * The verdict glyph: a filled disc with a check for right, a cross for wrong,
+ * the stroke drawn on as you watch. Shape carries the meaning, so it reads
+ * without relying on green vs red.
  */
 defineProps({
   kind: { type: String, default: 'right' },   // right | wrong
@@ -12,17 +12,20 @@ defineProps({
 
 <template>
   <svg class="pm" :class="`pm--${kind}`" :width="size" :height="size" viewBox="0 0 48 48" aria-hidden="true">
-    <path v-if="kind === 'right'" pathLength="1" d="M33.5 9.5C27.4 5.6 16.3 6.8 10.6 13.7 4.5 21.1 6.9 33.4 15.6 38.6c8.7 5.1 21.4 2.6 26-6.4 3.9-7.6.6-17.9-7.8-21.9-3.3-1.6-7.6-2-10.4-1.2" />
+    <circle class="pm__disc" cx="24" cy="24" r="22" />
+    <path v-if="kind === 'right'" pathLength="1" d="M14.5 24.8l6.4 6.4L34 17.6" />
     <template v-else>
-      <path pathLength="1" d="M12 11.5c8.3 8.6 16.4 17.4 24.6 25.6" />
-      <path pathLength="1" class="pm__2" d="M37 10.5C28.2 18.6 19.8 27.5 11.4 37" />
+      <path pathLength="1" d="M16.5 16.5l15 15" />
+      <path pathLength="1" class="pm__2" d="M31.5 16.5l-15 15" />
     </template>
   </svg>
 </template>
 
 <style scoped>
-.pm { flex-shrink: 0; overflow: visible; }
-.pm path { fill: none; stroke: var(--redpen); stroke-width: 3.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 0.42s cubic-bezier(0.5, 0, 0.3, 1) forwards; }
-.pm__2 { animation-delay: 0.18s !important; }
-@media (prefers-reduced-motion: reduce) { .pm path { stroke-dashoffset: 0; animation: none; } }
+.pm { flex-shrink: 0; overflow: visible; animation: spring-in 0.42s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
+.pm__disc { fill: var(--green); }
+.pm--wrong .pm__disc { fill: #ff3b30; }
+.pm path { fill: none; stroke: #fff; stroke-width: 4.2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 0.34s 0.12s cubic-bezier(0.5, 0, 0.3, 1) forwards; }
+.pm__2 { animation-delay: 0.26s !important; }
+@media (prefers-reduced-motion: reduce) { .pm, .pm path { animation: none; stroke-dashoffset: 0; } }
 </style>

@@ -483,9 +483,8 @@ watch(() => current.value?.id, () => { revealed.value = false; picked.value = nu
   font-size: var(--step--1);
   color: var(--ink-2);
   line-height: 1.75;
-  border-left: 3px solid var(--amber);
   background: var(--amber-wash);
-  border-color: var(--amber-edge);
+  border-radius: var(--radius);
 }
 .rule-note strong { color: var(--amber); display: block; margin-bottom: 4px; }
 
@@ -516,10 +515,9 @@ watch(() => current.value?.id, () => { revealed.value = false; picked.value = nu
 
 .probe__card {
   background: var(--surface);
-  border: 1px solid var(--rule);
-  border-top: 3px solid var(--rule-strong);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-2);
+  border: 0;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--rim), var(--shadow-2);
   padding: var(--sp-6) var(--sp-4) var(--sp-5);
   display: flex; flex-direction: column; align-items: center; gap: var(--sp-3);
   min-height: 220px;

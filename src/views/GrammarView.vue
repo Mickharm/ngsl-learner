@@ -266,8 +266,8 @@ onUnmounted(() => session.stopClock())
 .gram { display: flex; flex-direction: column; gap: var(--sp-4); padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-6)); }
 .phase { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--step--2); justify-content: space-between; }
 
-.disc { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2); border-top: 3px solid var(--amber); }
-.disc__s { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 1px dashed var(--rule); }
+.disc { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2); }
+.disc__s { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-2) 0; border-bottom: 0.5px solid var(--rule); }
 .disc__s:last-child { border-bottom: none; }
 .disc__en { font-family: var(--font-word); font-size: var(--step-1); line-height: 1.45; }
 .disc__q { font-size: var(--step-1); font-weight: 700; line-height: 1.5; }

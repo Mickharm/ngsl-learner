@@ -35,6 +35,61 @@ export function shuffle (arr, seed = Date.now()) {
   return out
 }
 
+/**
+ * Shuffle for "put these back in order" banks (sentence tiles, story pages,
+ * spelling letters). A plain shuffle is not enough: it can return the answer
+ * order itself, or keep long runs of it ("my sister" still side by side), and
+ * then the task is tapping left to right. So several shuffles are scored and
+ * the least readable one wins:
+ *
+ *   identity ............. never, when any other order exists
+ *   kept bigram .......... a pair still adjacent in answer order (3 each)
+ *   reversed bigram ...... a pair adjacent backwards, readable right-to-left (1)
+ *   full reversal ........ (4), same first / last tile as the answer (2 / 1)
+ *
+ * Compared by text, so duplicate tokens ("the … the") cannot fool it.
+ */
+export function scramble (items, seed = Date.now(), textOf = x => x) {
+  const n = items.length
+  if (n < 2) return [...items]
+  const ans = items.map(textOf)
+  const fwd = new Set(); const back = new Set()
+  for (let i = 0; i < n - 1; i++) { fwd.add(ans[i] + '\u0000' + ans[i + 1]); back.add(ans[i + 1] + '\u0000' + ans[i]) }
+  const rev = [...ans].reverse().join('\u0000')
+  const score = arr => {
+    const t = arr.map(textOf)
+    if (t.every((x, i) => x === ans[i])) return 1e6
+    let s = 0
+    for (let i = 0; i < n - 1; i++) {
+      const k = t[i] + '\u0000' + t[i + 1]
+      if (fwd.has(k)) s += 3
+      else if (back.has(k)) s += 1
+    }
+    if (n >= 3) {
+      if (t.join('\u0000') === rev) s += 4
+      if (t[0] === ans[0]) s += 2
+      if (t[n - 1] === ans[n - 1]) s += 1
+    }
+    return s
+  }
+  let best = null; let bestScore = Infinity
+  for (let k = 0; k < 48 && bestScore > 0; k++) {
+    const cand = shuffle(items, (seed >>> 0) + k * 7919)
+    const sc = score(cand)
+    if (sc < bestScore) { best = cand; bestScore = sc }
+  }
+  // all tiles identical (or a pathological seed): rotate as a last resort
+  if (bestScore >= 1e6) best = [...items.slice(1), items[0]]
+  return best
+}
+
+/** Small string hash for per-item seeds. */
+export function hashSeed (str) {
+  let h = 2166136261
+  for (const ch of String(str)) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) }
+  return h >>> 0
+}
+
 /** The short Chinese gloss shown on a card: first sense, parentheticals dropped. */
 export function glossOf (word) {
   const zh = word?.meanings?.[0]?.zh || ''
@@ -139,7 +194,7 @@ export function letterTiles (headword, seed = 1, decoys = 2) {
     const ch = DECOYS[Math.floor(r() * DECOYS.length)]
     if (!letters.includes(ch) && !extra.includes(ch)) extra.push(ch)
   }
-  return shuffle([...letters, ...extra].map((ch, i) => ({ ch, key: `${ch}${i}` })), seed + 17)
+  return scramble([...letters, ...extra].map((ch, i) => ({ ch, key: `${ch}${i}` })), seed + 17, t => t.ch)
 }
 
 /** Strip punctuation/case for comparing a typed answer to the target. */

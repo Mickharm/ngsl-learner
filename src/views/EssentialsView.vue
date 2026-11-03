@@ -194,7 +194,7 @@ const GROUP_LABEL = {
         <button class="btn btn--ghost btn--block zh" :disabled="extraLoading" @click="startGenerated(6)">
           {{ extraLoading ? '出題中…' : '再來 6 題（AI 出新題）' }}
         </button>
-        <button class="btn btn--primary btn--block zh" @click="finish">繼續，進入造句</button>
+        <button class="btn btn--primary btn--block zh" @click="finish">繼續，進入主題對話</button>
         <button class="btn btn--quiet btn--sm zh ess__skip" @click="stage = 'teach'">再看一次說明</button>
       </template>
     </main>
