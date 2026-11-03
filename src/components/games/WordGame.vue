@@ -285,7 +285,7 @@ onUnmounted(() => clearTimeout(timer))
         <WordAnatomy :word="word.headword" size="sm" :legend="false" :explore="false" />
         <AudioButton :text="word.headword" size="md" />
       </div>
-      <p class="reveal__zh"><span class="wg__pos">{{ pos }}</span><span class="kai">{{ word.meanings?.map(m => m.zh).join('；') }}</span></p>
+      <p class="reveal__zh"><span class="wg__pos">{{ pos }}</span><span class="gloss">{{ word.meanings?.map(m => m.zh).join('；') }}</span></p>
       <p v-if="!result.correct && given" class="reveal__given zh">你的答案：<s>{{ given }}</s></p>
       <p v-if="!result.correct && word.examples?.[0]" class="reveal__ex">{{ word.examples[0].en }}<br><span class="zh dim">{{ word.examples[0].zh }}</span></p>
     </AnswerSheet>
@@ -329,29 +329,14 @@ onUnmounted(() => clearTimeout(timer))
 
 /* meaning grid */
 .wg__grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
-.opt {
-  min-height: 104px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-  background: var(--surface); border: 0; box-shadow: var(--shadow-1); border-radius: var(--radius);
-  padding: var(--sp-2);
-  transition: transform 0.12s, background 0.15s, border-color 0.15s, opacity 0.2s;
-}
-.opt:active:not(:disabled) { transform: scale(0.97); }
+.opt { min-height: 104px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: var(--sp-2); }
 .opt__pic { font-size: 2.2rem; line-height: 1; }
 .opt__zh { font-size: var(--step-0); font-weight: 600; text-align: center; line-height: 1.3; }
-.opt--right { background: var(--hl-green); color: var(--ink); }
-.opt--wrong { background: var(--redpen-wash); color: var(--redpen); text-decoration: line-through; animation: shake 0.35s; }
-.opt--mute { opacity: 0.38; }
+.opt--wrong { animation: shake 0.35s; }
 
 /* recall list */
 .wg__list { display: flex; flex-direction: column; gap: var(--sp-2); }
-.optw {
-  min-height: 54px; border-radius: var(--radius);
-  border: 0; box-shadow: var(--shadow-1); background: var(--surface);
-  font-family: var(--font-word); font-size: var(--step-1);
-  transition: transform 0.12s, background 0.15s;
-}
-.optw:active:not(:disabled) { transform: scale(0.98); }
+.optw { min-height: 54px; font-family: var(--font-word); font-size: var(--step-1); }
 
 /* spell */
 .wg__spell { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); }
@@ -369,14 +354,8 @@ onUnmounted(() => clearTimeout(timer))
 .wg--right .slot--on { background: var(--jade-wash); border-color: var(--jade); box-shadow: 0 3px 0 var(--jade-edge); }
 .wg__fix { font-family: var(--font-word); font-size: var(--step-2); color: var(--jade); font-weight: 700; }
 .tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 8px; max-width: 360px; }
-.tile {
-  width: 48px; height: 52px;
-  background: var(--t-base-bg); border: 1.5px solid var(--t-base-edge); border-radius: 10px;
-  box-shadow: 0 3px 0 var(--t-base-edge);
-  font-family: var(--font-word); font-size: var(--step-2); font-weight: 600; color: var(--ink);
-  transition: transform 0.08s, box-shadow 0.08s;
-}
-.tile:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--t-base-edge); }
+.tile { width: 48px; height: 52px; font-family: var(--font-word); font-size: var(--step-2); font-weight: 600; color: var(--ink); transition: transform 0.08s, box-shadow 0.08s; }
+.tile:active { transform: translateY(2px); }
 .wg__hintbtn { margin-top: -4px; }
 
 /* cloze */
@@ -388,6 +367,6 @@ onUnmounted(() => clearTimeout(timer))
 .reveal__zh { font-size: var(--step-1); color: var(--ink); }
 .reveal__given { font-size: var(--step--1); color: var(--ink-3); }
 .reveal__given s { color: var(--redpen); font-family: var(--font-word); }
-.reveal__ex { font-family: var(--font-word); font-size: var(--step-0); line-height: 1.55; border-left: 3px solid var(--hl-yellow); padding-left: 10px; }
+.reveal__ex { font-family: var(--font-word); font-size: var(--step-0); line-height: 1.55; background: var(--surface-2); border-radius: var(--r-inset); padding: 10px 12px; }
 
 </style>

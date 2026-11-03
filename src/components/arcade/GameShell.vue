@@ -55,7 +55,7 @@ function next () { router.push(session.nextRoute('play')) }
       <button class="gs__back" :aria-label="inPhase ? '回今天' : '回遊戲中心'" @click="leave">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
       </button>
-      <span class="gs__title kai">{{ title }}</span>
+      <span class="gs__title">{{ title }}</span>
       <span v-if="lives != null" class="gs__lives" :aria-label="`剩 ${lives} 條命`">
         <svg v-for="n in maxLives" :key="n" viewBox="0 0 24 24" :class="{ 'gs__heart--off': n > lives }" class="gs__heart"><path d="M12 20.5s-7.2-4.4-9.2-8.9C1.4 8.3 3.4 4.8 6.8 4.8c2 0 3.5 1.1 5.2 3 1.7-1.9 3.2-3 5.2-3 3.4 0 5.4 3.5 4 6.8-2 4.5-9.2 8.9-9.2 8.9z" /></svg>
       </span>
@@ -81,11 +81,11 @@ function next () { router.push(session.nextRoute('play')) }
         <slot name="result" />
 
         <div v-if="missed.length" class="gs__missed">
-          <h3 class="gs__mt kai">這幾個字再看一眼</h3>
+          <h3 class="gs__mt">這幾個字再看一眼</h3>
           <ul>
             <li v-for="w in missed" :key="w.id">
               <b class="gs__mw">{{ w.headword }}</b>
-              <span class="kai gs__mz">{{ glossOf(w) }}</span>
+              <span class="gs__mz">{{ glossOf(w) }}</span>
               <AudioButton :text="w.headword" size="sm" />
             </li>
           </ul>
@@ -143,7 +143,7 @@ function next () { router.push(session.nextRoute('play')) }
 .gs__final span { font-size: var(--step-0); color: var(--ink-3); }
 .gs__record { font-weight: 700; background: var(--sun); color: var(--sun-ink); padding: 2px 12px; border-radius: 999px; }
 .gs__bestline { color: var(--ink-3); font-size: var(--step--1); }
-.gs__missed { align-self: stretch; text-align: left; background: var(--surface); box-shadow: var(--rim), var(--shadow-1); border-radius: var(--radius-lg); padding: var(--sp-3) var(--sp-4); }
+.gs__missed { align-self: stretch; text-align: left; padding: var(--sp-3) var(--sp-4); }
 .gs__mt { font-size: var(--step-0); font-weight: 700; margin-bottom: 4px; }
 .gs__missed li { display: flex; align-items: center; gap: var(--sp-3); padding: 7px 0; border-top: 0.5px solid var(--rule); }
 .gs__missed li:first-child { border-top: 0; }

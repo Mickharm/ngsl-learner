@@ -66,7 +66,7 @@ onMounted(() => {
       <header class="sum__head">
         <div class="sum__stamp"><Stamp :ratio="accuracy ?? 0" :text="t.total_count ? '' : '待補'" :size="112" /></div>
         <div>
-          <p class="sum__date kai">{{ t.day }}</p>
+          <p class="sum__date">{{ t.day }}</p>
           <h1 class="page-title">今天的課上完了</h1>
         </div>
       </header>
@@ -125,8 +125,8 @@ onMounted(() => {
 .sum__stamp { flex-shrink: 0; }
 .sum__date { color: var(--ink-2); font-size: var(--step--1); font-weight: 600; }
 .sum__head .page-title { font-size: var(--step-3); line-height: 1.2; }
-.sum__verdict { font-size: var(--step-0); color: var(--ink); line-height: 1.6; padding: 14px 16px; border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); }
-.report { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); overflow: hidden; }
+.sum__verdict { font-size: var(--step-0); color: var(--ink); line-height: 1.6; padding: 14px 16px; }
+.report { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; }
 .report th { text-align: left; font-weight: 500; color: var(--ink); padding: 13px 16px; font-size: var(--step-0); }
 .report td { text-align: right; padding: 13px 16px; }
 .report tr + tr th, .report tr + tr td { box-shadow: inset 0 0.5px 0 var(--rule); }

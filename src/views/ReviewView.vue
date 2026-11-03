@@ -135,7 +135,7 @@ onUnmounted(() => session.stopClock())
               {{ item.graded ? LADDER[item.from].short : '重學' }}
             </span>
             <span class="hud__combo" :class="{ 'hud__combo--hot': combo >= 3 }">
-              <span v-if="combo >= 2">🔥 <span class="num">{{ combo }}</span> 連對</span>
+              <span v-if="combo >= 2"><span class="num">{{ combo }}</span> 連對</span>
             </span>
             <span class="tally">
               <span class="tally__r num">{{ stats.right }}</span><span class="tally__sep">·</span><span class="tally__w num">{{ stats.wrong }}</span>
@@ -162,7 +162,7 @@ onUnmounted(() => session.stopClock())
           <div class="sum__grid">
             <div class="sum__cell"><b class="num up">↑ {{ stats.up }}</b><span class="zh">升一階</span></div>
             <div class="sum__cell"><b class="num down">↓ {{ stats.down }}</b><span class="zh">退一階</span></div>
-            <div class="sum__cell"><b class="num">🔥 {{ bestCombo }}</b><span class="zh">最長連對</span></div>
+            <div class="sum__cell"><b class="num">{{ bestCombo }}</b><span class="zh">最長連對</span></div>
           </div>
           <p class="sum__note zh">升階的字下次會用更難的方式考你；退階的字兩天內會回來。</p>
           <div v-if="missedWords.length" class="sum__miss">
@@ -186,7 +186,7 @@ onUnmounted(() => session.stopClock())
 .hud { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); min-height: 26px; }
 .hud__rung { display: flex; align-items: center; gap: 3px; font-size: var(--step--2); color: var(--ink-2); }
 .rung { width: 8px; height: 14px; border-radius: 2px; background: var(--surface-3); display: inline-block; }
-.rung--on { background: var(--violet); }
+.rung--on { background: var(--pen); }
 .hud__combo { font-size: var(--step--1); color: var(--amber); font-weight: 700; transition: transform 0.2s; }
 .hud__combo--hot { transform: scale(1.12); }
 .tally { display: flex; align-items: center; gap: 6px; font-size: var(--step--1); }
@@ -198,7 +198,7 @@ onUnmounted(() => session.stopClock())
 .sum__big { font-size: var(--step-6); color: var(--jade); line-height: 1; }
 .sum__label { color: var(--ink-2); font-size: var(--step--1); }
 .sum__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); width: 100%; margin-top: var(--sp-2); }
-.sum__cell { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: var(--sp-3) var(--sp-2); display: flex; flex-direction: column; gap: 2px; font-size: var(--step--2); color: var(--ink-3); }
+.sum__cell { padding: var(--sp-3) var(--sp-2); display: flex; flex-direction: column; gap: 2px; font-size: var(--step--2); color: var(--ink-3); }
 .sum__cell b { font-size: var(--step-2); color: var(--ink); }
 .sum__cell .up { color: var(--jade); }
 .sum__cell .down { color: var(--rose); }

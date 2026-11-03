@@ -96,9 +96,9 @@ async function submit () {
 
     <div v-else class="login__inner">
       <section class="brand">
-        <p class="brand__kicker kai">每天一頁的</p>
+        <p class="brand__kicker">每天一頁的</p>
         <h1 class="brand__title"><span class="staff brand__staff">English</span></h1>
-        <p class="brand__sub kai">高頻 2801 字，從字的零件學起</p>
+        <p class="brand__sub">高頻 2801 字，從字的零件學起</p>
       </section>
 
       <!-- ---------- profile chooser: one exercise book each ---------- -->
@@ -219,7 +219,7 @@ async function submit () {
 .book__orb {
   width: clamp(56px, 18vw, 72px); aspect-ratio: 1; border-radius: 50%;
   display: grid; place-items: center;
-  font-family: var(--font-kai); font-weight: 700; font-size: clamp(1.4rem, 6vw, 1.8rem); color: #fff;
+  font-family: var(--font-sys); font-weight: 700; font-size: clamp(1.4rem, 6vw, 1.8rem); color: #fff;
   background: radial-gradient(120% 120% at 30% 18%, rgba(255, 255, 255, 0.35), transparent 45%), linear-gradient(160deg, var(--o1), var(--o2));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -4px 10px rgba(0, 0, 0, 0.06), 0 8px 18px -12px rgba(40, 35, 30, 0.5);
   text-shadow: none;

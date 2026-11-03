@@ -157,7 +157,7 @@ onUnmounted(() => session.stopClock())
             <button class="unit" :class="[`unit--${u.status}`, { 'unit--next': u.next }]" @click="open(u.id)">
               <span class="unit__n num">{{ u.n }}</span>
               <span class="unit__body">
-                <span class="unit__title kai">{{ u.title }}</span>
+                <span class="unit__title">{{ u.title }}</span>
                 <span class="unit__parts">
                   <span v-for="p in u.parts.slice(0, 5)" :key="p" class="lt unit__lt" :class="`lt--${PARTS[p].kind}`">{{ PARTS[p].label.split(' ')[0] }}</span>
                   <span v-if="!u.parts.length" class="lt unit__lt">week</span><span v-if="!u.parts.length" class="lt unit__lt">end</span>
@@ -180,7 +180,7 @@ onUnmounted(() => session.stopClock())
             <span class="disc__zh zh">{{ e.zh }}</span>
           </div>
         </div>
-        <p class="disc__q kai">{{ disc.q }}</p>
+        <p class="disc__q">{{ disc.q }}</p>
         <div class="opts">
           <button
             v-for="o in disc.options" :key="o"
@@ -201,12 +201,12 @@ onUnmounted(() => session.stopClock())
       <!-- ================= TEACH ================= -->
       <template v-else-if="stage === 'teach' && unit">
         <p class="step zh">這個單元的零件</p>
-        <p class="hook kai">{{ unit.hook }}</p>
+        <p class="hook">{{ unit.hook }}</p>
 
         <section v-for="p in teachParts" :key="p.id || 'compound'" class="tp card">
           <div class="tp__head">
             <span v-if="p.id" class="lt tp__lt" :class="`lt--${p.kind}`">{{ p.label }}</span>
-            <span class="tp__zh kai">{{ p.zh }}</span>
+            <span class="tp__zh">{{ p.zh }}</span>
             <span v-if="p.variants?.length" class="tp__var zh">也寫成 {{ p.variants.join('、') }}</span>
             <span v-if="p.pos" class="chip chip--plain zh">變{{ { 'n.': '名詞', 'v.': '動詞', 'adj.': '形容詞', 'adv.': '副詞' }[p.pos] }}</span>
           </div>
@@ -290,10 +290,9 @@ onUnmounted(() => session.stopClock())
 .disc__q { font-size: var(--step-1); font-weight: 800; line-height: 1.4; }
 .disc__why { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); line-height: 1.6; }
 .opts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
-.popt { min-height: 60px; padding: 8px 10px; border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-1); font-weight: 600; line-height: 1.3; }
-.popt--right { background: var(--hl-green); animation: pop-in 0.25s; }
-.popt--wrong { background: var(--redpen-wash); color: var(--redpen); text-decoration: line-through; animation: shake 0.3s; }
-.popt--mute { opacity: 0.4; }
+.popt { min-height: 60px; padding: 8px 10px; font-weight: 600; line-height: 1.3; }
+.popt--right { animation: pop-in 0.25s; }
+.popt--wrong { animation: shake 0.3s; }
 
 .hook { font-size: var(--step-1); font-weight: 700; line-height: 1.5; }
 .tp { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
@@ -311,9 +310,9 @@ onUnmounted(() => session.stopClock())
 .tp__w { font-family: var(--font-word); font-weight: 700; }
 .tp__wzh { color: var(--ink-2); font-size: var(--step--1); flex: 1; }
 
-.note { display: flex; flex-direction: column; gap: 6px; padding: var(--sp-4); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); border-radius: var(--radius-lg); line-height: 1.6; font-size: var(--step--1);  -webkit-backdrop-filter: blur(20px) saturate(112%); backdrop-filter: blur(20px) saturate(112%); }
+.note { display: flex; flex-direction: column; gap: 6px; padding: var(--sp-4); line-height: 1.6; font-size: var(--step--1); background: var(--surface); border-radius: var(--r-panel); box-shadow: var(--rim), var(--shadow-1); -webkit-backdrop-filter: blur(20px) saturate(112%); backdrop-filter: blur(20px) saturate(112%); }
 .note--trap { border-left-color: var(--rose); }
-.note__t { font-family: var(--font-kai); font-size: var(--step-0); font-weight: 700; }
+.note__t { font-family: var(--font-sys); font-size: var(--step-0); font-weight: 700; }
 
 .hud { display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
 .hud__score { font-size: var(--step--1); color: var(--ink-2); }

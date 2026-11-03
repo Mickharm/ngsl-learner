@@ -65,10 +65,13 @@
   --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
 
   --radius-sm: 10px;
-  --radius: 14px;
+  --radius: 12px;
   --radius-lg: 20px;
-  --radius-xl: 26px;
+  --radius-xl: 24px;
   --radius-pill: 999px;
+  --r-panel: 20px;
+  --r-control: 14px;
+  --r-inset: 12px;
 
   /* backdrop: 白練 paper; the scene is drawn by Backdrop.vue */
   --bg:        #edece8;
@@ -89,7 +92,7 @@
 
   /* content material: thin, blurred, lit along the top edge */
   --paper:       #f3f2ef;
-  --surface:     rgba(250, 250, 248, 0.46);
+  --surface:     rgba(251, 251, 249, 0.62);
   --surface-solid: #f7f6f3;
   --surface-2:   rgba(60, 55, 50, 0.07);
   --surface-3:   rgba(60, 55, 50, 0.13);
@@ -124,8 +127,9 @@
   --rose:        #b7282e;
   --rose-wash:   rgba(183, 40, 46, 0.08);
   --rose-edge:   rgba(183, 40, 46, 0.28);
-  --violet:      #5f5a85;   /* 藤鼠 */
-  --violet-wash: rgba(95, 90, 133, 0.09);
+  /* v5.2: no second accent — the old violet role is the 藍 action colour */
+  --violet:      var(--pen);
+  --violet-wash: var(--pen-wash);
 
   /* word-part marks: 鴇 / 芥子 / 秘色 */
   --hl-yellow:   rgba(208, 175, 76, 0.34);
@@ -165,7 +169,7 @@
     --hill-1: #202322; --hill-2: #1b1e1d; --hill-3: #171918;
     --ink: #ecebe6; --ink-2: rgba(236, 235, 230, 0.7); --ink-3: rgba(236, 235, 230, 0.44);
     --rule: rgba(236, 235, 230, 0.1); --rule-strong: rgba(236, 235, 230, 0.2);
-    --paper: #151615; --surface: rgba(52, 54, 53, 0.34); --surface-solid: #222423;
+    --paper: #151615; --surface: rgba(46, 48, 47, 0.5); --surface-solid: #222423;
     --surface-2: rgba(236, 235, 230, 0.07); --surface-3: rgba(236, 235, 230, 0.13);
     --rim: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 0 0.5px rgba(255, 255, 255, 0.07);
     --glass: rgba(40, 42, 41, 0.42); --glass-thick: rgba(34, 36, 35, 0.8); --glass-solid: #222423;
@@ -177,7 +181,7 @@
     --green: #5e8a74;
     --amber: #d2a46a; --amber-wash: rgba(210, 164, 106, 0.13); --amber-edge: rgba(210, 164, 106, 0.35);
     --rose: #d98479; --rose-wash: rgba(217, 132, 121, 0.13); --rose-edge: rgba(217, 132, 121, 0.35);
-    --violet: #a7a2cc; --violet-wash: rgba(167, 162, 204, 0.14);
+    --violet: var(--pen); --violet-wash: var(--pen-wash);
     --hl-yellow: rgba(208, 175, 76, 0.3); --hl-pink: rgba(214, 140, 150, 0.3);
     --hl-blue: rgba(110, 160, 182, 0.3); --hl-green: rgba(126, 190, 165, 0.28);
     --sun: #c9ad5e; --sun-edge: #a68c40; --sun-ink: #1d1c1a; --sun-wash: rgba(208, 175, 76, 0.22);
@@ -202,7 +206,7 @@
   --hill-1: #202322; --hill-2: #1b1e1d; --hill-3: #171918;
   --ink: #ecebe6; --ink-2: rgba(236, 235, 230, 0.7); --ink-3: rgba(236, 235, 230, 0.44);
   --rule: rgba(236, 235, 230, 0.1); --rule-strong: rgba(236, 235, 230, 0.2);
-  --paper: #151615; --surface: rgba(52, 54, 53, 0.34); --surface-solid: #222423;
+  --paper: #151615; --surface: rgba(46, 48, 47, 0.5); --surface-solid: #222423;
   --surface-2: rgba(236, 235, 230, 0.07); --surface-3: rgba(236, 235, 230, 0.13);
   --rim: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 0 0.5px rgba(255, 255, 255, 0.07);
   --glass: rgba(40, 42, 41, 0.42); --glass-thick: rgba(34, 36, 35, 0.8); --glass-solid: #222423;
@@ -214,7 +218,7 @@
   --green: #5e8a74;
   --amber: #d2a46a; --amber-wash: rgba(210, 164, 106, 0.13); --amber-edge: rgba(210, 164, 106, 0.35);
   --rose: #d98479; --rose-wash: rgba(217, 132, 121, 0.13); --rose-edge: rgba(217, 132, 121, 0.35);
-  --violet: #a7a2cc; --violet-wash: rgba(167, 162, 204, 0.14);
+  --violet: var(--pen); --violet-wash: var(--pen-wash);
   --hl-yellow: rgba(208, 175, 76, 0.3); --hl-pink: rgba(214, 140, 150, 0.3);
   --hl-blue: rgba(110, 160, 182, 0.3); --hl-green: rgba(126, 190, 165, 0.28);
   --sun: #c9ad5e; --sun-edge: #a68c40; --sun-ink: #1d1c1a; --sun-wash: rgba(208, 175, 76, 0.22);
@@ -333,14 +337,79 @@ img, svg { display: block; max-width: 100%; }
 .card--pad { padding: var(--sp-4); }
 .card--flat { box-shadow: var(--rim); }
 
-.card, .qbox, .wcard, .missbox, .ask, .gs__missed, .reader, .topic, .rq, .prac,
-.quest, .pl, .power, .metrics, .prog, .lvl__badge, .titem, .qitem, .game, .fam,
-.me__card, .probe__card, .opt-card, .book, .seqcard,
-.sum__verdict, .report, .sum__cell, .bub--ai, .grp, .disc, .scene, .build,
-.opt, .optw, .gopt, .popt, .qopt, .dopt, .zone, .quiz__opt, .fb__answer, .fb__corrected {
+/* ==========================================================================
+   Component layer — one material, one shape language, one set of states.
+
+   v5.1 still carried each screen's own idea of a card and an answer button
+   (bordered here, shadowed there, green fill in one game, outlined green in
+   the next). The scoped styles now keep only layout; what a panel, a choice
+   and a state look like is decided here, once.
+
+     panel    radius 20 · thin glass fill · light along the top edge
+     choice   radius 14 · same fill, lighter shadow · press = scale .97
+     inset    radius 12 · a tint inside a panel, no shadow
+     chrome   capsules (tab bar, header) and the 28px sheet
+
+   States are the same everywhere: selected = 藍 outline, right = 青磁 wash +
+   千歳緑 text, wrong = 茜 wash + strike, mute = 40%.
+   ========================================================================== */
+.card, .qbox, .wcard, .missbox, .ask, .gs__missed, .reader, .rq, .prac, .quest, .pl, .power, .metrics, .prog, .titem, .qitem, .game, .fam, .me__card, .probe__card, .book, .sum__verdict, .report, .sum__cell, .grp, .scene {
+  background: var(--surface);
+  border: 0;
+  border-radius: var(--r-panel);
+  box-shadow: var(--rim), var(--shadow-1);
+}
+.opt, .optw, .gopt, .popt, .qopt, .dopt, .quiz__opt, .mcard, .opt-card, .zone, .tile, .topic, .seqcard {
+  background: var(--surface);
+  border: 0;
+  border-radius: var(--r-control);
+  box-shadow: var(--rim), 0 1px 2px rgba(40, 35, 30, 0.05), 0 6px 14px -10px rgba(40, 35, 30, 0.22);
+  color: var(--ink);
+  transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1), background 0.2s, box-shadow 0.2s, opacity 0.2s, color 0.2s;
+}
+.opt:active:not(:disabled), .optw:active:not(:disabled), .gopt:active:not(:disabled), .popt:active:not(:disabled), .qopt:active:not(:disabled), .dopt:active:not(:disabled), .quiz__opt:active:not(:disabled), .mcard:active:not(:disabled), .opt-card:active:not(:disabled), .zone:active:not(:disabled), .tile:active:not(:disabled), .topic:active:not(:disabled), .seqcard:active:not(:disabled) { transform: scale(0.97); transition-duration: 0.08s; }
+.opt:disabled, .optw:disabled, .gopt:disabled, .popt:disabled, .qopt:disabled, .dopt:disabled, .quiz__opt:disabled, .mcard:disabled, .opt-card:disabled, .zone:disabled, .tile:disabled, .topic:disabled, .seqcard:disabled { cursor: default; }
+.card, .qbox, .wcard, .missbox, .ask, .gs__missed, .reader, .rq, .prac, .quest, .pl, .power, .metrics, .prog, .game, .fam, .me__card, .probe__card, .book, .sum__verdict, .report, .sum__cell, .grp, .scene, .opt, .optw, .gopt, .popt, .qopt, .dopt, .quiz__opt, .opt-card, .zone {
   -webkit-backdrop-filter: blur(20px) saturate(112%);
   backdrop-filter: blur(20px) saturate(112%);
 }
+
+/* states */
+.opt--sel, .optw--sel, .gopt--sel, .popt--sel, .qopt--sel, .dopt--sel, .quiz__opt--sel, .mcard--sel, .opt-card--sel, .zone--sel, .tile--sel, .topic--sel, .seqcard--sel, .ask--sel, .topic--on {
+  background: var(--pen-wash); box-shadow: inset 0 0 0 1.5px var(--pen); color: var(--pen);
+}
+.opt--right, .opt--ok, .opt--rec, .opt--good, .optw--right, .optw--ok, .optw--rec, .optw--good, .gopt--right, .gopt--ok, .gopt--rec, .gopt--good, .popt--right, .popt--ok, .popt--rec, .popt--good, .qopt--right, .qopt--ok, .qopt--rec, .qopt--good, .dopt--right, .dopt--ok, .dopt--rec, .dopt--good, .quiz__opt--right, .quiz__opt--ok, .quiz__opt--rec, .quiz__opt--good, .mcard--right, .mcard--ok, .mcard--rec, .mcard--good, .opt-card--right, .opt-card--ok, .opt-card--rec, .opt-card--good, .zone--right, .zone--ok, .zone--rec, .zone--good, .tile--right, .tile--ok, .tile--rec, .tile--good, .topic--right, .topic--ok, .topic--rec, .topic--good, .seqcard--right, .seqcard--ok, .seqcard--rec, .seqcard--good, .ask--right, .ask--ok, .ask--rec, .ask--good, .seqcard--on {
+  background: var(--jade-wash); box-shadow: inset 0 0 0 1.5px var(--jade-edge); color: var(--jade-ink);
+}
+.opt--wrong, .opt--bad, .optw--wrong, .optw--bad, .gopt--wrong, .gopt--bad, .popt--wrong, .popt--bad, .qopt--wrong, .qopt--bad, .dopt--wrong, .dopt--bad, .quiz__opt--wrong, .quiz__opt--bad, .mcard--wrong, .mcard--bad, .opt-card--wrong, .opt-card--bad, .zone--wrong, .zone--bad, .tile--wrong, .tile--bad, .topic--wrong, .topic--bad, .seqcard--wrong, .seqcard--bad, .ask--wrong, .ask--bad {
+  background: var(--redpen-wash); box-shadow: inset 0 0 0 1.5px var(--rose-edge); color: var(--redpen);
+}
+.opt--wrong, .optw--wrong, .gopt--wrong, .popt--wrong, .qopt--wrong, .dopt--wrong { text-decoration: line-through; text-decoration-thickness: 1px; }
+.opt--mute, .optw--mute, .gopt--mute, .popt--mute, .qopt--mute, .dopt--mute, .quiz__opt--mute, .mcard--mute, .opt-card--mute, .zone--mute, .tile--mute, .topic--mute, .seqcard--mute, .opt-card:disabled { opacity: 0.4; }
+
+/* word tiles you pick up and place: one look in every drill and game */
+.wtile, .tok, .tapw {
+  background: var(--surface-solid); border: 0; border-radius: 10px;
+  box-shadow: var(--rim), 0 1px 2px rgba(40, 35, 30, 0.06), 0 4px 10px -8px rgba(40, 35, 30, 0.25);
+  color: var(--ink);
+  transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1), background 0.2s, box-shadow 0.2s;
+}
+.wtile:active, .tok:active:not(:disabled), .tapw:active:not(:disabled) { transform: scale(0.95); transition-duration: 0.08s; }
+.wtile--on, .tok--on { background: var(--pen-wash); box-shadow: inset 0 0 0 1.5px var(--pen); color: var(--pen); }
+.tapw--hit { background: var(--redpen-wash); box-shadow: inset 0 0 0 1.5px var(--rose-edge); color: var(--redpen); text-decoration: line-through; text-decoration-thickness: 1px; }
+.tapw--miss { background: var(--amber-wash); box-shadow: inset 0 0 0 1.5px var(--amber-edge); }
+/* where tiles go: an inset well with a dashed edge, the one place dashes mean "empty" */
+.build, .built { background: var(--surface-2); border: 1.5px dashed var(--rule-strong); border-radius: var(--r-control); }
+:root[data-theme="dark"] .wtile, :root[data-theme="dark"] .tok, :root[data-theme="dark"] .tapw { background: var(--surface-3); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) :is(.wtile, .tok, .tapw) { background: var(--surface-3); } }
+
+/* section headings (H2): 明朝 is for page and section titles only */
+.sec__t, .quest__title, .sec, .grp__title, .chart__title, .section-title {
+  font-family: var(--font-kai); font-size: 1.1875rem; font-weight: 700; letter-spacing: 0.02em; line-height: 1.3; color: var(--ink);
+}
+
+/* content pictures (emoji) muted to sit with the palette */
+.pic__emoji, .opt__pic, .mcard__pic, .scene, .gg__scene, .rec__cover, .book__cover, .res__cover { filter: saturate(0.72) contrast(0.97); }
 
 /* control glass: thicker, floating over everything */
 .glass {
@@ -405,7 +474,7 @@ img, svg { display: block; max-width: 100%; }
   background: var(--pen); color: var(--pen-ink);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 6px 16px -10px rgba(22, 60, 80, 0.5);
 }
-.btn--ink { background: var(--slab); color: var(--slab-ink); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12); }
+.btn--ink { background: var(--pen-wash); color: var(--pen); }
 
 .btn--ghost { background: var(--surface); color: var(--ink); box-shadow: var(--rim), var(--shadow-1); }
 .btn--ghost:active:not(:disabled) { background: var(--surface-2); }
@@ -589,10 +658,9 @@ textarea.input { min-height: 96px; padding: var(--sp-3); resize: vertical; line-
 /* the highlighter: slightly skewed, uneven edges, sits behind the letters */
 .lt::before {
   content: ''; position: absolute; z-index: -1;
-  left: -0.06em; right: -0.06em; top: 0.26em; bottom: 0.14em;
+  left: 0; right: 0; top: 0.2em; bottom: 0.12em;
   background: var(--tb);
-  border-radius: 0.18em 0.32em 0.22em 0.4em / 0.4em 0.2em 0.36em 0.24em;
-  transform: skewX(-6deg) rotate(-0.6deg);
+  border-radius: 0.3em;
 }
 .lt--prefix { --tc: var(--t-prefix); --tb: var(--t-prefix-bg); --te: var(--t-prefix-edge); }
 .lt--root   { --tc: var(--t-root);   --tb: var(--t-root-bg);   --te: var(--t-root-edge); }
@@ -618,7 +686,7 @@ button.lt:disabled { opacity: 0.3; cursor: default; }
 /* legend swatches: a short highlighter stroke */
 .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: var(--step--2); color: var(--ink-3); font-family: var(--font-zh); }
 .legend__k { display: inline-flex; align-items: center; gap: 6px; }
-.legend__sw { width: 18px; height: 9px; border-radius: 2px 4px 3px 5px; background: var(--tb, transparent); border-bottom: 1.5px solid var(--te, var(--rule-strong)); transform: skewX(-8deg); }
+.legend__sw { width: 14px; height: 10px; border-radius: 3px; background: var(--tb, transparent); box-shadow: inset 0 0 0 1px var(--te, var(--rule-strong)); }
 
 /* ==========================================================================
    The four-line staff (英文四線格). Andika metrics: 2048 upm, ascent 2500,

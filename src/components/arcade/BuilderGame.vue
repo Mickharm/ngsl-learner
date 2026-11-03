@@ -132,9 +132,8 @@ onUnmounted(() => cancelAnimationFrame(raf))
 </template>
 
 <style scoped>
-.ask { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: var(--sp-5) var(--sp-4); display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
-.ask--good { border-color: var(--jade); background: var(--jade-wash); }
-.ask--bad { border-color: var(--rose); animation: shake 0.3s; }
+.ask { padding: var(--sp-5) var(--sp-4); display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); }
+.ask--bad { animation: shake 0.3s; }
 .ask__zh { font-size: var(--step-3); font-weight: 900; text-align: center; line-height: 1.2; }
 .ask__pos { font-size: var(--step--1); color: var(--ink-3); }
 .slots { display: flex; gap: 6px; margin-top: var(--sp-3); flex-wrap: wrap; justify-content: center; }

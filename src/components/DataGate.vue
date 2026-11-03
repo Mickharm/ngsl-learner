@@ -67,7 +67,7 @@ const pct = computed(() => {
   </main>
 
   <main v-else-if="state === 'nokey'" class="shell gate">
-    <div class="empty__mark">🔑</div>
+    <div class="empty__mark">Key</div>
     <h2 class="gate__title zh">需要 Gemini API Key</h2>
     <p class="gate__desc zh">
       單字的中文翻譯、音標和例句由 Gemini 產生。到設定頁貼上你的 API Key 就能開始，

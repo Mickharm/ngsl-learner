@@ -210,11 +210,9 @@ const label = computed(() => ({
 .pg__hint { text-align: center; font-size: var(--step--1); color: var(--ink-3); margin-top: -8px; }
 
 .pg__opts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
-.popt { min-height: 60px; padding: 8px 10px; border-radius: var(--radius); background: var(--surface); border: 0; box-shadow: var(--shadow-1); font-weight: 600; line-height: 1.3; transition: transform 0.1s, opacity 0.2s; }
-.popt:active:not(:disabled) { transform: scale(0.97); }
-.popt--right { background: var(--hl-green); color: var(--ink); animation: pop-in 0.25s; }
-.popt--wrong { background: var(--redpen-wash); color: var(--redpen); text-decoration: line-through; animation: shake 0.3s; }
-.popt--mute { opacity: 0.4; }
+.popt { min-height: 60px; padding: 8px 10px; font-weight: 600; line-height: 1.3; }
+.popt--right { animation: pop-in 0.25s; }
+.popt--wrong { animation: shake 0.3s; }
 
 .fb { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
 .fb__explain { font-size: var(--step-0); line-height: 1.6; }

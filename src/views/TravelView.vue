@@ -207,14 +207,8 @@ function close () {
 .travel__sub { font-size: var(--step--1); color: var(--ink-2); line-height: 1.7; }
 
 .scenes { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: var(--sp-2); }
-.scene {
-  background: var(--surface); border: 1px solid var(--rule);
-  border-radius: var(--radius);
-  padding: var(--sp-4) var(--sp-2);
-  display: flex; flex-direction: column; align-items: center; gap: var(--sp-2);
-  transition: border-color 0.15s, transform 0.1s;
-}
-.scene:active { transform: scale(0.97); background: var(--surface-2); }
+.scene { padding: var(--sp-4) var(--sp-2); display: flex; flex-direction: column; align-items: center; gap: var(--sp-2); transition: border-color 0.15s, transform 0.1s; }
+.scene:active { transform: scale(0.97); }
 .scene__icon { font-size: 1.5rem; line-height: 1; }
 .scene__label { font-size: var(--step--2); font-weight: 600; text-align: center; }
 

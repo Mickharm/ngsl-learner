@@ -49,15 +49,15 @@ defineExpose({ play })
   display: grid;
   place-items: center;
   border-radius: 50%;
-  color: var(--ink-2);
-  background: var(--surface-2);
-  border: 1px solid var(--rule);
+  color: var(--pen);
+  background: var(--pen-wash);
+  border: 0;
   flex-shrink: 0;
   transition: color 0.15s, background 0.15s, transform 0.12s;
 }
 .audio:active:not(:disabled) { transform: scale(0.92); }
 .audio:disabled { opacity: 0.35; }
-.audio--on { color: var(--jade); background: var(--jade-wash); border-color: var(--jade-edge); }
+.audio--on { color: var(--pen-ink); background: var(--pen); }
 
 .audio--sm { width: 30px; height: 30px; }
 .audio--sm svg { width: 15px; height: 15px; }

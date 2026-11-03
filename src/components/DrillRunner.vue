@@ -282,11 +282,7 @@ const TYPE_LABEL = { choice: '選擇題', correct: '找出錯誤', order: '句�
 .dr__count { margin-left: auto; font-size: var(--step--1); color: var(--ink-2); }
 .dr__exit { align-self: center; }
 
-.qbox {
-  background: var(--surface); border: 1px solid var(--rule);
-  border-radius: var(--radius-lg); padding: var(--sp-5) var(--sp-4);
-  display: flex; flex-direction: column; gap: var(--sp-2); box-shadow: var(--shadow-1);
-}
+.qbox { padding: var(--sp-5) var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2); }
 .qbox__q { font-family: var(--font-word); font-size: var(--step-2); line-height: 1.5; }
 .qbox__zh { font-size: var(--step-1); font-weight: 500; line-height: 1.5; }
 .qbox__wrong {
@@ -295,23 +291,14 @@ const TYPE_LABEL = { choice: '選擇題', correct: '找出錯誤', order: '句�
 }
 
 .opts { display: flex; flex-direction: column; gap: var(--sp-2); }
-.opt {
-  display: flex; align-items: center; gap: var(--sp-3);
-  min-height: 50px; padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--radius); border: 1px solid var(--rule-strong);
-  background: var(--surface); text-align: left;
-  transition: background 0.14s, border-color 0.14s, opacity 0.2s;
-}
+.opt { display: flex; align-items: center; gap: var(--sp-3); min-height: 50px; padding: var(--sp-2) var(--sp-3); text-align: left; }
 .opt__key {
   width: 24px; height: 24px; display: grid; place-items: center;
   border-radius: var(--radius-sm); background: var(--surface-2);
   color: var(--ink-3); font-size: var(--step--2); flex-shrink: 0;
 }
 .opt__text { font-family: var(--font-word); font-size: var(--step-1); line-height: 1.45; }
-.opt--right { border-color: var(--jade); background: var(--jade-wash); color: var(--jade); }
 .opt--right .opt__key { background: var(--jade); color: var(--surface); }
-.opt--wrong { border-color: var(--rose); background: var(--rose-wash); color: var(--rose); }
-.opt--mute { opacity: 0.42; }
 
 /* sort */
 .sort { display: flex; flex-direction: column; gap: var(--sp-2); }
@@ -335,21 +322,14 @@ const TYPE_LABEL = { choice: '選擇題', correct: '找出錯誤', order: '句�
 
 /* order */
 .build {
-  min-height: 68px; border: 1.5px dashed var(--rule-strong); border-radius: var(--radius);
+  min-height: 68px;
   padding: var(--sp-3); display: flex; flex-wrap: wrap; gap: var(--sp-2);
-  align-items: center; background: var(--surface);
+  align-items: center;
 }
 .build--empty { justify-content: center; }
 .build__ph { color: var(--ink-3); font-size: var(--step--1); }
 .bank { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
-.tok {
-  font-family: var(--font-word); font-size: var(--step-0);
-  padding: 9px 13px; border-radius: var(--radius-sm);
-  border: 1px solid var(--rule-strong); background: var(--surface-2);
-  transition: transform 0.1s, background 0.14s;
-}
-.tok:active:not(:disabled) { transform: scale(0.95); }
-.tok--on { background: var(--jade-wash); border-color: var(--jade-edge); color: var(--jade); }
+.tok { font-family: var(--font-word); font-size: var(--step-0); padding: 9px 13px; }
 
 /* feedback */
 .fb { border-radius: var(--radius); padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); border: 1px solid; }

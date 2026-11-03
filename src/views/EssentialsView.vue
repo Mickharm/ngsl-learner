@@ -111,7 +111,7 @@ const GROUP_LABEL = {
       <!-- ---------------- teach ---------------- -->
       <template v-if="stage === 'teach'">
         <div class="ess__tags">
-          <span class="chip chip--jade">{{ GROUP_LABEL[unit.group] || unit.group }}</span>
+          <span class="chip chip--plain">{{ GROUP_LABEL[unit.group] || unit.group }}</span>
           <span class="chip chip--plain">{{ isNew ? '新單元' : '複習' }}</span>
           <span class="dim num">#{{ unit.order }}/12</span>
         </div>

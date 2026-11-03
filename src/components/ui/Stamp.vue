@@ -54,8 +54,8 @@ const uid = Math.random().toString(36).slice(2, 8)
   stroke-dasharray: var(--c); stroke-dashoffset: var(--c);
   animation: ring-fill 1.1s 0.2s cubic-bezier(0.3, 0.9, 0.3, 1) forwards;
 }
-.medal__s1 { stop-color: var(--a1); }
-.medal__s2 { stop-color: var(--a3); }
+.medal__s1 { stop-color: var(--pen); }
+.medal__s2 { stop-color: var(--pen); }
 .medal__g { font-family: var(--font-kai); font-weight: 700; font-size: 30px; fill: var(--ink); letter-spacing: 0; }
 .medal__g--long { font-size: 26px; }
 .medal__g--xl { font-size: 19px; }

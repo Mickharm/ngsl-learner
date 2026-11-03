@@ -62,7 +62,7 @@ function openCourse (c) { router.push(c.to) }
     <ol class="toc">
       <li v-for="(c, i) in courses" :key="c.key" class="toc__item">
         <button class="toc__row" @click="openCourse(c)">
-          <span class="toc__n kai">第{{ ['一', '二', '三', '四'][i] }}冊</span>
+          <span class="toc__n">第{{ ['一', '二', '三', '四'][i] }}冊</span>
           <span class="toc__t kai">{{ c.title }}</span>
           <span class="toc__dots" aria-hidden="true" />
           <span class="toc__p num">{{ c.done }}<small>/{{ c.total }}</small></span>
@@ -88,7 +88,7 @@ function openCourse (c) { router.push(c.to) }
       <ul class="plist">
         <li v-for="p in practice" :key="p.to">
           <RouterLink :to="p.to" class="prac">
-            <span class="prac__t kai">{{ p.title }}</span>
+            <span class="prac__t">{{ p.title }}</span>
             <span class="prac__s zh">{{ p.sub }}</span>
           </RouterLink>
         </li>
@@ -120,9 +120,9 @@ function openCourse (c) { router.push(c.to) }
 .point__n { color: var(--ink-3); font-size: var(--step--1); }
 .point__t { font-size: var(--step--1); font-weight: 600; line-height: 1.4; justify-self: start; }
 .point__s { font-size: var(--step--2); color: var(--ink-3); white-space: nowrap; }
-.sec { font-size: var(--step-1); font-weight: 700; margin-bottom: var(--sp-2); }
+.sec { margin-bottom: var(--sp-2); }
 .plist { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
-.prac { display: flex; flex-direction: column; gap: 3px; padding: var(--sp-3); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-1); min-height: 80px; }
+.prac { display: flex; flex-direction: column; gap: 3px; padding: var(--sp-3); min-height: 80px; }
 .prac__t { font-weight: 700; font-size: var(--step-1); }
 .prac__s { font-size: var(--step--2); color: var(--ink-2); line-height: 1.45; }
 </style>

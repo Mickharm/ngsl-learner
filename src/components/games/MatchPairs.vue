@@ -96,21 +96,12 @@ onMounted(build)
 .mp__help { font-size: var(--step--1); color: var(--ink-2); text-align: center; }
 .mp__cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
 .mp__col { display: flex; flex-direction: column; gap: var(--sp-2); }
-.mcard {
-  min-height: 62px;
-  border: 1.5px solid var(--rule-strong); border-radius: var(--radius);
-  background: var(--surface);
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 6px 8px;
-  transition: transform 0.12s, background 0.15s, border-color 0.15s, opacity 0.3s;
-}
-.mcard:active:not(:disabled) { transform: scale(0.97); }
+.mcard { min-height: 62px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 6px 8px; }
 .mcard--r { font-family: var(--font-word); font-size: var(--step-1); }
 .mcard__pic { font-size: 1.7rem; line-height: 1; }
 .mcard__zh { font-size: var(--step--1); font-weight: 600; text-align: left; line-height: 1.25; }
-.mcard--sel { border-color: var(--violet); background: var(--violet-wash); box-shadow: 0 0 0 3px var(--violet-wash); }
-.mcard--ok { border-color: var(--jade-edge); background: var(--jade-wash); opacity: 0.45; }
-.mcard--bad { border-color: var(--rose); background: var(--rose-wash); animation: shake 0.35s; }
+.mcard--ok { opacity: 0.45; }
+.mcard--bad { animation: shake 0.35s; }
 .mp__score { text-align: center; font-size: var(--step--1); color: var(--ink-3); }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 </style>

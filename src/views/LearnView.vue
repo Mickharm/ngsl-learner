@@ -249,7 +249,7 @@ onUnmounted(() => session.stopClock())
               @next="guessing = false"
             >
               <p class="zh">{{ guessRight ? '你從線索推出來了，這樣記得最牢。' : '先猜過再看答案，反而記得更牢。' }}</p>
-              <p class="guess__ans"><b class="en">{{ current.headword }}</b>　<span class="kai">{{ guessAnswer }}</span></p>
+              <p class="guess__ans"><b class="en">{{ current.headword }}</b>　<span class="gloss">{{ guessAnswer }}</span></p>
             </AnswerSheet>
           </section>
 
@@ -316,7 +316,7 @@ onUnmounted(() => session.stopClock())
         <!-- ================= MATCH ================= -->
         <template v-else-if="stage === 'match'">
           <div class="phase">
-            <span class="phase__t kai">連連看</span>
+            <span class="phase__t">連連看</span>
             <span class="dim zh">剛剛那幾個字，配得起來嗎？</span>
           </div>
           <MatchPairs :words="matchWords" :seed="meetIndex + 3" :count="matchWords.length" @done="onMatchDone" />
@@ -325,7 +325,7 @@ onUnmounted(() => session.stopClock())
         <!-- ================= RECALL ================= -->
         <template v-else-if="stage === 'recall' && recallWord">
           <div class="phase">
-            <span class="phase__t kai">{{ recallItem.graded ? '回想挑戰' : '再試一次' }}</span>
+            <span class="phase__t">{{ recallItem.graded ? '回想挑戰' : '再試一次' }}</span>
             <span class="dim zh">{{ recallItem.graded ? '答對答錯決定它什麼時候回來' : '這題不計分，記住它就好' }}</span>
           </div>
           <WordGame
@@ -370,11 +370,9 @@ onUnmounted(() => session.stopClock())
 .guess__sent { font-family: var(--font-word); font-size: var(--step-1); line-height: 1.5; text-align: center; }
 .guess__sent :deep(mark), .ex__en :deep(mark) { background: var(--sun-wash); color: inherit; padding: 0 4px; border-radius: 6px; font-weight: 700; box-shadow: inset 0 -2px 0 var(--sun); }
 .guess__opts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
-.gopt { min-height: 64px; padding: 8px; border-radius: var(--radius); background: var(--surface); border: 0; box-shadow: var(--shadow-1); font-weight: 600; font-size: var(--step-0); line-height: 1.3; transition: transform 0.1s, opacity 0.2s; }
-.gopt:active:not(:disabled) { transform: scale(0.97); }
-.gopt--right { background: var(--hl-green); color: var(--ink); animation: pop-in 0.25s; }
-.gopt--wrong { background: var(--redpen-wash); color: var(--redpen); text-decoration: line-through; animation: shake 0.3s; }
-.gopt--mute { opacity: 0.4; }
+.gopt { min-height: 64px; padding: 8px; font-weight: 600; font-size: var(--step-0); line-height: 1.3; }
+.gopt--right { animation: pop-in 0.25s; }
+.gopt--wrong { animation: shake 0.3s; }
 .guess__skip { align-self: center; }
 .guess__ans { font-size: var(--step-1); }
 
@@ -397,7 +395,7 @@ onUnmounted(() => session.stopClock())
 .hk__t { font-size: var(--step--1); font-weight: 700; color: var(--ink-3); }
 .hk__p { font-size: var(--step-0); line-height: 1.6; }
 .hk__fam { display: flex; flex-wrap: wrap; gap: 8px; }
-.fam { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; border-radius: var(--radius-pill); background: var(--surface); border: 1px solid var(--rule); font-family: var(--font-word); }
+.fam { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; font-family: var(--font-word); }
 .fam__a { font-size: var(--step--2); color: var(--t-suffix); font-weight: 600; }
 .en { font-family: var(--font-word); }
 

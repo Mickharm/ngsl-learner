@@ -657,8 +657,8 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 .ava {
   width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
   display: grid; place-items: center;
-  font-family: var(--font-kai); font-weight: 700; font-size: 1.15rem; color: #fff;
-  background: linear-gradient(160deg, var(--a1), var(--a3));
+  font-family: var(--font-sys); font-weight: 700; font-size: 1.15rem; 
+  background: var(--surface-3); color: var(--ink);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 4px 12px -6px rgba(0, 0, 0, 0.35);
   
 }
@@ -820,7 +820,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 .fixc__row { display: flex; align-items: flex-start; gap: 6px; }
 .fixc__better { flex: 1; font-family: var(--font-word); font-size: var(--step-0); line-height: 1.5; color: var(--jade); font-weight: 700; }
 .fixc__why { font-size: var(--step--1); color: var(--ink-2); line-height: 1.55; }
-.up { padding: 16px; display: flex; flex-direction: column; gap: 4px; background: color-mix(in srgb, var(--a2) 40%, var(--surface)); }
+.up { padding: 16px; display: flex; flex-direction: column; gap: 4px; }
 .up__row { display: flex; align-items: flex-start; gap: 6px; }
 .up__en { flex: 1; font-family: var(--font-word); font-size: var(--step-1); font-weight: 700; line-height: 1.35; }
 .up__zh { font-size: var(--step-0); }

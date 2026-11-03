@@ -78,11 +78,11 @@ function pick (t) {
           @click="pick(t)"
         >
           <span class="staff ana__staff"><span class="mark" :class="`mark--${t.kind}`">{{ t.text }}</span></span>
-          <span v-if="t.kind !== 'link'" class="ana__gloss kai">{{ t.gloss || ' ' }}</span>
+          <span v-if="t.kind !== 'link'" class="ana__gloss">{{ t.gloss || ' ' }}</span>
           <span v-if="t.base" class="ana__base">{{ t.base }}</span>
         </component>
       </div>
-      <p v-if="formula && size !== 'sm'" class="ana__formula kai">{{ formula }}</p>
+      <p v-if="formula && size !== 'sm'" class="ana__formula">{{ formula }}</p>
       <div v-if="pickedInfo" class="ana__more zh">
         <p><b class="en">{{ pickedInfo.label }}</b>　{{ pickedInfo.zh }}<template v-if="pickedInfo.pos">，做出{{ POS_ZH[pickedInfo.pos] }}</template></p>
         <p v-if="pickedInfo.more" class="ana__moretext">{{ pickedInfo.more }}</p>
@@ -132,9 +132,8 @@ button.ana__col { cursor: pointer; }
 .mark { position: relative; z-index: 0; }
 .mark::before {
   content: ''; position: absolute; z-index: -1;
-  left: -0.03em; right: -0.03em; top: 0.6em; bottom: 0.3em;
-  border-radius: 0.12em 0.3em 0.16em 0.34em / 0.3em 0.14em 0.3em 0.18em;
-  transform: skewX(-5deg) rotate(-0.8deg);
+  left: 0; right: 0; top: 0.62em; bottom: 0.3em;
+  border-radius: 0.18em;
   background: transparent;
 }
 .mark--prefix::before { background: var(--hl-pink); }
@@ -147,7 +146,7 @@ button.ana__col { cursor: pointer; }
 .ana--sm .ana__gloss { font-size: 0.7rem; }
 .ana__base { font-size: max(0.7rem, calc(var(--fs) * 0.26)); color: var(--ink-3); font-family: var(--font-word); }
 .ana__formula { font-size: var(--step-0); color: var(--ink); padding: 2px 0 0; }
-.ana__more { font-size: var(--step--1); line-height: 1.65; text-align: left; border-left: 3px solid var(--hl-yellow); padding: 4px 0 4px 12px; display: flex; flex-direction: column; gap: 2px; animation: rise 0.18s ease-out; align-self: stretch; }
+.ana__more { font-size: var(--step--1); line-height: 1.65; text-align: left; background: var(--surface-2); border-radius: var(--r-inset); padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; animation: rise 0.18s ease-out; align-self: stretch; }
 .ana__moretext, .ana__also { color: var(--ink-2); }
 .ana__alsow { display: inline-block; margin-right: 10px; }
 .en { font-family: var(--font-word); color: var(--ink); }

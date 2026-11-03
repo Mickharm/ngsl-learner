@@ -93,7 +93,7 @@ onUnmounted(() => session.stopClock())
   <main class="shell home">
     <header class="top">
       <div>
-        <p class="top__date kai">{{ dateLine }}</p>
+        <p class="top__date">{{ dateLine }}</p>
         <h1 class="page-title">{{ auth.displayName }}，今天的課</h1>
       </div>
       <RouterLink to="/me" class="lvl" :aria-label="`字力等級 ${power.level}`">
@@ -231,7 +231,6 @@ onUnmounted(() => session.stopClock())
   overflow: hidden;
 }
 .quest__head { display: flex; align-items: baseline; gap: var(--sp-2); padding: 0 var(--sp-5) var(--sp-2); }
-.quest__title { font-size: var(--step-1); font-weight: 700; letter-spacing: -0.01em; }
 .quest__meta { font-size: var(--step--2); color: var(--ink-2); flex: 1; }
 .quest__count { font-size: var(--step--1); color: var(--ink-2); background: var(--surface-2); padding: 1px 9px; border-radius: 999px; }
 .steps { display: flex; flex-direction: column; }
@@ -261,7 +260,6 @@ onUnmounted(() => session.stopClock())
 .step__go { background: var(--pen); color: var(--pen-ink); font-weight: 600; padding: 8px 18px; border-radius: 999px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18); }
 
 .sec__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--sp-2); padding: 0 4px; }
-.sec__t { font-size: var(--step-1); font-weight: 700; letter-spacing: -0.01em; }
 .sec__link { font-size: var(--step--1); color: var(--pen); font-weight: 500; }
 
 .wotd { display: flex; flex-direction: column; gap: var(--sp-2); }
@@ -269,29 +267,29 @@ onUnmounted(() => session.stopClock())
 .wotd__more { font-size: var(--step--1); color: var(--pen); align-self: center; font-weight: 500; }
 
 .play__row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); }
-.pl { display: flex; flex-direction: column; gap: 2px; padding: 14px 12px 12px; border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); min-height: 112px; transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
+.pl { display: flex; flex-direction: column; gap: 2px; padding: 14px 12px 12px; min-height: 112px; transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
 .pl:active { transform: scale(0.96); }
 /* app-icon squares: a squircle-ish tile with a system-colour gradient */
-.pl__i { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; color: #fff; margin-bottom: 8px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25); }
+.pl__i { width: 36px; height: 36px; border-radius: var(--r-inset); display: grid; place-items: center; margin-bottom: 8px; }
 .pl__i svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
-.pl__i--a { background: #6f9e86; }
-.pl__i--b { background: #6f95a6; }
-.pl__i--c { background: #b99a52; }
+.pl__i--a { background: var(--pen-wash); color: var(--pen); }
+.pl__i--b { background: var(--pen-wash); color: var(--pen); }
+.pl__i--c { background: var(--pen-wash); color: var(--pen); }
 .pl__t { font-weight: 650; font-size: var(--step--1); }
 .pl__s { font-size: var(--step--2); color: var(--ink-2); line-height: 1.4; }
 
 .nums { display: flex; flex-direction: column; gap: var(--sp-3); }
-.power { display: flex; flex-direction: column; gap: 8px; padding: var(--sp-4); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); }
+.power { display: flex; flex-direction: column; gap: 8px; padding: var(--sp-4); }
 .power__t { font-weight: 600; }
 .power__bar { height: 8px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
 .power__bar span { display: block; height: 100%; border-radius: 4px; background: var(--pen); }
 .power__hint { font-size: var(--step--2); color: var(--ink-2); }
-.metrics { display: grid; grid-template-columns: repeat(4, 1fr); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); }
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); }
 .metric { display: flex; flex-direction: column; align-items: center; padding: 14px 2px 12px; }
 .metric + .metric { box-shadow: inset 0.5px 0 0 var(--rule); }
 .metric dt { font-size: var(--step--2); color: var(--ink-2); order: 2; }
 .metric dd { font-size: var(--step-2); font-weight: 700; letter-spacing: -0.02em; }
-.prog { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-4); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--rim), var(--shadow-1); }
+.prog { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-4); }
 .prog__head { display: flex; align-items: baseline; gap: var(--sp-2); font-weight: 600; }
 .prog__scope { flex: 1; color: var(--ink-3); font-size: var(--step--1); }
 .prog__bar { position: relative; height: 10px; border-radius: 5px; background: var(--surface-3); overflow: hidden; }

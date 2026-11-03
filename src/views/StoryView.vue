@@ -257,7 +257,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
           </span>
         </button>
         <div v-for="lvl in [1, 2, 3]" :key="lvl" class="shelf">
-          <div class="shelf__head"><span class="chip" :class="lvl === 1 ? 'chip--jade' : lvl === 2 ? 'chip--violet' : 'chip--amber'">{{ LEVEL_LABEL[lvl] }}</span></div>
+          <div class="shelf__head"><span class="chip">{{ LEVEL_LABEL[lvl] }}</span></div>
           <div class="shelf__row">
             <button v-for="s in STORIES.filter(x => x.level === lvl)" :key="s.id" class="book" @click="open(s)">
               <span class="book__cover" aria-hidden="true">{{ s.cover }}</span>
@@ -283,7 +283,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
         </div>
         <div class="readbar">
           <button class="btn btn--ghost btn--sm zh" :disabled="page === 0" @click="prevPage">上一頁</button>
-          <button class="btn btn--ghost btn--sm zh" @click="readPage">🔊 讀給我聽</button>
+          <button class="btn btn--ghost btn--sm zh" @click="readPage">讀給我聽</button>
           <button class="btn btn--primary btn--sm zh" @click="nextPage">{{ page + 1 < story.pages.length ? '下一頁' : '讀完了！' }}</button>
         </div>
         <p class="hint zh">點任何一個英文字可以看意思。先讀英文，看不懂再點「中文」。</p>
@@ -292,7 +292,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 
       <!-- ================= SEQUENCE ================= -->
       <template v-else-if="stage === 'seq'">
-        <div class="phase"><span class="chip chip--amber zh">🧩 排順序</span><span class="dim zh">照故事發生的順序點圖</span></div>
+        <div class="phase"><span class="chip chip--violet zh">排順序</span><span class="dim zh">照故事發生的順序點圖</span></div>
         <div class="seqbuilt">
           <div v-for="(p, k) in seqBuilt" :key="p.i" class="seqcard seqcard--on">
             <span class="seqcard__n num">{{ k + 1 }}</span><span class="seqcard__scene">{{ p.scene }}</span><span class="seqcard__line">{{ p.first }}</span>
@@ -308,7 +308,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 
       <!-- ================= QUIZ ================= -->
       <template v-else-if="stage === 'quiz' && quizQ">
-        <div class="phase"><span class="chip chip--violet zh">❓ 理解題</span><span class="dim num">{{ qIdx + 1 }}/{{ story.quiz.length }}</span></div>
+        <div class="phase"><span class="chip chip--violet zh">理解題</span><span class="dim num">{{ qIdx + 1 }}/{{ story.quiz.length }}</span></div>
         <section class="card qcard">
           <p class="qcard__q">{{ quizQ.q }}</p>
           <p class="qcard__zh zh">{{ quizQ.q_zh }}</p>
@@ -330,7 +330,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 
       <!-- ================= HUNT ================= -->
       <template v-else-if="stage === 'hunt'">
-        <div class="phase"><span class="chip chip--jade zh">🔎 找單字</span><span class="dim zh">在故事裡點出下面這些字</span></div>
+        <div class="phase"><span class="chip chip--violet zh">找單字</span><span class="dim zh">在故事裡點出下面這些字</span></div>
         <div class="targets">
           <span v-for="(w, k) in story.words" :key="w" class="target" :class="{ 'target--found': huntFound.has(targetIds[k]) }">{{ w }}</span>
         </div>
@@ -371,12 +371,12 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 .rec__zh { font-size: var(--step--1); color: var(--ink-3); }
 .shelf { display: flex; flex-direction: column; gap: var(--sp-2); }
 .shelf__row { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: var(--sp-2); }
-.book { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--sp-3) var(--sp-2); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); box-shadow: var(--shadow-1); }
+.book { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: var(--sp-3) var(--sp-2); }
 .book__cover { font-size: 2.2rem; }
 .book__title { font-family: var(--font-word); font-size: var(--step--1); text-align: center; line-height: 1.25; }
 .book__stars { font-size: var(--step--1); color: var(--sun-edge); letter-spacing: 1px; }
 
-.scene { font-size: clamp(2.6rem, 14vw, 4rem); text-align: center; padding: var(--sp-5) var(--sp-3); letter-spacing: 0.12em; background: linear-gradient(180deg, var(--surface), var(--surface-2)); }
+.scene { font-size: clamp(2.6rem, 14vw, 4rem); text-align: center; padding: var(--sp-5) var(--sp-3); letter-spacing: 0.12em; }
 .lines { display: flex; flex-direction: column; gap: var(--sp-3); }
 .line { padding: var(--sp-2) var(--sp-3); border-radius: var(--radius); transition: background 0.2s; }
 .line--on { background: var(--amber-wash); }
@@ -386,9 +386,8 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 
 .seqbuilt, .seqbank { display: flex; flex-direction: column; gap: var(--sp-2); }
 .seqbuilt:empty { display: none; }
-.seqcard { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-3); border-radius: var(--radius); border: 1.5px solid var(--rule-strong); background: var(--surface); text-align: left; }
-.seqcard--on { border-color: var(--jade-edge); background: var(--jade-wash); }
-.seqcard--bad { border-color: var(--rose); background: var(--rose-wash); animation: shake 0.35s; }
+.seqcard { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-3); text-align: left; }
+.seqcard--bad { animation: shake 0.35s; }
 .seqcard__n { width: 24px; height: 24px; border-radius: 50%; background: var(--jade); color: var(--paper); display: grid; place-items: center; font-size: var(--step--2); flex-shrink: 0; }
 .seqcard__scene { font-size: 1.6rem; flex-shrink: 0; letter-spacing: 0.05em; }
 .seqcard__line { font-family: var(--font-word); font-size: var(--step--1); line-height: 1.35; color: var(--ink-2); }
@@ -397,10 +396,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 .qcard__q { font-family: var(--font-word); font-size: var(--step-2); }
 .qcard__zh { font-size: var(--step--1); color: var(--ink-3); margin-top: 4px; }
 .qopts { display: flex; flex-direction: column; gap: var(--sp-2); }
-.qopt { min-height: 52px; padding: var(--sp-2) var(--sp-4); border-radius: var(--radius); border: 1.5px solid var(--rule-strong); background: var(--surface); text-align: left; font-family: var(--font-word); font-size: var(--step-1); }
-.qopt--right { border-color: var(--jade); background: var(--jade-wash); color: var(--jade-ink); }
-.qopt--wrong { border-color: var(--rose); background: var(--rose-wash); color: var(--rose); }
-.qopt--mute { opacity: 0.4; }
+.qopt { min-height: 52px; padding: var(--sp-2) var(--sp-4); text-align: left; font-family: var(--font-word); font-size: var(--step-1); }
 .qfb { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); font-size: var(--step--1); color: var(--ink-2); }
 
 .targets { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }

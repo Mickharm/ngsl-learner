@@ -13,7 +13,7 @@ const settings = useSettings()
 const audio = ref(null)
 
 const bandClass = computed(() => ({
-  B1: 'chip--jade', B2: 'chip--violet', B3: 'chip--amber'
+  B1: 'chip--plain', B2: 'chip--plain', B3: 'chip--plain'
 }[props.word.band] || 'chip--plain'))
 
 /** Highlight the target word inside its own example sentence. */
@@ -111,13 +111,7 @@ watch(() => props.word.id, autoplay)
 </template>
 
 <style scoped>
-.wcard {
-  background: var(--surface);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-2);
-  overflow: hidden;
-}
+.wcard { overflow: hidden; }
 
 .wcard__front {
   padding: var(--sp-5) var(--sp-5) var(--sp-4);

@@ -529,7 +529,6 @@ const buildSha = __BUILD_SHA__
 .set__head { display: flex; flex-direction: column; gap: 3px; margin-bottom: var(--sp-1); }
 
 .grp { display: flex; flex-direction: column; gap: var(--sp-4); }
-.grp__title { font-size: var(--step-0); font-weight: 700; letter-spacing: -0.01em; }
 
 .val { font-size: var(--step-0); color: var(--jade); }
 

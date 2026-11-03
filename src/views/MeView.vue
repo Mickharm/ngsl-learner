@@ -77,13 +77,12 @@ const links = computed(() => [
 
 <style scoped>
 .me { display: flex; flex-direction: column; gap: var(--sp-5); }
-.me__card { position: relative; display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-4); background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-1); border-top: 6px solid var(--pen); }
+.me__card { position: relative; display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-4); }
 .me__id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .me__school { font-size: var(--step--2); color: var(--ink-3); letter-spacing: 0.1em; }
 .me__name { font-size: var(--step-4); }
 .me__title { color: var(--ink-2); font-size: var(--step--1); }
 .me__lv { width: 76px; height: 76px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; color: #fff; font-weight: 700; font-size: var(--step-1); background: linear-gradient(160deg, var(--a1), var(--a3)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 8px 18px -12px rgba(40, 35, 30, 0.5); }
-.sec { font-size: var(--step-1); font-weight: 700; }
 .ladder { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
 .ladder__lead { font-size: var(--step--1); color: var(--ink-2); line-height: 1.6; }
 .ladder__rows { display: flex; flex-direction: column; gap: 8px; }
@@ -102,7 +101,7 @@ const links = computed(() => [
 .links li:first-child { border-top: 1px solid var(--rule); }
 .link { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-4) 2px; }
 .link__body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-.link__t { font-weight: 700; font-family: var(--font-kai); font-size: var(--step-1); }
+.link__t { font-weight: 700; font-family: var(--font-sys); font-size: var(--step-1); }
 .link__s { font-size: var(--step--2); color: var(--ink-3); }
 .link__badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--redpen); color: #fff; font-size: var(--step--2); display: grid; place-items: center; }
 .link svg { width: 18px; height: 18px; color: var(--ink-3); }

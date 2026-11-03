@@ -153,7 +153,7 @@ onUnmounted(() => session.stopClock())
       <!-- ================= DISCOVER ================= -->
       <template v-if="stage === 'discover' && discover">
         <div class="phase">
-          <span class="chip chip--amber zh">🔍 找規律</span>
+          <span class="chip chip--violet zh">找規律</span>
           <span class="dim zh">先猜，再看答案——自己發現的規則最難忘</span>
         </div>
         <section class="card disc">
@@ -221,7 +221,7 @@ onUnmounted(() => session.stopClock())
           </section>
 
           <section class="pit">
-            <div class="pit__head zh">⚠️ 台灣人最常錯的地方</div>
+            <div class="pit__head zh">台灣人最常錯的地方</div>
             <ul class="pit__list">
               <li v-for="(p, i) in point.pitfalls" :key="i" class="zh" v-html="inlineMd(p)" />
             </ul>
@@ -236,7 +236,7 @@ onUnmounted(() => session.stopClock())
       <!-- ================= PRACTICE / MIX ================= -->
       <template v-else-if="(stage === 'practice' || stage === 'mix') && item">
         <div class="phase">
-          <span class="chip zh" :class="stage === 'mix' ? 'chip--rose' : 'chip--violet'">{{ stage === 'mix' ? '🎲 混合挑戰' : '練習' }}</span>
+          <span class="chip zh" :class="'chip--violet'">{{ stage === 'mix' ? '混合挑戰' : '練習' }}</span>
           <span class="dim zh">{{ stage === 'mix' ? '每題可能考不同的文法，先想「這題考什麼」' : point.title.split('：')[0] }}</span>
         </div>
         <GrammarGame :key="stage + idx" :item="item" :seed="daySeed + idx" :show-point="stage === 'mix'" @answer="onAnswer" @next="next" />
@@ -272,10 +272,7 @@ onUnmounted(() => session.stopClock())
 .disc__en { font-family: var(--font-word); font-size: var(--step-1); line-height: 1.45; }
 .disc__q { font-size: var(--step-1); font-weight: 700; line-height: 1.5; }
 .disc__opts { display: flex; flex-direction: column; gap: var(--sp-2); }
-.dopt { min-height: 52px; padding: var(--sp-2) var(--sp-4); border-radius: var(--radius); border: 1.5px solid var(--rule-strong); background: var(--surface); text-align: left; font-size: var(--step-0); line-height: 1.45; }
-.dopt--right { border-color: var(--jade); background: var(--jade-wash); color: var(--jade-ink); }
-.dopt--wrong { border-color: var(--rose); background: var(--rose-wash); color: var(--rose); }
-.dopt--mute { opacity: 0.4; }
+.dopt { min-height: 52px; padding: var(--sp-2) var(--sp-4); text-align: left; font-size: var(--step-0); line-height: 1.45; }
 .disc__why { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); line-height: 1.7; font-size: var(--step--1); }
 
 .gram__head { display: flex; flex-direction: column; gap: var(--sp-2); }

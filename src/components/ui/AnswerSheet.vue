@@ -101,7 +101,7 @@ onUnmounted(() => {
       <div class="as__in">
         <header class="as__head">
           <PenMark :kind="right ? 'right' : 'wrong'" :size="34" />
-          <span class="as__verdict kai">{{ verdict }}</span>
+          <span class="as__verdict">{{ verdict }}</span>
           <span v-if="right && paused" class="as__paused zh">已停住，看完再按繼續</span>
         </header>
         <div class="as__body"><slot /></div>
@@ -152,7 +152,7 @@ onUnmounted(() => {
   transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 .as__next:active { transform: scale(0.97); }
-.as__next--wrong { background: var(--ink); color: var(--paper); }
+.as__next--wrong { background: var(--pen); color: var(--pen-ink); }
 .as__bar { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.24); transform-origin: left; }
 .as__label { position: relative; }
 @media (prefers-reduced-motion: reduce) { .as { animation: none; } }

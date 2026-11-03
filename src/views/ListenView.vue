@@ -276,7 +276,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
             <span v-if="item.ipa" class="fb__ipa">{{ item.ipa }}</span>
             <AudioButton v-if="item.reveal" :text="item.reveal" size="sm" />
           </p>
-          <p v-if="item.zh" class="fb__zh kai">{{ item.zh }}</p>
+          <p v-if="item.zh" class="fb__zh">{{ item.zh }}</p>
         </AnswerSheet>
 
         <button class="btn btn--quiet btn--sm lis__skip zh" @click="skipPhase">跳過這個階段</button>
@@ -340,22 +340,11 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 .player__row { display: flex; gap: var(--sp-2); }
 .player__count { font-size: var(--step--2); color: var(--ink-3); }
 
-.qbox {
-  background: var(--surface); border: 1px solid var(--rule);
-  border-radius: var(--radius-lg); padding: var(--sp-4);
-  box-shadow: var(--shadow-1);
-}
+.qbox { padding: var(--sp-4); }
 .qbox__q { font-family: var(--font-word); font-size: var(--step-1); line-height: 1.6; text-align: center; }
 
 .opts { display: flex; flex-direction: column; gap: var(--sp-2); }
-.opt {
-  display: flex; align-items: center; gap: var(--sp-3);
-  min-height: 52px; padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--radius); border: 1px solid var(--rule-strong);
-  background: var(--surface); text-align: left;
-  transition: background 0.14s, border-color 0.14s, opacity 0.2s;
-}
-.opt:active:not(:disabled) { background: var(--surface-2); }
+.opt { display: flex; align-items: center; gap: var(--sp-3); min-height: 52px; padding: var(--sp-2) var(--sp-3); text-align: left; }
 .opt__key {
   width: 24px; height: 24px; display: grid; place-items: center;
   border-radius: var(--radius-sm); background: var(--surface-2);
@@ -363,10 +352,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 }
 .opt__text { font-size: var(--step-0); line-height: 1.5; }
 .opt__text:not(.zh) { font-family: var(--font-word); }
-.opt--right { border-color: var(--jade); background: var(--jade-wash); color: var(--jade); }
 .opt--right .opt__key { background: var(--jade); color: var(--surface); }
-.opt--wrong { border-color: var(--rose); background: var(--rose-wash); color: var(--rose); }
-.opt--mute { opacity: 0.42; }
 
 .lis__hint { font-size: var(--step--1); color: var(--ink-2); text-align: center; }
 .lis__input { font-family: var(--font-word); font-size: var(--step-1); text-align: center; }

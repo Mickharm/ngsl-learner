@@ -133,13 +133,13 @@ onUnmounted(() => { cancelAnimationFrame(raf); clearTimeout(nextTimer) })
 
     <div v-if="phase === 'miss' && word" class="missbox">
       <p class="missbox__w"><b>{{ word.headword }}</b><AudioButton :text="word.headword" size="sm" /></p>
-      <p class="missbox__zh kai">{{ glossOf(word) }}</p>
+      <p class="missbox__zh">{{ glossOf(word) }}</p>
       <button class="btn btn--block btn--ink zh" @click="advance">{{ lives > 0 ? '記住了，繼續' : '看結果' }}</button>
     </div>
     <div v-else class="opts">
       <button
         v-for="o in options" :key="o.id"
-        class="opt kai"
+        class="opt"
         :class="{ 'opt--right': phase !== 'fall' && o.correct, 'opt--wrong': picked === o.id && !o.correct }"
         :disabled="phase !== 'fall'"
         @click="pick(o)"
@@ -166,11 +166,8 @@ onUnmounted(() => { cancelAnimationFrame(raf); clearTimeout(nextTimer) })
 .sky--miss .drop__w { border-color: var(--redpen); box-shadow: 3px 3px 0 var(--redpen); color: var(--redpen); animation: shake 0.3s; }
 .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--line-base); opacity: 0.7; }
 .opts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-2); margin-top: var(--sp-4); }
-.opt { min-height: 68px; padding: 8px; border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-1); font-weight: 700; font-size: var(--step-1); line-height: 1.25; }
-.opt:active:not(:disabled) { transform: translateY(1px); }
-.opt--right { background: var(--hl-green); }
-.opt--wrong { background: var(--redpen-wash); color: var(--redpen); text-decoration: line-through; }
-.missbox { margin-top: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-4); background: var(--surface); border-radius: var(--radius); box-shadow: var(--rim), var(--shadow-1); background: var(--redpen-wash); animation: rise 0.18s ease-out; }
+.opt { min-height: 68px; padding: 8px; font-weight: 700; font-size: var(--step-1); line-height: 1.25; }
+.missbox { margin-top: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-4); animation: rise 0.18s ease-out; }
 .missbox__w { display: flex; align-items: center; gap: var(--sp-2); font-family: var(--font-word); font-size: var(--step-2); }
 .missbox__zh { font-size: var(--step-1); color: var(--ink-2); }
 </style>

@@ -130,7 +130,7 @@ onUnmounted(() => clearTimeout(timer))
       <div v-else-if="word" class="missbox">
         <p class="missbox__lead zh">剛剛說的是</p>
         <p class="missbox__w"><b>{{ word.headword }}</b><AudioButton :text="word.headword" size="sm" /></p>
-        <p class="missbox__zh kai">{{ glossOf(word) }}</p>
+        <p class="missbox__zh">{{ glossOf(word) }}</p>
         <button class="btn btn--block btn--ink zh" @click="advance">{{ lives > 0 ? '記住了，繼續' : '看結果' }}</button>
       </div>
     </div>
@@ -168,7 +168,7 @@ onUnmounted(() => clearTimeout(timer))
 .bub--pop .bub__in { animation: popout 0.3s forwards; background: var(--hl-green); border-color: var(--jade); }
 .bub--bad .bub__in { background: var(--redpen-wash); border-color: var(--redpen); color: var(--redpen); }
 @keyframes popout { to { transform: scale(1.5); opacity: 0; } }
-.missbox { position: absolute; inset: auto var(--sp-3) var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-4); background: var(--surface); border-radius: var(--radius); box-shadow: var(--rim), var(--shadow-2); animation: rise 0.18s ease-out; }
+.missbox { position: absolute; inset: auto var(--sp-3) var(--sp-3); display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-4); animation: rise 0.18s ease-out; }
 .missbox__lead { font-size: var(--step--1); color: var(--ink-3); }
 .missbox__w { display: flex; align-items: center; gap: var(--sp-2); font-family: var(--font-word); font-size: var(--step-2); }
 .missbox__zh { font-size: var(--step-1); color: var(--ink-2); }
