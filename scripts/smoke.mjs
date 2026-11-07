@@ -1109,6 +1109,23 @@ await shot('16h-story-page')
   checks.push(['finishing a story records its stars', Object.values(saved).some(v => v >= 1), JSON.stringify(saved)])
 }
 
+/* the reading phase rotates: yesterday's story is not served again (v5.2.1) */
+{
+  const y = await page.evaluate(() => { const d = new Date(Date.now() - 86400000); const p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}` })
+  await page.evaluate(([id, y]) => {
+    localStorage.setItem(`ngsl.stories.${id}`, '{}')
+    localStorage.setItem(`ngsl.stories.log.${id}`, JSON.stringify({ s01: { first: y, last: y, opens: 1 } }))
+  }, [USER_ID, y])
+  // same component on a hash change is reused, not remounted — reload so the
+  // view reads the seeded log like a fresh day would
+  await page.goto(URL_BASE + '#/story?phase=1', { waitUntil: 'networkidle' })
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForTimeout(800)
+  const log = await page.evaluate(id => { try { return JSON.parse(localStorage.getItem(`ngsl.stories.log.${id}`) || '{}') } catch { return {} } }, USER_ID)
+  const today = Object.entries(log).filter(([k, v]) => k !== 's01' && v.opens >= 1).map(([k]) => k)
+  checks.push(['a story read-then-skipped yesterday is not opened again today', today.length === 1 && log.s01.last === y, JSON.stringify(log)])
+}
+
 /* ------------------------------------------------------------------ *
  * Word Parts — map → guess → teach → an 8-item round → schedule
  * ------------------------------------------------------------------ */

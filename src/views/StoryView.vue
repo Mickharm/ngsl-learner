@@ -9,6 +9,8 @@ import { useAuth } from '@/stores/auth'
 import STORIES, { LEVEL_LABEL } from '@/data/stories'
 import { shuffle, scramble } from '@/lib/game'
 import { speak, stopSpeaking } from '@/lib/tts'
+import { planStory, logOpen, logFinish } from '@/lib/storyPlan'
+import { todayKey } from '@/stores/progress'
 import SessionHeader from '@/components/SessionHeader.vue'
 import AudioButton from '@/components/AudioButton.vue'
 import TappableText from '@/components/TappableText.vue'
@@ -42,6 +44,12 @@ function readDone () { try { return JSON.parse(localStorage.getItem(LS()) || '{}
 const done = ref(readDone())
 function saveDone () { try { localStorage.setItem(LS(), JSON.stringify(done.value)) } catch { /* ignore */ } }
 
+/** When each story was opened and finished — what the rotation runs on. */
+const LOG = () => `ngsl.stories.log.${auth.userId || 'anon'}`
+function readLog () { try { return JSON.parse(localStorage.getItem(LOG()) || '{}') } catch { return {} } }
+const log = ref(readLog())
+function saveLog () { try { localStorage.setItem(LOG(), JSON.stringify(log.value)) } catch { /* ignore */ } }
+
 const inPhase = computed(() => route.query.phase === '1')
 
 /** The learner's level by how many words they have met. */
@@ -49,10 +57,14 @@ const myLevel = computed(() => {
   const seen = progress.stats.seen
   return seen >= 1800 ? 3 : seen >= 900 ? 2 : 1
 })
-const recommended = computed(() =>
-  STORIES.find(s => s.level <= myLevel.value && !done.value[s.id]) ||
-  STORIES.find(s => !done.value[s.id]) || STORIES[0]
-)
+const plan = computed(() => planStory({
+  day: todayKey(), stories: STORIES, level: myLevel.value, stars: done.value, log: log.value
+}))
+const recommended = computed(() => plan.value.story)
+const REASON_LABEL = {
+  today: '今天的故事', reread: '隔幾天再讀一次', new: '推薦你讀',
+  unfinished: '上次沒讀完', stretch: '挑戰高一級', oldest: '好久沒讀了'
+}
 
 const story = ref(null)
 const stage = ref('hub')        // hub | read | seq | quiz | hunt | result
@@ -85,6 +97,8 @@ const popError = ref('')
 const pageObj = computed(() => story.value?.pages[page.value] || null)
 
 function open (s) {
+  log.value = logOpen(log.value, s.id, todayKey())
+  saveLog()
   story.value = s
   page.value = 0
   showZh.value = new Set()
@@ -218,6 +232,8 @@ function finish () {
   stars.value = s
   done.value = { ...done.value, [story.value.id]: Math.max(done.value[story.value.id] || 0, s) }
   saveDone()
+  log.value = logFinish(log.value, story.value.id, todayKey())
+  saveLog()
   stage.value = 'result'
   if (inPhase.value) session.markDone('read')
 }
@@ -251,7 +267,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
         <button v-if="recommended" class="rec card" @click="open(recommended)">
           <span class="rec__cover" aria-hidden="true">{{ recommended.cover }}</span>
           <span class="rec__body">
-            <span class="eyebrow">推薦你讀</span>
+            <span class="eyebrow">{{ REASON_LABEL[plan.reason] }}</span>
             <span class="rec__title">{{ recommended.title }}</span>
             <span class="rec__zh zh">{{ recommended.title_zh }} · {{ LEVEL_LABEL[recommended.level] }}</span>
           </span>

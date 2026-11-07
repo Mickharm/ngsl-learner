@@ -58,6 +58,8 @@
  * matters for the "read the whole article" button.
  */
 
+import { claimPlaybackSession } from './audioSession.js'
+
 const synth = typeof window !== 'undefined' ? window.speechSynthesis : null
 
 let voices = []
@@ -128,28 +130,51 @@ export function whenVoicesReady () {
 }
 
 /** English voices, preferring en-US then en-GB, natural voices first. */
-export function englishVoices () {
-  const en = voices.filter(v => /^en([-_]|$)/i.test(v.lang))
+export function englishVoices () { return rankVoices(voices) }
+
+/** Pure ranking, exported for scripts/test-tts.mjs. */
+export function rankVoices (list) {
+  const en = list.filter(v => /^en([-_]|$)/i.test(v.lang))
   const score = v => {
     let s = 0
     if (/en[-_]US/i.test(v.lang)) s += 4
     if (/en[-_]GB/i.test(v.lang)) s += 3
-    if (v.localService) s += 1
+    // local voices outrank network ones: a network voice that times out is
+    // silently replaced by a local one at a different loudness
+    if (v.localService) s += 6
     if (/samantha|ava|alex|siri|natural|enhanced|premium/i.test(v.name)) s += 3
-    if (/google/i.test(v.name)) s += 2
+    if (/google/i.test(v.name)) s += 1
     if (/compact|eloquence/i.test(v.name)) s -= 2
     return s
   }
   return en.sort((a, b) => score(b) - score(a))
 }
 
+/**
+ * The voice in use, held for the whole session.
+ *
+ * v5.2.1: loudness jumping between phrases. Two things changed the voice
+ * under the learner without any setting changing:
+ *  - the list is re-read as it fills in (`voiceschanged` fires more than
+ *    once on Chromium/Android), and a different voice could top the ranking
+ *    halfway through a session;
+ *  - the default ranking preferred network voices ("Google US English",
+ *    "… Online (Natural)"). When a request to the voice server is slow or
+ *    fails, the browser quietly falls back to a local voice, and the two are
+ *    mastered at very different levels.
+ * So the default voice is local-first and, once chosen, kept until the
+ * learner picks another one in Settings or it disappears from the list.
+ */
+let pinned = null
 function pickVoice (voiceURI) {
   if (!voices.length) loadVoices()
-  if (voiceURI) {
-    const exact = voices.find(v => v.voiceURI === voiceURI)
-    if (exact) return exact
-  }
-  return englishVoices()[0] || null
+  if (pinned && pinned.want === voiceURI && voices.includes(pinned.voice)) return pinned.voice
+  let v = null
+  if (voiceURI) v = voices.find(x => x.voiceURI === voiceURI) || null
+  if (!v) v = englishVoices()[0] || null
+  // only pin once the list is real; an empty list means "not loaded yet"
+  if (v) pinned = { want: voiceURI, voice: v }
+  return v
 }
 
 /**
@@ -166,6 +191,7 @@ function pickVoice (voiceURI) {
 export function primeAudio () {
   if (!synth || primed) return
   primed = true
+  claimPlaybackSession()
   if (!isSafari) return
   try {
     const u = new SpeechSynthesisUtterance(' ')
