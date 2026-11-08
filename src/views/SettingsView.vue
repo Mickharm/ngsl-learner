@@ -204,6 +204,17 @@ const enrichedPct = computed(() => (words.enrichedCount / TOTAL_WORDS) * 100)
  */
 const appVersion = __APP_VERSION__
 const buildSha = __BUILD_SHA__
+
+const upd = ref({ state: 'idle' })
+const UPD_TEXT = {
+  idle: '', checking: '檢查中…', offline: '連不到伺服器，稍後再試',
+  current: '已是最新版', updating: '下載新版中…', reset: '清除舊版快取，重新載入…',
+  stuck: '新版沒有接手，請完全關閉 App 再開'
+}
+async function checkUpdate () {
+  const { ensureLatest } = await import('@/lib/updater')
+  await ensureLatest({ force: true, onStatus: s => { upd.value = s } })
+}
 </script>
 
 <template>
@@ -521,6 +532,10 @@ const buildSha = __BUILD_SHA__
 
     <p class="foot zh">NGSL Learner · 2801 words · 30 grammar points</p>
     <p class="foot foot--version">v{{ appVersion }} · {{ buildSha }}</p>
+    <button class="btn btn--ghost btn--block zh upd" :disabled="['checking','updating','reset'].includes(upd.state)" @click="checkUpdate">檢查更新</button>
+    <p v-if="upd.state !== 'idle'" class="foot foot--version upd__msg zh" :data-upd="upd.state">
+      {{ UPD_TEXT[upd.state] }}<template v-if="upd.server && upd.state !== 'current'"> · 伺服器 v{{ upd.server.version }} · {{ upd.server.sha }}</template>
+    </p>
   </main>
 </template>
 
@@ -592,6 +607,8 @@ const buildSha = __BUILD_SHA__
   color: var(--ink-3);
   padding: var(--sp-4) 0 var(--sp-6);
 }
+.upd { margin-top: calc(-1 * var(--sp-4)); }
+.upd__msg { opacity: 0.85; }
 .foot--version {
   padding-top: 0;
   font-family: var(--font-mono);

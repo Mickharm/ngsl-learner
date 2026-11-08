@@ -27,6 +27,18 @@ export default defineConfig({
   },
   plugins: [
     vue(),
+    {
+      // what the server is running, for src/lib/updater.js — never precached
+      name: 'ngsl-version-json',
+      apply: 'build',
+      generateBundle () {
+        this.emitFile({
+          type: 'asset',
+          fileName: 'version.json',
+          source: JSON.stringify({ version: pkg.version, sha: buildSha, time: new Date().toISOString() })
+        })
+      }
+    },
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icons/*.png'],
@@ -48,6 +60,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,json,woff2}'],
+        globIgnores: ['version.json'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         // Without these, a redeploy keeps serving the previous build until the
         // user closes every tab — which on an iPhone home-screen app is

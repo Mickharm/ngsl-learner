@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { registerSW } from 'virtual:pwa-register'
+import { ensureLatest } from './lib/updater'
 import App from './App.vue'
 import router from './router'
 import './styles/main.css'
@@ -20,9 +21,11 @@ app.mount('#app')
  *
  *   - the plugin's autoUpdate client reloads the page once the new worker
  *     has activated (workbox `activated` with isUpdate);
- *   - every time the app comes back to the foreground it asks the server for
- *     a newer sw.js, because an iPhone keeps a home-screen app alive in the
- *     background for days and never re-runs the page-load check.
+ *   - on launch and every time the app comes back to the foreground it
+ *     compares its build with the server's version.json and, if stale,
+ *     updates — escalating to a clean reload when the worker does not take
+ *     over (src/lib/updater.js). An iPhone keeps a home-screen app alive in
+ *     the background for days and never re-runs the page-load check.
  *
  * Reloading only happens right after the app is opened or resumed, so it does
  * not cut into a lesson in progress.
@@ -35,8 +38,11 @@ registerSW({
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState !== 'visible' || Date.now() - last < 60_000) return
       last = Date.now()
-      reg.update().catch(() => {})
+      ensureLatest()
     })
+    // and once per launch: compare with the server's version.json, escalate
+    // to a clean reload if the worker never takes the new build (v5.2.2)
+    setTimeout(() => ensureLatest(), 3000)
   },
   onRegisterError () { /* no service worker here (private mode, file://) — the app still runs */ }
 })

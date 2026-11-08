@@ -1422,6 +1422,28 @@ checks.push([
 ])
 await shot('23-remembered-relaunch')
 
+/* update check (v5.2.2): the page compares itself with the server's version.json */
+await page.goto(URL_BASE + '#/settings', { waitUntil: 'networkidle' })
+await page.waitForTimeout(800)
+{
+  const btn = page.locator('button:has-text("檢查更新")').first()
+  await btn.click().catch(() => {})
+  await page.waitForSelector('[data-upd="current"]', { timeout: 8000 }).catch(() => {})
+  const st = await page.locator('[data-upd]').first().getAttribute('data-upd').catch(() => null)
+  checks.push(['檢查更新 reports the build as current when the server agrees', st === 'current', `state=${st}`])
+
+  // a server that is ahead, and a worker that never takes over → clean reload
+  await page.route('**/version.json*', r => r.fulfill({ contentType: 'application/json', body: JSON.stringify({ version: '9.9.9', sha: 'fffffff' }) }))
+  const before = page.url()
+  await btn.click().catch(() => {})
+  await page.waitForURL(/[?&]u=/, { timeout: 25000 }).catch(() => {})
+  const reloaded = /[?&]u=/.test(page.url())
+  const cachesLeft = await page.evaluate(async () => { try { return (await caches.keys()).length } catch { return -1 } })
+  checks.push(['a stale build that the worker will not replace is cleared and reloaded', reloaded && cachesLeft <= 1, `url ${before} → ${page.url()}, caches=${cachesLeft}`])
+  await page.unroute('**/version.json*')
+  await page.waitForTimeout(3000)
+}
+
 // and "forget this device" must genuinely put the password box back
 await page.goto(URL_BASE + '#/settings', { waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(900)
