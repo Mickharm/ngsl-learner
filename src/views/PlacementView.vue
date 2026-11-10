@@ -3,6 +3,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWords } from '@/stores/words'
 import { useProgress } from '@/stores/progress'
+import { useAuth } from '@/stores/auth'
+import { scoped } from '@/lib/userScope'
 import { useSettings } from '@/stores/settings'
 import { useToast } from '@/stores/toast'
 import { testConnection } from '@/lib/gemini'
@@ -35,6 +37,7 @@ const KNOWN_THRESHOLD = 0.7
 
 const words = useWords()
 const progress = useProgress()
+const auth = useAuth()
 const settings = useSettings()
 const router = useRouter()
 const toast = useToast()
@@ -289,7 +292,7 @@ async function apply (opt) {
       targetWords: opt.prefill > 0 ? target.value : TOTAL_WORDS,
       newPerDay: pace.value
     })
-    localStorage.setItem('ngsl.placed', '1')
+    localStorage.setItem(scoped('ngsl.placed', auth.userId), '1')
     await progress.flush()
     toast.info(`分級完成 · 這一階段的目標是第 ${opt.prefill > 0 ? target.value : TOTAL_WORDS} 名以內`)
     router.push('/')
@@ -299,7 +302,7 @@ async function apply (opt) {
 }
 
 function skip () {
-  localStorage.setItem('ngsl.placed', '1')
+  localStorage.setItem(scoped('ngsl.placed', auth.userId), '1')
   router.push('/')
 }
 

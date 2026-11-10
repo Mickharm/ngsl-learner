@@ -207,7 +207,7 @@ await ctx.addInitScript(() => {
       // cancelsAtSpeak is the point of the whole record: an utterance handed
       // over while a cancel is still unwinding is the one that loses its head.
       log.spoken.push({
-        text: u.text, rate: u.rate, volume: u.volume,
+        text: u.text, rate: u.rate, pitch: u.pitch, volume: u.volume,
         voiceURI: u.voice?.voiceURI || '', cancelsAtSpeak: log.cancels
       })
       synth.speaking = true
@@ -293,7 +293,16 @@ await ctx.route('**/hlwmqtbgpconoclmxwll.supabase.co/**', async route => {
 
   if (req.method() === 'GET') {
     const single = (req.headers().accept || '').includes('vnd.pgrst.object')
-    const rows = db[table]
+    let rows = db[table]
+    // The one filter the stub honours: `day=eq.<key>`. Without it "today's
+    // row" for a new day would be yesterday's, and the day-rollover check
+    // (v6.1) would be testing the stub. An upserted day is one row on the
+    // real server, so the latest write for that day is the row.
+    const dayEq = new URL(req.url()).searchParams.get('day')
+    if (dayEq?.startsWith('eq.')) {
+      rows = rows.filter(r => r.day === dayEq.slice(3))
+      return single ? (rows.length ? json(rows.at(-1)) : json(null)) : json(rows)
+    }
     return single ? (rows[0] ? json(rows[0]) : json(null)) : json(rows)
   }
   if (req.method() === 'POST' || req.method() === 'PATCH') {
@@ -428,6 +437,29 @@ async function sceneProbe () {
   })
 }
 const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
+
+/**
+ * v6.1: reach a Pinia store of the running app. Used where a check needs a
+ * precise starting state (a logged listening miss, a recorded confusion) that
+ * the UI path only produces by chance, and to read what the store believes so
+ * the screen can be compared against it.
+ */
+const store = (name, fn, arg) => page.evaluate(([n, src, a]) => {
+  const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia
+  const s = pinia._s.get(n)
+  const all = Object.fromEntries([...pinia._s.entries()])
+  // eslint-disable-next-line no-new-func
+  return new Function('s', 'arg', 'stores', `return (${src})(s, arg, stores)`)(s, a, all)
+}, [name, fn.toString(), arg])
+const idbMeta = key => page.evaluate(k => new Promise(res => {
+  const req = indexedDB.open('ngsl-learner')
+  req.onsuccess = () => {
+    const g = req.result.transaction('meta', 'readonly').objectStore('meta').get(k)
+    g.onsuccess = () => res(g.result ?? null)
+    g.onerror = () => res(null)
+  }
+  req.onerror = () => res(null)
+}), key)
 
 console.log(`\n=== NGSL smoke (${DARK ? 'dark' : 'light'}) ===`)
 
@@ -768,6 +800,19 @@ for (let i = 0; i < 60; i++) {
   if (!(await page.locator('.wg').first().isVisible({ timeout: 1500 }).catch(() => false))) break
   await playWordGame({ wrong: i === 0 || (wrongWaited === null && i < 4) })
   if (i === 0) await shot('08b-wordlab-reveal-after-miss')
+  if (i === 2) {
+    // v6.1: leave in the middle of the recall round and come back. The words
+    // already met must not be met again, and the ones already graded must not
+    // be asked (and graded) a second time.
+    await page.goto(URL_BASE + '#/', { waitUntil: 'networkidle' })
+    await page.waitForTimeout(1300)
+    await page.goto(URL_BASE + '#/learn', { waitUntil: 'networkidle' })
+    await page.waitForTimeout(1500)
+    const inRecall = await page.locator('.wg').first().isVisible().catch(() => false)
+    const backAtStart = await page.locator('.guess').first().isVisible().catch(() => false)
+    checks.push(['leaving Word Lab mid-way resumes where it was, not at the first word', inRecall && !backAtStart, `recall=${inRecall} guess-step=${backAtStart}`])
+    await shot('08c-wordlab-resumed')
+  }
 }
 await page.waitForTimeout(900)
 await shot('09-wordlab-done')
@@ -788,6 +833,11 @@ checks.push(['a wrong answer waits for 繼續 instead of moving on by itself', w
   ])
   const learnLogs = db.review_log.filter(r => r.mode === 'learn')
   checks.push(['the first review is logged as a measured recall, not a self-grade', learnLogs.length > 0, `${learnLogs.length} learn-mode reviews`])
+  // v6.1: one scheduled review per word per day, even though the phase was left and re-entered
+  const learnIds = learnLogs.map(r => r.word_id)
+  checks.push(['no new word is graded twice in one day', new Set(learnIds).size === learnIds.length, `${learnIds.length} gradings of ${new Set(learnIds).size} words`])
+  const labLeft = await page.evaluate(id => localStorage.getItem(`ngsl.lab.${id}`), USER_ID)
+  checks.push(['the saved Word Lab position is cleared once the phase is finished', labLeft === null, String(labLeft).slice(0, 60)])
 }
 
 /* ------------------------------------------------------------------ *
@@ -1066,6 +1116,69 @@ await shot('16c-listen-intro')
   const after = await page.locator('.fb__answer').first().innerText().catch(() => '')
   checks.push(['answering reveals what was said', after.trim().length > 0, `"${after.trim().slice(0, 40)}"`])
   await shot('16e-listen-feedback')
+}
+
+/* ------------------------------------------------------------------ *
+ * v6.1 應答聽力: a spoken question, three spoken responses, three letters
+ * ------------------------------------------------------------------ */
+let p2Missed = false
+{
+  // the phase intro now announces two parts
+  await page.goto(URL_BASE + '#/', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(300)
+  await page.goto(URL_BASE + '#/listen', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(900)
+  checks.push(['the listening phase is two parts: words, then question–response', (await page.locator('.lis__plan li').count().catch(() => 0)) === 2, 'no two-part plan on the intro'])
+
+  await page.goto(URL_BASE + '#/listen?part2=1', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(900)
+  const spokenBefore = await page.evaluate(() => window.__tts.spoken.length)
+  await page.locator('button:has-text("開始")').first().click().catch(() => {})
+  await page.waitForTimeout(2600)   // question + A + B + C
+  await shot('16e2-part2-item')
+  const letters = await page.locator('.abc__btn').allInnerTexts().catch(() => [])
+  checks.push(['a 應答 item shows three letters', letters.map(t => t.trim()).join('') === 'ABC', letters.join('|')])
+  const before = await page.locator('.lis').innerText().catch(() => '')
+  checks.push(['and no English at all before the answer', !/[A-Za-z]{3,}/.test(before), before.replace(/\s+/g, ' ').slice(0, 80)])
+  const said = (await page.evaluate(n => window.__tts.spoken.slice(n), spokenBefore)).filter(u => u.volume > 0)
+  checks.push(['the question is spoken, then A, B and C', said.length >= 4 && /^A\. /.test(said[1].text) && /^B\. /.test(said[2].text) && /^C\. /.test(said[3].text), said.map(u => u.text.slice(0, 18)).join(' / ')])
+  checks.push(['question and responses differ in pitch, not in voice', said.length >= 2 && said[0].pitch !== said[1].pitch && said[0].voiceURI === said[1].voiceURI, said.slice(0, 2).map(u => `${u.pitch}@${u.voiceURI}`).join(' vs ')])
+
+  await page.locator('.abc__btn').first().click().catch(() => {})
+  await page.waitForTimeout(500)
+  await shot('16e3-part2-explained')
+  const opts = await page.locator('.tx__o').count().catch(() => 0)
+  const right = await page.locator('.tx__o--right').count().catch(() => 0)
+  const whys = await page.locator('.tx__o:not(.tx__o--right) .tx__why').allInnerTexts().catch(() => [])
+  checks.push(['after the answer the whole exchange is shown, one response marked right', opts === 3 && right === 1, `${opts} options, ${right} right`])
+  checks.push(['each wrong response says what the trap was', whys.length === 2 && whys.every(t => t.trim().length > 4), whys.join(' | ')])
+  p2Missed = (await page.locator('.tx__o--picked').count().catch(() => 0)) > 0
+  const logged = await idbMeta(`part2:${USER_ID}`)
+  const entry = logged && Object.values(logged)[0]
+  checks.push(['the answer is recorded for this learner', !!entry && entry.lastRight === !p2Missed, JSON.stringify(logged)])
+  checks.push(['a missed 應答 item is counted by the notebook', (await store('progress', s => s.part2Missed.length)) === (p2Missed ? 1 : 0), `missed=${p2Missed}`])
+
+  // nothing may sit on top of the transcript: the right response is the point of the screen
+  const clear = await page.evaluate(() => {
+    const hit = sel => {
+      const el = document.querySelector(sel)
+      if (!el) return false
+      el.scrollIntoView({ block: 'nearest' })
+      const r = el.getBoundingClientRect()
+      const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)
+      return !!top && (el === top || el.contains(top))
+    }
+    return { sheet: document.querySelectorAll('.as').length, right: hit('.tx__o--right'), next: hit('.tx__next'), verdict: (document.querySelector('.tx__verdict')?.textContent || '').trim() }
+  })
+  checks.push(['the right response and 下一題 are not covered by anything', clear.sheet === 0 && clear.right && clear.next, JSON.stringify(clear)])
+  checks.push(['the verdict is stated in words', p2Missed ? /正解是 [ABC]/.test(clear.verdict) : clear.verdict === '接得上', clear.verdict])
+  await page.locator('.tx__next').click().catch(() => {})
+  await page.waitForTimeout(600)
+  checks.push(['下一題 brings three letters again and hides the transcript', (await page.locator('.abc__btn').count().catch(() => 0)) === 3 && (await page.locator('.tx').count().catch(() => 0)) === 0, 'did not advance'])
+  await page.keyboard.press('b')
+  await page.waitForTimeout(400)
+  const byKey = await store('progress', s => Object.keys(s.part2Log).length)
+  checks.push(['a letter key answers too', byKey === 2 && (await page.locator('.tx__o').count().catch(() => 0)) === 3, `logged ${byKey}`])
 }
 
 // the elastic phase has to react to the target, or it is not elastic
@@ -1417,6 +1530,215 @@ for (const [route, name] of [['#/errors', '17-errors'], ['#/stats', '18-stats'],
       `badge=${badge} word rows=${rows}`
     ])
   }
+}
+
+/* ------------------------------------------------------------------ *
+ * v6.1: mistakes that used to be write-only now have a place and a way out
+ * ------------------------------------------------------------------ */
+{
+  await page.goto(URL_BASE + '#/errors', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(700)
+  // a word missed by ear (logged the way ListenView logs it)
+  const heardId = await store('progress', (s, _a, st) => {
+    const w = [...s.cards.keys()].map(id => st.words.get(id)).find(x => x?.meanings?.length && x.examples?.length)
+    s.logError('listen', String(w.id), { type: 'meaning', audio: w.headword, answer: w.meanings[0].zh })
+    return w.id
+  })
+  await page.waitForTimeout(300)
+  const lead = await store('session', s => s.listenWordIds[0])
+  checks.push(['a word missed by ear leads the next listening round', lead === heardId, `first target ${lead}, missed ${heardId}`])
+  await page.locator('.seg__btn:has-text("聽力")').click().catch(() => {})
+  await page.waitForTimeout(300)
+  const rowsBefore = await page.locator('.litem').count().catch(() => 0)
+  const hiddenFirst = !(await page.locator('.litem__en').first().isVisible().catch(() => false))
+  checks.push(['the notebook lists it, with the text hidden until asked for', rowsBefore >= 1 && hiddenFirst, `${rowsBefore} rows, hidden=${hiddenFirst}`])
+  await page.locator('.litem__show').first().click().catch(() => {})
+  await page.waitForTimeout(200)
+  await shot('17b-errors-listening')
+  const badgeBefore = Number((await page.locator('.tab__badge').first().innerText().catch(() => '0')) || 0)
+  await page.locator('.litem button:has-text("聽懂了")').first().click().catch(() => {})
+  await page.waitForTimeout(300)
+  const rowsAfter = await page.locator('.litem').count().catch(() => 0)
+  const badgeAfter = Number((await page.locator('.tab__badge').first().innerText().catch(() => '0')) || 0)
+  checks.push(['marking it understood removes it and lowers the badge', rowsAfter === rowsBefore - 1 && badgeAfter === badgeBefore - 1, `rows ${rowsBefore}→${rowsAfter}, badge ${badgeBefore}→${badgeAfter}`])
+  if (p2Missed) checks.push(['a missed 應答 item is listed with its right response', await page.locator('.qitem .qitem__ok').first().isVisible().catch(() => false), 'not listed'])
+
+  // two words taken for each other
+  const pair = await store('progress', (s, _a, st) => {
+    const short = w => (w.meanings[0].zh || '').replace(/[（(][^）)]*[）)]/g, '').split(/[;；，,、/]/)[0].trim()
+    const ws = [...s.cards.keys()].map(id => st.words.get(id)).filter(x => x?.meanings?.length && x.examples?.length)
+    const a = ws[0]
+    // unlike on the page too (no shared first letter, lengths 3+ apart), so one pick is only a stray tap
+    const b = ws.find(x => x.id !== a.id && short(x) && short(a) && !short(x).includes(short(a)) && !short(a).includes(short(x)) &&
+      x.headword[0] !== a.headword[0] && Math.abs(x.headword.length - a.headword.length) >= 3)
+    const before = s.drillablePairs.length
+    s.noteConfusion(a.id, b.id)
+    const afterOne = s.drillablePairs.length
+    const kept = !!s.confusions[`${a.id}|${b.id}`]
+    s.noteConfusion(b.id, a.id)
+    return { a: a.id, b: b.id, ha: a.headword, hb: b.headword, before, afterOne, kept, listed: s.drillablePairs.length }
+  })
+  await page.waitForTimeout(300)
+  checks.push(['one stray pick between unlike words is remembered but not listed', pair.kept && pair.afterOne === pair.before, `${pair.ha} / ${pair.hb}: ${pair.before} → ${pair.afterOne}`])
+  checks.push(['the second pick lists the pair', pair.listed === pair.before + 1, `${pair.before} → ${pair.listed}`])
+  {
+    // both directions were recorded; both must have reached the device, not just the first
+    const onDisk = (await idbMeta(`confusions:${USER_ID}`)) || {}
+    checks.push(['every recorded confusion reaches the device, not only the first', !!onDisk[`${pair.a}|${pair.b}`] && !!onDisk[`${pair.b}|${pair.a}`], Object.keys(onDisk).join(', ')])
+  }
+  await page.locator('.seg__btn:has-text("易混淆")').click().catch(() => {})
+  await page.waitForTimeout(300)
+  await shot('17c-errors-pairs')
+  const pairRows = await page.locator('.pitem').count().catch(() => 0)
+  checks.push(['a pair of words taken for each other is listed', pairRows === pair.listed && pairRows >= 1, `${pairRows} rows, store lists ${pair.listed} (${pair.ha} / ${pair.hb})`])
+  {
+    const badge = Number((await page.locator('.tab__badge').first().innerText().catch(() => '0')) || 0)
+    const tabs = await page.locator('.seg__btn .num').allInnerTexts().catch(() => [])
+    checks.push(['the badge still equals what the four tabs list', badge === tabs.reduce((n, t) => n + (Number(t) || 0), 0), `badge=${badge} tabs=${tabs.join('+')}`])
+  }
+  await page.locator('button:has-text("開始分辨練習")').click().catch(() => {})
+  await page.waitForTimeout(400)
+  await shot('17d-contrast-drill')
+  let twoWay = true, answered = 0, alternates = true, lastSide = null
+  for (let i = 0; i < 40; i++) {
+    if (await page.locator('.vsend').isVisible({ timeout: 200 }).catch(() => false)) break
+    const n = await page.locator('.vs__opt').count().catch(() => 0)
+    if (n !== 2) { twoWay = false; break }
+    // answer correctly: the store knows which option is the target
+    const idx = await page.evaluate(() => {
+      const pinia = document.querySelector('#app').__vue_app__.config.globalProperties.$pinia
+      const words = pinia._s.get('words')
+      const prompt = document.querySelector('.vs__prompt')?.textContent.trim() || ''
+      const opts = [...document.querySelectorAll('.vs__opt')].map(b => b.textContent.trim())
+      const heads = [...document.querySelectorAll('.vs__pair span')].map(s => s.textContent.trim())
+      const kind = document.querySelector('.vs__kind')?.textContent || ''
+      const ws = heads.map(h => words.get(words.lookup(h)))
+      const short = w => (w.meanings[0].zh || '').replace(/[（(][^）)]*[）)]/g, '').split(/[;；，,、/]/)[0].trim()
+      let target
+      if (kind.includes('哪一個字') && !kind.includes('空格')) target = ws.find(w => prompt.startsWith(short(w)))
+      else if (kind.includes('哪一個意思')) target = ws.find(w => prompt.startsWith(w.headword))
+      else target = ws.find(w => (w.examples || []).some(e => { const [a, b] = prompt.split('＿＿＿'); return e.en.startsWith(a) && e.en.endsWith(b) }))
+      if (!target) return -1
+      const want = kind.includes('哪一個意思') ? short(target) : target.headword
+      return { i: opts.indexOf(want), side: heads.indexOf(target.headword) }
+    })
+    if (idx === -1 || idx.i < 0) { twoWay = false; break }
+    if (lastSide !== null && idx.side === lastSide) alternates = false
+    lastSide = idx.side
+    await page.locator('.vs__opt').nth(idx.i).click().catch(() => {})
+    await page.waitForTimeout(250)
+    await page.locator('.err > button.btn--primary').click().catch(() => {})
+    await page.waitForTimeout(250)
+    answered++
+  }
+  checks.push(['the contrast drill asks only two-way questions between the pair', twoWay && answered >= 4, `${answered} items, two-way=${twoWay}`])
+  checks.push(['and the answer changes side every time', alternates, 'two items in a row had the same word as the answer'])
+  await shot('17e-contrast-done')
+  const clean1 = await store('progress', (s, p) => s.confusions[`${p.a}|${p.b}`]?.clean, pair)
+  checks.push(['a clean round is remembered but does not retire the pair yet', clean1 === 1, `clean=${clean1}`])
+  await page.locator('button:has-text("回錯題本")').click().catch(() => {})
+  await page.waitForTimeout(200)
+  await store('progress', (s, p) => s.settlePair(p.a, p.b), pair)
+  const gone = await store('progress', (s, p) => !s.confusions[`${p.a}|${p.b}`] && !s.confusions[`${p.b}|${p.a}`], pair)
+  checks.push(['the second clean round retires it', gone, 'still in the ledger'])
+  const kept = await idbMeta(`confusions:${USER_ID}`)
+  checks.push(['the ledger is stored per learner on the device', kept !== null && typeof kept === 'object', String(kept)])
+
+  // measured retention on the stats page is the store's number, and Word Lab recall is not in it
+  await page.goto(URL_BASE + '#/stats', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(600)
+  const r = await store('progress', s => ({ n: s.retention30.n, ret: s.retention30.retention, learn: s.reviews.filter(x => x.mode === 'learn').length, all: s.reviews.length }))
+  const sub = await page.locator('.ret .chart__sub').innerText().catch(() => '')
+  checks.push(['the stats page shows measured retention on the reviews the store counts', new RegExp(`${r.n}\\s*次複習`).test(sub), `page="${sub}" store n=${r.n}`])
+  checks.push(['Word Lab\'s same-sitting recall is not counted as retention', r.learn > 0 && r.n === r.all - r.learn, `${r.all} reviews, ${r.learn} learn-mode, ${r.n} counted`])
+  checks.push(['a percentage is shown only when there are enough reviews', (r.ret === null) === (await page.locator('.ret__none').isVisible().catch(() => false)), `retention=${r.ret}`])
+  await shot('18b-stats-retention')
+}
+
+/* ------------------------------------------------------------------ *
+ * v6.1: the day's pace, per-learner state, and the morning after
+ * ------------------------------------------------------------------ */
+{
+  await page.goto(URL_BASE + '#/', { waitUntil: 'networkidle' })
+  await page.waitForTimeout(500)
+  const scopedKeys = await page.evaluate(id => ({
+    mine: localStorage.getItem(`ngsl.session.${id}`) !== null,
+    shared: localStorage.getItem('ngsl.session') !== null,
+    placedMine: localStorage.getItem(`ngsl.placed.${id}`) !== null,
+    placedShared: localStorage.getItem('ngsl.placed') !== null
+  }), USER_ID)
+  checks.push(['the day\'s state is stored under the learner\'s own key', scopedKeys.mine && !scopedKeys.shared && scopedKeys.placedMine && !scopedKeys.placedShared, JSON.stringify(scopedKeys)])
+  const owner = await idbMeta('owner')
+  const queue = (await idbMeta('outbox')) || []
+  checks.push(['the offline queue and card mirror are tagged with their owner', owner === USER_ID && queue.every(i => i.uid === USER_ID), `owner=${owner} untagged=${queue.filter(i => i.uid !== USER_ID).length}`])
+
+  // the morning after: the app was never closed. Nothing is reloaded; the
+  // clock moves 50 hours and the app is brought to the foreground.
+  const today0 = await page.locator('.hero__date').innerText().catch(() => '')
+  const done0 = await page.locator('.step--done').count().catch(() => 0)
+  const due0 = await store('progress', s => s.dueCards.length)
+  await page.evaluate(() => {
+    const Real = Date
+    const OFF = 50 * 3600 * 1000
+    class Shifted extends Real {
+      constructor (...a) { if (a.length) super(...a); else super(Real.now() + OFF) }
+      static now () { return Real.now() + OFF }
+    }
+    window.__RealDate = Real
+    window.Date = Shifted
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+  await page.waitForTimeout(2500)
+  const today1 = await page.locator('.hero__date').innerText().catch(() => '')
+  const done1 = await page.locator('.step--done').count().catch(() => 0)
+  const due1 = await store('progress', s => s.dueCards.length)
+  const nowT = (await page.locator('.now__t').first().innerText().catch(() => '')).trim()
+  const answered1 = await store('progress', s => s.today.total_count)
+  await shot('16t-dashboard-next-morning')
+  checks.push(['left open overnight, 今天 shows the new date', !!today0 && today1 !== today0, `${today0} → ${today1}`])
+  checks.push(['and a fresh timetable', done0 > 0 && done1 === 0, `${done0} periods ticked → ${done1}`])
+  checks.push(['yesterday\'s words have come due without a reload', due1 > due0 && due1 > 0, `due ${due0} → ${due1}`])
+  checks.push(['so the day starts with the review, not with an "empty" one', nowT === '複習挑戰', `now="${nowT}"`])
+  checks.push(['and the day\'s answer count starts from zero', answered1 === 0, `total_count=${answered1}`])
+
+  // the governor, on that morning: the queue is real, so the check cannot be skipped.
+  // A queue that does not fit in the day lowers today's new words, and 今天 says so.
+  const paced = await store('session', (s, cap, st) => {
+    const before = { count: s.pace.count, base: s.pace.base, reason: s.pace.reason }
+    const due = st.progress.dueCards.length
+    st.settings.set({ reviewCap: cap })
+    return { before, due, newPerDay: st.settings.state.newPerDay }
+  }, 10)
+  // a changed cap alone must not re-decide a day already under way…
+  await page.waitForTimeout(300)
+  const held = await store('session', s => ({ count: s.pace.count, base: s.pace.base }))
+  // …a changed 每日新字 does
+  await store('settings', (s, v) => s.set(v), { newPerDay: paced.newPerDay + 1 })
+  await page.waitForTimeout(500)
+  const after = await store('session', s => ({ count: s.pace.count, base: s.pace.base, reason: s.pace.reason, note: s.pace.note }))
+  const note = (await page.locator('.pace').innerText().catch(() => '')).replace(/\s+/g, ' ')
+  checks.push(['the morning queue is longer than the cap used for this check', paced.due > 10, `due=${paced.due}`])
+  checks.push(['the day\'s pace is decided once, not on every setting change', held.count === paced.before.count, `${JSON.stringify(paced.before)} → ${JSON.stringify(held)}`])
+  checks.push(['a review queue past the cap lowers today\'s new words', after.base === paced.newPerDay + 1 && after.count < after.base && ['backlog', 'both'].includes(after.reason), JSON.stringify(after)])
+  checks.push(['and 今天 says why, with the number', note.includes(String(paced.due)), `note="${note}"`])
+  {
+    await page.evaluate(() => window.scrollTo(0, 0))
+    await page.waitForTimeout(200)
+    const go = await page.locator('.now .btn').first().boundingBox().catch(() => null)
+    const bar = await page.locator('.tabbar').first().boundingBox().catch(() => null)
+    checks.push(['the note does not push the one button off the first screen', !!go && !!bar && go.y + go.height <= bar.y + 2, go && bar ? `button ends ${Math.round(go.y + go.height)}, tab bar starts ${Math.round(bar.y)}` : 'no button / tab bar'])
+  }
+  await shot('16v-dashboard-paced')
+  await store('settings', (s, v) => s.set(v), { autoPace: false })
+  await page.waitForTimeout(400)
+  const manual = await store('session', s => ({ count: s.pace.count, base: s.pace.base, reason: s.pace.reason }))
+  checks.push(['with 自動調節 off the setting is used as it is, and the note goes', manual.count === manual.base && manual.reason === 'manual' && (await page.locator('.pace').count().catch(() => 0)) === 0, JSON.stringify(manual)])
+  await store('settings', (s, v) => s.set(v), { autoPace: true, reviewCap: 60, newPerDay: paced.newPerDay })
+  await page.waitForTimeout(400)
+  const restored = await store('session', s => ({ count: s.pace.count, base: s.pace.base, reason: s.pace.reason }))
+  checks.push(['restoring the cap restores the count', restored.count === restored.base, JSON.stringify(restored)])
+  await page.evaluate(() => { window.Date = window.__RealDate; document.dispatchEvent(new Event('visibilitychange')) })
+  await page.waitForTimeout(1500)
 }
 
 // horizontal-overflow check on every screen

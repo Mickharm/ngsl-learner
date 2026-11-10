@@ -82,7 +82,7 @@ export const useEssentials = defineStore('essentials', () => {
   const all = computed(() => ESSENTIALS)
 
   const dueList = computed(() => {
-    const now = Date.now()
+    const now = progress.now
     return ESSENTIALS.filter(u => {
       const r = rows.value.get(u.id)
       return r && r.dueAt <= now
@@ -142,6 +142,7 @@ export const useEssentials = defineStore('essentials', () => {
 
     progress.bumpDay({ grammar_correct: correct, grammar_total: total })
     if (grade === GRADE.AGAIN) progress.logError('essential', unitId, { correct, total, title: unit.title })
+    else progress.resolveErrorsFor('essential', unitId)  // passed since: no longer an open mistake
 
     return { rec, grade }
   }

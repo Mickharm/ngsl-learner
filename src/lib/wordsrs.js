@@ -301,6 +301,27 @@ export function clozeSentence (word) {
   return null
 }
 
+/** Two instants on the same calendar day, in the learner's own time zone. */
+export function sameLocalDay (a, b) {
+  const x = new Date(a), y = new Date(b)
+  return x.getFullYear() === y.getFullYear() && x.getMonth() === y.getMonth() && x.getDate() === y.getDate()
+}
+
+/**
+ * Has this word already had its scheduled review today?
+ *
+ * "One scheduled review per day" was a rule every caller had to keep. Two
+ * did not: leaving Word Lab during the recall round and coming back graded
+ * the same new words again, and re-entering a review after the app had been
+ * closed could do the same. The second grade of a day is the massed
+ * repetition this module exists to stop counting, so progress.gradeCard asks
+ * this first and treats a repeat as practice.
+ */
+export function reviewedToday (card, now = Date.now()) {
+  if (!card || card.state === STATE.NEW || !card.lastReviewedAt || !(card.reps > 0)) return false
+  return sameLocalDay(card.lastReviewedAt, now)
+}
+
 export function dueSoonest (cards, now = Date.now()) {
   return [...cards].sort((a, b) => retrievabilityV2(a, now) - retrievabilityV2(b, now) || a.dueAt - b.dueAt)
 }

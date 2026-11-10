@@ -3,24 +3,41 @@ import AnswerSheet from '@/components/ui/AnswerSheet.vue'
 import Stamp from '@/components/ui/Stamp.vue'
 import AudioButton from '@/components/AudioButton.vue'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useWords } from '@/stores/words'
 import { useProgress, todayKey } from '@/stores/progress'
 import { useSession } from '@/stores/session'
 import { useSettings } from '@/stores/settings'
-import { useToast } from '@/stores/toast'
 import SessionHeader from '@/components/SessionHeader.vue'
 import { speak, stopSpeaking, ttsSupported } from '@/lib/tts'
 import { buildListenRound, LISTEN_LABEL } from '@/lib/listening'
 import { matchesAnswer } from '@/lib/answer'
+import PART2, { KIND_LABEL } from '@/data/part2'
+import { selectPart2, layoutPart2, scriptPart2 } from '@/lib/part2'
 
 /**
- * Listening phase.
+ * Listening phase, in two parts.
  *
- * The English is hidden until the answer is in — that is the whole point.
- * Every other screen in the app puts the word on the page next to a play
- * button, which trains reading with an audio garnish. Here the sound is the
- * only evidence.
+ *   1. 聽單字與句子 — hear a word or a sentence, say what it means, fill the
+ *      gap, spell it. The English is hidden until the answer is in — that is
+ *      the whole point. Every other screen in the app puts the word on the
+ *      page next to a play button, which trains reading with an audio
+ *      garnish. Here the sound is the only evidence.
+ *
+ *   2. 應答聽力 (v6.1) — the shape of TOEIC Part 2: a spoken question or
+ *      statement, then three spoken responses lettered A B C, and nothing on
+ *      the screen but three letters. Part 1 asks "what did that mean"; this
+ *      asks the learner to answer, and its wrong options are built from the
+ *      traps the real test uses (an answer to a different question, a word
+ *      that only sounds the same). After the answer the whole exchange is
+ *      shown with each trap named.
+ *
+ * What the words round is about is decided by session.listenWordIds: words
+ * missed by ear before, today's words, then the weakest in the deck. A word
+ * got right here clears its listening mistakes.
+ *
+ * Opened as /listen?part2=1 (from 課程) it is a free 應答 round and does not
+ * touch the day's phase.
  *
  * Built from data already on the device, so it runs offline and costs no quota.
  */
@@ -29,10 +46,12 @@ const words = useWords()
 const progress = useProgress()
 const session = useSession()
 const settings = useSettings()
-const toast = useToast()
 const router = useRouter()
+const route = useRoute()
 
-const stage = ref('intro')        // intro | run | result
+const free = computed(() => route.query.part2 === '1')
+
+const stage = ref('intro')        // intro | run | p2 | result
 const index = ref(0)
 const picked = ref(null)
 const settled = ref(false)
@@ -40,7 +59,7 @@ const typed = ref('')
 const plays = ref(0)
 const results = ref([])           // { wordId, type, correct }
 
-const dayWords = computed(() => words.getMany(session.dayWordIds).filter(w => w.enriched))
+const dayWords = computed(() => words.getMany(session.listenWordIds).filter(w => w.enriched))
 /** A cold load must not be mistaken for an empty day. */
 const booting = computed(() => words.hydrating || !progress.loaded)
 const pool = computed(() =>
@@ -51,12 +70,14 @@ const items = ref([])
 const item = computed(() => items.value[index.value] || null)
 const correctCount = computed(() => results.value.filter(r => r.correct).length)
 
+const daySeed = () => Number(todayKey().replace(/-/g, '')) % 100000
+const wordCount = computed(() => (free.value || dayWords.value.length < 2 ? 0 : session.listenCount))
+const p2Count = computed(() => (free.value ? 8 : session.part2Count))
+
 function build () {
-  const seed = Number(todayKey().replace(/-/g, '')) % 100000
-  items.value = buildListenRound(dayWords.value, pool.value, {
-    count: session.listenCount,
-    seed
-  })
+  items.value = wordCount.value
+    ? buildListenRound(dayWords.value, pool.value, { count: wordCount.value, seed: daySeed() })
+    : []
 }
 
 /** Play the item's audio. Slow mode drops the rate rather than the pitch. */
@@ -80,20 +101,28 @@ function reset () {
 
 function start () {
   build()
-  if (!items.value.length) {
+  buildP2()
+  results.value = []
+  p2Results.value = []
+  index.value = 0
+  p2Index.value = 0
+  if (items.value.length) {
+    stage.value = 'run'
+    reset()
+  } else if (p2Items.value.length) {
+    startP2()
+  } else {
     session.markDone('listen')
     router.replace(session.nextRoute('listen'))
-    return
   }
-  stage.value = 'run'
-  index.value = 0
-  results.value = []
-  reset()
 }
 
 function record (correct) {
   results.value.push({ wordId: item.value.wordId, type: item.value.type, correct })
-  if (!correct) {
+  if (correct) {
+    // heard it right: the earlier misses of this word by ear are settled
+    progress.clearListenErrors(item.value.wordId)
+  } else {
     progress.logError('listen', String(item.value.wordId), {
       type: item.value.type,
       audio: item.value.audio,
@@ -126,60 +155,162 @@ function next () {
   if (index.value + 1 < items.value.length) {
     index.value++
     reset()
+  } else if (p2Items.value.length) {
+    startP2()
   } else {
     finish()
   }
 }
 
+/* ---------------- 應答聽力 ---------------- */
+
+const p2Items = ref([])           // laid-out items
+const p2Index = ref(0)
+const p2Picked = ref(null)
+const p2Settled = ref(false)
+const p2Plays = ref(0)
+const p2Speaking = ref(-1)        // which line is being spoken: 0 question, 1-3 options
+const p2Results = ref([])         // { id, correct }
+const p2 = computed(() => p2Items.value[p2Index.value] || null)
+const p2Correct = computed(() => p2Results.value.filter(r => r.correct).length)
+let p2Run = 0                     // cancels a script that is still playing
+
+function buildP2 () {
+  const picked = selectPart2(PART2, {
+    log: progress.part2Log,
+    known: new Set(progress.cards.keys()),
+    lookup: words.lookup,
+    n: p2Count.value,
+    seed: daySeed() + (free.value ? Object.keys(progress.part2Log).length * 7 + 1 : 0)
+  })
+  p2Items.value = picked.map((it, i) => layoutPart2(it, daySeed() + i * 13 + (progress.part2Log[it.id]?.right || 0) + (progress.part2Log[it.id]?.wrong || 0)))
+}
+
+const pause = ms => new Promise(r => setTimeout(r, ms))
+
+/** Speak the question, then A, B, C. Any new call or an answer cuts it off. */
+async function playP2 (slow = false) {
+  if (!p2.value) return
+  const run = ++p2Run
+  stopSpeaking()
+  p2Plays.value++
+  const lines = scriptPart2(p2.value)
+  for (let i = 0; i < lines.length; i++) {
+    if (run !== p2Run) return
+    p2Speaking.value = i
+    await speak(lines[i].text, {
+      rate: slow ? 0.7 : settings.state.ttsRate,
+      pitch: lines[i].pitch,
+      voiceURI: settings.state.ttsVoiceURI,
+      leadIn: settings.state.ttsLeadIn
+    })
+    if (run !== p2Run) return
+    await pause(slow ? lines[i].gap * 1.4 : lines[i].gap)
+  }
+  if (run === p2Run) p2Speaking.value = -1
+}
+
+function resetP2 () {
+  p2Picked.value = null
+  p2Settled.value = false
+  p2Plays.value = 0
+  p2Speaking.value = -1
+  if (settings.state.autoPlayAudio) playP2()
+}
+
+function startP2 () {
+  stage.value = 'p2'
+  p2Index.value = 0
+  resetP2()
+}
+
+function chooseP2 (i) {
+  if (p2Settled.value || !p2.value) return
+  p2Run++
+  stopSpeaking()
+  p2Speaking.value = -1
+  p2Picked.value = i
+  p2Settled.value = true
+  const correct = i === p2.value.answer
+  p2Results.value.push({ id: p2.value.id, correct })
+  progress.notePart2(p2.value.id, correct)
+}
+
+function nextP2 () {
+  p2Run++
+  stopSpeaking()
+  if (p2Index.value + 1 < p2Items.value.length) {
+    p2Index.value++
+    resetP2()
+  } else {
+    finish()
+  }
+}
+
+/* ---------------- result ---------------- */
+
+const totalItems = computed(() => items.value.length + p2Items.value.length)
+const totalCorrect = computed(() => correctCount.value + p2Correct.value)
+
 function finish () {
   stage.value = 'result'
-  session.setListenResult({ correct: correctCount.value, total: items.value.length })
+  if (!free.value) {
+    session.setListenResult({
+      correct: totalCorrect.value, total: totalItems.value,
+      words: { correct: correctCount.value, total: items.value.length },
+      part2: { correct: p2Correct.value, total: p2Items.value.length }
+    })
+  }
 }
 
 function done () {
+  if (free.value) return router.push('/courses')
   session.markDone('listen')
   router.push(session.nextRoute('listen'))
 }
 
 function skipPhase () {
+  p2Run++
   stopSpeaking()
+  if (free.value) return router.push('/courses')
   session.markDone('listen')
   router.push(session.nextRoute('listen'))
 }
 
-onMounted(() => session.startClock())
-onUnmounted(() => { session.stopClock(); stopSpeaking() })
+/** 應答 by keyboard: A / B / C (or 1 / 2 / 3) to answer, Enter to move on. */
+function onP2Key (e) {
+  if (stage.value !== 'p2' || !p2.value || e.metaKey || e.ctrlKey || e.altKey) return
+  if (/input|textarea/i.test(document.activeElement?.tagName || '')) return
+  if (p2Settled.value) {
+    // a focused button answers Enter by itself
+    if (e.key === 'Enter' && !/button|a/i.test(document.activeElement?.tagName || '')) { e.preventDefault(); nextP2() }
+    return
+  }
+  const k = e.key.length === 1 ? e.key.toLowerCase() : ''
+  const i = k ? Math.max('abc'.indexOf(k), '123'.indexOf(k)) : -1
+  if (i >= 0 && i < p2.value.options.length) { e.preventDefault(); chooseP2(i) }
+}
+
+onMounted(() => { session.startClock(); window.addEventListener('keydown', onP2Key) })
+onUnmounted(() => { p2Run++; session.stopClock(); stopSpeaking(); window.removeEventListener('keydown', onP2Key) })
 </script>
 
 <template>
   <div class="view">
     <SessionHeader
-      title="聽力"
-      :current="stage === 'run' ? index + 1 : (stage === 'result' ? items.length : 0)"
-      :total="items.length"
+      :title="free ? '應答聽力' : '聽力'"
+      :current="stage === 'run' ? index + 1 : stage === 'p2' ? items.length + p2Index + 1 : (stage === 'result' ? totalItems : 0)"
+      :total="stage === 'intro' ? wordCount + p2Count : totalItems"
+      :exit-to="free ? '/courses' : '/'"
     />
 
     <main class="shell lis">
       <!-- still loading; an empty store is not an empty day -->
-      <template v-if="stage === 'intro' && booting && !dayWords.length">
+      <template v-if="stage === 'intro' && booting && !dayWords.length && !free">
         <div class="lis__intro">
           <div class="gate__spinner"><span /><span /><span /></div>
           <p class="lis__desc zh">正在載入今天的單字…</p>
         </div>
-      </template>
-
-      <!-- nothing to build a round from yet -->
-      <template v-else-if="stage === 'intro' && !dayWords.length">
-        <div class="lis__intro">
-          <div class="lis__mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12a9 9 0 0 1 18 0" /><path d="M3 12v4a2 2 0 0 0 2 2h1v-6H5a2 2 0 0 0-2 2Z" /><path d="M21 12v4a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2Z" />
-            </svg>
-          </div>
-          <h1 class="lis__title zh">還沒有可以聽的字</h1>
-          <p class="lis__desc zh">聽力題是用今天學過與複習過的單字出的。先完成前面的關卡再回來。</p>
-        </div>
-        <button class="btn btn--primary btn--block zh" @click="skipPhase">回到今天的關卡</button>
       </template>
 
       <!-- intro -->
@@ -190,18 +321,29 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
               <path d="M3 12a9 9 0 0 1 18 0" /><path d="M3 12v4a2 2 0 0 0 2 2h1v-6H5a2 2 0 0 0-2 2Z" /><path d="M21 12v4a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2Z" />
             </svg>
           </div>
-          <h1 class="lis__title zh">聽力練習</h1>
-          <p class="lis__desc zh">
-            用今天的 {{ dayWords.length }} 個單字出 {{ session.listenCount }} 題。
+          <h1 class="lis__title zh">{{ free ? '應答聽力' : '聽力練習' }}</h1>
+          <p v-if="free" class="lis__desc zh">
+            一共出 {{ p2Count }} 題。先聽一個問題，再聽 A、B、C 三個回應，選出接得上的那一個。
+            <strong>畫面上只有三個字母</strong>——這就是多益聽力 Part 2 的考法。
+          </p>
+          <p v-else class="lis__desc zh">
+            一共出 {{ wordCount + p2Count }} 題。
+            <template v-if="wordCount">先用 {{ dayWords.length }} 個單字出 {{ wordCount }} 題，再做</template>
+            <template v-else>今天做</template>
+            {{ p2Count }} 題應答：聽問題，選回應。
             <strong>英文不會顯示在畫面上</strong>，答完才看得到——看得到字就不是在練聽力。
           </p>
+          <ul v-if="!free && wordCount" class="lis__plan zh">
+            <li><b class="fig">1</b><span>聽單字與句子<small>聽錯過的字會先出現</small></span></li>
+            <li><b class="fig">2</b><span>應答聽力<small>多益 Part 2 的題型</small></span></li>
+          </ul>
           <p v-if="!ttsSupported" class="lis__warn zh">這個瀏覽器不支援語音合成，聽力關卡無法運作。</p>
         </div>
         <button class="btn btn--primary btn--block zh" :disabled="!ttsSupported" @click="start">開始</button>
-        <button class="btn btn--quiet btn--sm zh lis__skip" @click="skipPhase">跳過這個階段</button>
+        <button class="btn btn--quiet btn--sm zh lis__skip" @click="skipPhase">{{ free ? '回課程' : '跳過這個階段' }}</button>
       </template>
 
-      <!-- run -->
+      <!-- part 1: words and sentences -->
       <template v-else-if="stage === 'run' && item">
         <div class="phase-tag">
           <span class="chip chip--violet">{{ LISTEN_LABEL[item.type] }}</span>
@@ -268,7 +410,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
           v-if="settled" :key="'fb' + index"
           :right="!!results.at(-1)?.correct"
           :chars="(item.reveal || '').length + (item.zh || '').length"
-          :next-label="index + 1 < items.length ? '下一題' : '看結果'"
+          :next-label="index + 1 < items.length ? '下一題' : (p2Items.length ? '接著做應答' : '看結果')"
           @next="next"
         >
           <p class="fb__answer">
@@ -282,21 +424,91 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
         <button class="btn btn--quiet btn--sm lis__skip zh" @click="skipPhase">跳過這個階段</button>
       </template>
 
+      <!-- part 2: question → response -->
+      <template v-else-if="stage === 'p2' && p2">
+        <div class="phase-tag">
+          <span class="chip chip--violet zh">應答聽力</span>
+          <span v-if="p2Settled" class="chip zh">{{ KIND_LABEL[p2.kind] }}</span>
+          <span class="tally num">{{ p2Correct }} / {{ p2Results.length }}</span>
+        </div>
+
+        <div class="player" :class="{ 'player--small': p2Settled }">
+          <button v-if="!p2Settled" class="player__big" :class="{ 'player__big--on': p2Speaking >= 0 }" aria-label="播放問題與三個回應" @click="playP2(false)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 5 6.5 9H3v6h3.5L11 19z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
+            </svg>
+          </button>
+          <div class="player__row">
+            <button class="btn btn--ghost btn--sm zh" @click="playP2(false)">再聽一次</button>
+            <button class="btn btn--ghost btn--sm zh" @click="playP2(true)">放慢</button>
+          </div>
+          <p v-if="!p2Settled || p2Speaking >= 0" class="player__count zh">
+            <template v-if="p2Speaking === 0">正在唸問題…</template>
+            <template v-else-if="p2Speaking > 0">正在唸 {{ 'ABC'[p2Speaking - 1] }}…</template>
+            <template v-else>已播放 {{ p2Plays }} 次</template>
+          </p>
+        </div>
+
+        <!-- before the answer: three letters and nothing else -->
+        <div v-if="!p2Settled" class="abc">
+          <button
+            v-for="(o, i) in p2.options" :key="o.letter"
+            class="abc__btn" :class="{ 'abc__btn--say': p2Speaking === i + 1 }"
+            :aria-label="`選 ${o.letter}`"
+            @click="chooseP2(i)"
+          >{{ o.letter }}</button>
+        </div>
+
+        <!-- after: the whole exchange, with each trap named -->
+        <div v-else class="tx">
+          <p class="tx__verdict zh" :class="{ 'tx__verdict--right': p2Picked === p2.answer }" role="status">
+            {{ p2Picked === p2.answer ? '接得上' : `接不上，正解是 ${p2.options[p2.answer].letter}` }}
+          </p>
+          <div class="tx__q">
+            <p class="tx__en">{{ p2.q }} <AudioButton :text="p2.q" size="sm" /></p>
+            <p class="tx__zh zh">{{ p2.zh }}</p>
+          </div>
+          <div
+            v-for="(o, i) in p2.options" :key="o.letter"
+            class="tx__o"
+            :class="{ 'tx__o--right': o.correct, 'tx__o--picked': p2Picked === i && !o.correct }"
+          >
+            <span class="tx__l fig">{{ o.letter }}</span>
+            <div class="tx__body">
+              <p class="tx__en">{{ o.en }}</p>
+              <p class="tx__zh zh">{{ o.zh }}</p>
+              <p v-if="!o.correct" class="tx__why zh">{{ o.why }}</p>
+            </div>
+            <span v-if="o.correct" class="tx__mark zh">正解</span>
+            <span v-else-if="p2Picked === i" class="tx__mark tx__mark--no zh">你選的</span>
+          </div>
+          <p class="tx__tip zh">{{ p2.tip }}</p>
+          <!-- in the flow, not a sheet: a sheet over three long responses hides the one that was right -->
+          <button class="btn btn--primary btn--block tx__next zh" @click="nextP2">{{ p2Index + 1 < p2Items.length ? '下一題' : '看結果' }}</button>
+        </div>
+
+        <button class="btn btn--quiet btn--sm lis__skip zh" @click="skipPhase">{{ free ? '結束' : '跳過這個階段' }}</button>
+      </template>
+
       <!-- result -->
       <template v-else>
         <div class="res">
-          <Stamp :ratio="items.length ? correctCount / items.length : 0" :size="120" />
-          <h2 class="res__title kai">聽力練習完成，答對 {{ correctCount }} / {{ items.length }}</h2>
+          <Stamp :ratio="totalItems ? totalCorrect / totalItems : 0" :size="120" />
+          <h2 class="res__title kai">聽力練習完成，答對 {{ totalCorrect }} / {{ totalItems }}</h2>
+          <div v-if="items.length && p2Items.length" class="res__split zh">
+            <span>單字與句子 <b class="fig">{{ correctCount }}/{{ items.length }}</b></span>
+            <span>應答 <b class="fig">{{ p2Correct }}/{{ p2Items.length }}</b></span>
+          </div>
           <p class="res__note zh">
-            <template v-if="items.length && correctCount / items.length >= 0.8">
-              聽得出來了。之後題目會慢慢從單字換成整句。
+            <template v-if="totalItems && totalCorrect / totalItems >= 0.8">
+              聽得出來了。答對的應答題不會再出，會換新的題型上來。
             </template>
             <template v-else>
-              聽錯的字已進錯題本。聽不出來通常不是耳朵的問題，是那個字的發音還沒進腦子——複習時多按幾次播放。
+              聽錯的字明天的聽力會先出現，錯的應答題也會再來一次；錯題本的「聽力」分頁可以先看。聽不出來通常不是耳朵的問題，是那個字的聲音還沒進腦子。
             </template>
           </p>
         </div>
-        <button class="btn btn--primary btn--block zh" @click="done">繼續</button>
+        <button class="btn btn--primary btn--block zh" @click="done">{{ free ? '回課程' : '繼續' }}</button>
         <button class="btn btn--ghost btn--block zh" @click="start">再練一輪</button>
       </template>
     </main>
@@ -383,4 +595,47 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
 .res__pct small { font-size: var(--step--1); color: var(--ink-3); }
 .res__title { font-size: var(--step-1); font-weight: 700; }
 .res__note { font-size: var(--step--1); color: var(--ink-3); line-height: 1.75; max-width: 34ch; }
+
+/* the day's two parts, as a short list on the intro */
+.lis__plan { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 300px; margin-top: var(--sp-2); text-align: left; }
+.lis__plan li { display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: center; padding: 10px 14px; border-radius: var(--r-control); background: var(--surface); box-shadow: var(--rim); }
+.lis__plan b { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--rule-strong); font-size: var(--step-0); color: var(--ink-2); }
+.lis__plan span { display: flex; flex-direction: column; font-weight: 600; font-size: var(--step--1); }
+.lis__plan small { font-weight: 400; font-size: var(--step--2); color: var(--ink-2); }
+
+/* 應答: three letters, nothing to read */
+.player__big--on { box-shadow: 0 0 0 6px var(--pen-wash); }
+.player--small { padding: 0; flex-direction: row; justify-content: flex-start; gap: var(--sp-3); }
+.abc { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); }
+.abc__btn {
+  min-height: 92px; border-radius: var(--r-panel);
+  font-family: var(--font-fig); font-size: 2.4rem; font-weight: 500; color: var(--ink);
+  background: radial-gradient(130% 80px at var(--lx) 0, var(--sheen), transparent 70%), var(--surface);
+  box-shadow: var(--rim), var(--shadow-1);
+  -webkit-backdrop-filter: blur(22px) saturate(140%); backdrop-filter: blur(22px) saturate(140%);
+  transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1), box-shadow 0.2s;
+}
+.abc__btn:active { transform: scale(0.95); }
+.abc__btn--say { box-shadow: var(--rim), inset 0 0 0 2px var(--pen), var(--shadow-1); }
+
+.tx { display: flex; flex-direction: column; gap: var(--sp-2); }
+.tx__q { padding: var(--sp-3) var(--sp-4); border-radius: var(--r-control); background: var(--surface-2); }
+.tx__en { font-family: var(--font-word); font-size: var(--step-0); line-height: 1.5; display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+.tx__zh { font-size: var(--step--1); color: var(--ink-2); line-height: 1.5; }
+.tx__o { display: grid; grid-template-columns: 30px 1fr auto; gap: 12px; align-items: start; padding: var(--sp-3) var(--sp-4); border-radius: var(--r-control); background: var(--surface); box-shadow: var(--rim); }
+.tx__l { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; font-size: var(--step-0); color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--rule-strong); }
+.tx__o--right { background: var(--jade-wash); box-shadow: inset 0 0 0 1.5px var(--jade-edge); }
+.tx__o--right .tx__l { background: var(--green); color: #fff; box-shadow: none; }
+.tx__o--picked { background: var(--rose-wash); box-shadow: inset 0 0 0 1.5px var(--rose-edge); }
+.tx__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tx__why { font-size: var(--step--2); color: var(--ink-2); line-height: 1.5; margin-top: 2px; }
+.tx__why::before { content: '✕ '; color: var(--rose); }
+.tx__mark { font-size: var(--step--2); font-weight: 700; color: var(--jade); white-space: nowrap; padding-top: 5px; }
+.tx__mark--no { color: var(--rose); }
+.tx__tip { font-size: var(--step--1); color: var(--ink-2); line-height: 1.6; padding: var(--sp-2) 4px 0; }
+.tx__verdict { font-size: var(--step-1); font-weight: 700; letter-spacing: -0.01em; color: var(--redpen); padding: 0 4px; }
+.tx__verdict--right { color: var(--jade); }
+.tx__next { margin-top: var(--sp-2); }
+.res__split { display: flex; gap: var(--sp-5); font-size: var(--step--1); color: var(--ink-2); }
+.res__split b { font-size: var(--step-1); color: var(--ink); margin-left: 4px; }
 </style>

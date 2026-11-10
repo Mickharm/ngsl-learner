@@ -40,7 +40,8 @@ const verdict = computed(() => {
   if (mins < settings.state.dailyMinutes * 0.6) {
     return `今天 ${mins} 分鐘，低於你設定的 ${settings.state.dailyMinutes} 分鐘目標。時間不夠時，複習比新字重要。`
   }
-  if (a !== null && a >= 0.9 && t.value.new_count >= 10) return '狀態很好。如果連續一週都這樣，可以考慮把每日新字數調高。'
+  // "a full day of new words" is the day's own count, not a fixed ten
+  if (a !== null && a >= 0.9 && t.value.new_count >= Math.max(1, session.pace.count)) return '狀態很好。如果連續一週都這樣，可以考慮把每日新字數調高。'
   return '穩定推進中。明天的複習量已經排好了。'
 })
 

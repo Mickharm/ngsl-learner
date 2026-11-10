@@ -80,7 +80,7 @@ export const useGrammar = defineStore('grammar', () => {
   })
 
   const dueList = computed(() => {
-    const now = Date.now()
+    const now = progress.now
     return available.value
       .filter(g => {
         const r = rows.value.get(g.id)
@@ -143,6 +143,7 @@ export const useGrammar = defineStore('grammar', () => {
 
     progress.bumpDay({ grammar_correct: correct, grammar_total: total })
     if (grade === GRADE.AGAIN) progress.logError('grammar', grammarId, { correct, total })
+    else progress.resolveErrorsFor('grammar', grammarId)  // passed since: no longer an open mistake
 
     return { rec, grade }
   }

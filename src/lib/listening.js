@@ -150,6 +150,37 @@ export function buildListenRound (dayWords, pool, { count = 14, seed = 1 } = {})
   return items.slice(0, count)
 }
 
+/**
+ * Which words today's listening round is about.
+ *
+ * Until v6.1 it was "the words the day touched", which broke at both ends:
+ * on a day with nothing new and nothing due the phase was skipped although
+ * the learner holds hundreds of words, and on a day with three words the
+ * same three were asked fourteen times. And a word missed by ear was logged
+ * and never asked again.
+ *
+ *   1. words missed in listening before and not yet got right, newest first
+ *   2. today's words
+ *   3. the words whose memory is weakest right now
+ *
+ * until there are `want` of them. Returns ids, in that priority.
+ */
+export function listenTargets ({ missedIds = [], dayIds = [], weakIds = [], want = 10, usable = () => true } = {}) {
+  const out = []
+  const seen = new Set()
+  const push = (ids, cap) => {
+    for (const id of ids) {
+      if (out.length >= cap) return
+      if (seen.has(id) || !usable(id)) continue
+      seen.add(id); out.push(id)
+    }
+  }
+  push(missedIds, Math.max(2, Math.ceil(want / 2)))   // misses never crowd out today's words
+  push(dayIds, Math.max(want, out.length + dayIds.length))
+  push(weakIds, want)
+  return out
+}
+
 export const LISTEN_LABEL = {
   'word-zh': '聽單字',
   gap: '聽句子填字',

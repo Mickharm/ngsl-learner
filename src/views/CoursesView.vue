@@ -2,6 +2,8 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
+import PART2 from '@/data/part2'
+import { useProgress } from '@/stores/progress'
 import { useGrammar } from '@/stores/grammar'
 import { useEssentials } from '@/stores/essentials'
 import { useParts } from '@/stores/parts'
@@ -15,6 +17,7 @@ import STORIES from '@/data/stories'
  */
 const router = useRouter()
 const auth = useAuth()
+const progress = useProgress()
 const grammar = useGrammar()
 const essentials = useEssentials()
 const parts = useParts()
@@ -39,7 +42,9 @@ const courses = computed(() => [
   { key: 'parts', title: '字首字尾', sub: '15 個單元：合成字、字尾、字首、字根', to: '/parts', done: parts.stats.started, total: parts.stats.total },
   { key: 'grammar', title: '文法', sub: '先看句子猜規則，再用時間軸和色塊理解', to: '/grammar', done: grammar.stats.started, total: grammar.stats.total },
   { key: 'story', title: '故事屋', sub: '分級圖文故事，每個字都能點', to: '/story', done: storiesDone.value, total: STORIES.length },
-  { key: 'essentials', title: '基礎知識', sub: '日期、數字、詞性、多益 Part 5 必考', to: '/essentials', done: essentials.stats.started, total: essentials.stats.total }
+  { key: 'essentials', title: '基礎知識', sub: '日期、數字、詞性、多益 Part 5 必考', to: '/essentials', done: essentials.stats.started, total: essentials.stats.total },
+  // v6.1: the question–response shape of TOEIC Part 2; "done" = answered right at least once
+  { key: 'part2', title: '應答聽力', sub: '多益 Part 2：聽一個問題，從三個回應裡選接得上的', to: '/listen?part2=1', done: Object.values(progress.part2Log).filter(r => r.right > 0).length, total: PART2.length }
 ])
 
 const practice = [

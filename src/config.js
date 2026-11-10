@@ -71,6 +71,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   // convergent. 20/day - what both learners had set - does not.
   newPerDay: 8,
   reviewCap: 60,
+  // lower today's new words when the review queue or recent recall says so (lib/pacing.js)
+  autoPace: true,
   ttsRate: 0.9,
   ttsVoiceURI: '',
   // Units of leading silence inside each utterance. The OS audio stream loses

@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSettings } from '@/stores/settings'
 import { useAuth } from '@/stores/auth'
+import { scoped } from '@/lib/userScope'
 import { useProgress } from '@/stores/progress'
 import { useWords } from '@/stores/words'
 import { useSession } from '@/stores/session'
@@ -153,7 +154,7 @@ async function hardReset () {
   await progress.resetAll()
   session.resetToday()
   await auth.wipeDevice()
-  localStorage.removeItem('ngsl.placed')
+  localStorage.removeItem(scoped('ngsl.placed', auth.userId))
   toast.info('進度已清空')
   router.push('/setup')
 }
@@ -267,6 +268,9 @@ async function checkUpdate () {
           <template v-if="session.newCountLocked">
             今天的新字已經開始了，清單不會中途變動——這個設定<strong>明天生效</strong>。
           </template>
+          <template v-else-if="session.pace.count < s.newPerDay">
+            今天自動放慢為 <strong class="num">{{ session.plan.newCount }}</strong> 個新字。{{ session.pace.note }}
+          </template>
           <template v-else-if="session.plan.newCount < s.newPerDay">
             今天只排得出 <strong class="num">{{ session.plan.newCount }}</strong> 個新字：
             目前解鎖的關卡裡沒有更多沒學過的字了。把已解鎖範圍的字複習到 80% 就會開下一關。
@@ -287,6 +291,20 @@ async function checkUpdate () {
           :value="s.reviewCap" @input="settings.set({ reviewCap: +$event.target.value })"
         >
         <p class="note zh">超過上限的到期卡片會順延到隔天，優先保留最快忘記的那些。</p>
+      </div>
+
+      <div class="field">
+        <div class="row between">
+          <label class="label zh" for="pace">自動調節新字量</label>
+          <button
+            id="pace" class="toggle" :data-on="String(s.autoPace !== false)" :aria-pressed="s.autoPace !== false"
+            @click="settings.set({ autoPace: s.autoPace === false })"
+          />
+        </div>
+        <p class="note zh">
+          待複習超過一天的上限時新字減半，超過一倍半時當天不加新字；最近七天複習答對率低於 65% 也會減半。
+          只會往下調，回到正常後自動恢復，首頁會寫出當天的原因。想完全照上面的數字走就關掉。
+        </p>
       </div>
 
       <!-- v2: the review task is chosen by each word's ladder rung, so the old

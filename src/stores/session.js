@@ -6,7 +6,11 @@ import { useWords } from './words'
 import { useGrammar } from './grammar'
 import { useEssentials } from './essentials'
 import { useParts } from './parts'
+import { useAuth } from './auth'
 import { STATE } from '@/lib/srs'
+import { paceToday } from '@/lib/pacing'
+import { listenTargets } from '@/lib/listening'
+import { scoped, adopt } from '@/lib/userScope'
 
 /**
  * The day's quest. Seven phases, each unlocked by the one before it, so the
@@ -87,9 +91,10 @@ export function questGame (dayKey = todayKey()) {
   return QUEST_GAMES[((days % QUEST_GAMES.length) + QUEST_GAMES.length) % QUEST_GAMES.length]
 }
 
-function readPhaseState () {
+/** The day's phase state, per learner (see lib/userScope.js for why). */
+function readPhaseState (uid) {
   try {
-    const raw = JSON.parse(localStorage.getItem(LS_KEY) || 'null')
+    const raw = JSON.parse(localStorage.getItem(scoped(LS_KEY, uid)) || 'null')
     if (raw?.day === todayKey()) return raw
   } catch { /* ignore */ }
   return { day: todayKey(), done: {}, startedAt: null, seconds: 0 }
@@ -102,13 +107,23 @@ export const useSession = defineStore('session', () => {
   const grammar = useGrammar()
   const essentials = useEssentials()
   const parts = useParts()
+  const auth = useAuth()
 
-  const phase = ref(readPhaseState())
+  adopt(LS_KEY, auth.userId, auth.user?.email)
+  const phase = ref(readPhaseState(auth.userId))
   const activeTimer = ref(null)
 
   function save () {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(phase.value)) } catch { /* ignore */ }
+    try { localStorage.setItem(scoped(LS_KEY, auth.userId), JSON.stringify(phase.value)) } catch { /* ignore */ }
   }
+
+  // another learner signed in on this device: their day, not the last one's
+  watch(() => auth.userId, uid => {
+    adopt(LS_KEY, uid, auth.user?.email)
+    phase.value = readPhaseState(uid)
+  })
+  // the day changed while the app stayed open (progress.now is the clock)
+  watch(() => progress.dayKey, () => rollIfNewDay())
 
   function rollIfNewDay () {
     if (phase.value.day !== todayKey()) {
@@ -127,11 +142,42 @@ export const useSession = defineStore('session', () => {
    */
   const learnStarted = computed(() => (progress.today.new_count || 0) > 0)
 
+  /**
+   * How many new words today can afford (lib/pacing.js): the setting, lowered
+   * when the review queue does not fit in a day or recent reviews are being
+   * missed. Decided once, on the day's first look at the queue — if it were
+   * live, clearing sixty reviews would bring the new words straight back and
+   * the point of holding them would be lost.
+   */
+  const livePace = computed(() => paceToday({
+    newPerDay: settings.state.newPerDay,
+    dueCount: progress.dueCards.length,
+    reviewCap: settings.state.reviewCap,
+    retention: progress.retention7.retention,
+    sample: progress.retention7.n,
+    auto: settings.state.autoPace !== false
+  }))
+  const pace = computed(() => {
+    const p = phase.value.pace
+    if (p && p.base === settings.state.newPerDay && p.auto === (settings.state.autoPace !== false)) return p
+    return { ...livePace.value, auto: settings.state.autoPace !== false }
+  })
+  function fixPace () {
+    rollIfNewDay()
+    if (!progress.loaded || !auth.userId) return
+    const auto = settings.state.autoPace !== false
+    const p = phase.value.pace
+    if (p && p.base === settings.state.newPerDay && p.auto === auto) return
+    phase.value = { ...phase.value, pace: { ...livePace.value, auto } }
+    save()
+  }
+  watch(() => [progress.loaded, progress.dayKey, auth.userId, settings.state.newPerDay, settings.state.autoPace], fixPace, { immediate: true })
+
   /** New word ids to introduce today. */
   const newIds = computed(() => {
     rollIfNewDay()
     if (phase.value.newIds?.length) return phase.value.newIds
-    return progress.newCandidates(settings.state.newPerDay, settings.target)
+    return progress.newCandidates(pace.value.count, settings.target)
   })
 
   /** True when the setting cannot change today's plan any more. */
@@ -140,7 +186,7 @@ export const useSession = defineStore('session', () => {
   )
 
   // Re-plan today when the target changes and nothing has been answered yet.
-  watch(() => settings.state.newPerDay, () => {
+  watch(() => [settings.state.newPerDay, settings.state.autoPace], () => {
     if (newCountLocked.value) return
     if (!phase.value.newIds?.length) return
     const next = { ...phase.value }
@@ -207,9 +253,25 @@ export const useSession = defineStore('session', () => {
     return Math.max(LISTEN_MIN_MINUTES, Math.min(LISTEN_MAX_MINUTES, Math.round(spare)))
   })
 
+  /**
+   * Listening is two parts since v6.1: the word/sentence round, and a short
+   * 應答聽力 round (question → pick the response). The second takes about
+   * three tenths of the phase's minutes, at roughly a minute an item with
+   * its explanation.
+   */
+  const part2Count = computed(() => Math.max(3, Math.min(8, Math.round(listenMinutes.value * 0.3))))
   const listenCount = computed(() =>
-    Math.max(8, Math.min(30, Math.round(listenMinutes.value / LISTEN_ITEM_MINUTES)))
+    Math.max(6, Math.min(24, Math.round((listenMinutes.value * 0.7) / LISTEN_ITEM_MINUTES)))
   )
+
+  /** The words today's listening is about: old misses, today's words, the weakest (lib/listening.js). */
+  const listenWordIds = computed(() => listenTargets({
+    missedIds: progress.listenErrors.map(e => e.wordId),
+    dayIds: dayWordIds.value,
+    weakIds: progress.weakestIds,
+    want: 10,
+    usable: id => !!words.get(id)?.meanings?.length
+  }))
 
   const plan = computed(() => ({
     newCount: newIds.value.length,
@@ -218,6 +280,8 @@ export const useSession = defineStore('session', () => {
     essential: essentialUnit.value,
     parts: partsUnit.value,
     listenCount: listenCount.value,
+    part2Count: part2Count.value,
+    pace: pace.value,
     track: track.value,
     estimatedMinutes: Math.round(fixedMinutes.value + listenMinutes.value)
   }))
@@ -241,7 +305,7 @@ export const useSession = defineStore('session', () => {
   function lockNewIds () {
     rollIfNewDay()
     if (!phase.value.newIds?.length || !newCountLocked.value) {
-      phase.value = { ...phase.value, newIds: progress.newCandidates(settings.state.newPerDay, settings.target) }
+      phase.value = { ...phase.value, newIds: progress.newCandidates(pace.value.count, settings.target) }
       save()
     }
     return phase.value.newIds
@@ -262,7 +326,8 @@ export const useSession = defineStore('session', () => {
       essentials: !essentialUnit.value,
       parts: !partsUnit.value,
       play: (progress.stats.seen || 0) < 6,
-      listen: dayWordIds.value.length === 0,
+      // 應答聽力 needs no deck, but is only worth it once some words are known
+      listen: listenWordIds.value.length < 2 && (progress.stats.seen || 0) < 30,
       write: false,
       read: false,
       summary: false
@@ -312,6 +377,8 @@ export const useSession = defineStore('session', () => {
       save()
     }
     activeTimer.value = setInterval(() => {
+      // time with the app in the background is not study time
+      if (typeof document !== 'undefined' && document.hidden) return
       phase.value = { ...phase.value, seconds: (phase.value.seconds || 0) + 10 }
       save()
       progress.setDay({ seconds: phase.value.seconds })
@@ -356,7 +423,7 @@ export const useSession = defineStore('session', () => {
     PHASES, TRACK, phase, newIds, reviewCards, reviewIds, dayWordIds, grammarPoint, essentialUnit, partsUnit, plan,
     learnStarted, newCountLocked, track, todayPhases, runsToday, nextRoute,
     phaseStatus, currentPhase, completedCount, allDone, minutesToday,
-    fixedMinutes, listenMinutes, listenCount, listenResult, setListenResult,
+    fixedMinutes, listenMinutes, listenCount, part2Count, listenWordIds, pace, listenResult, setListenResult,
     isDone, markDone, lockNewIds, startClock, stopClock, prepareData, resetToday, rollIfNewDay
   }
 })

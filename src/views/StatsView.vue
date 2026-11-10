@@ -24,6 +24,24 @@ const grammar = useGrammar()
 const words = useWords()
 
 const WEEKS = 8
+
+/**
+ * Measured retention (lib/pacing.js): of the reviews that came back after a
+ * gap, the share still remembered — per task, because recognising a word and
+ * spelling it are different memories and the weak one is where time belongs.
+ */
+const TASKS = [
+  ['meaning', '看字選意思'], ['listen', '聽音選意思'], ['recall', '看意思選字'], ['spell', '拼出來'], ['cloze', '填進句子']
+]
+const ret = computed(() => progress.retention30)
+const retTasks = computed(() => TASKS
+  .map(([key, label]) => ({ key, label, ...(ret.value.byMode[key] || { n: 0, right: 0, retention: null }) }))
+  .filter(t => t.n > 0))
+const weakestTask = computed(() => {
+  const rated = retTasks.value.filter(t => t.retention !== null)
+  if (rated.length < 2) return null
+  return rated.reduce((a, b) => (b.retention < a.retention ? b : a))
+})
 const tip = ref(null)
 
 onMounted(() => { progress.loadHistory(WEEKS * 7 + 7) })
@@ -162,6 +180,32 @@ function showTip (payload, evt) {
       </div>
     </section>
 
+    <!-- measured retention -->
+    <section class="card card--pad ret">
+      <div class="chart__head">
+        <h2 class="chart__title zh">實測保留率</h2>
+        <span class="chart__sub num">最近 30 天 · {{ ret.n }} 次複習</span>
+      </div>
+      <p v-if="ret.retention === null" class="ret__none zh">
+        複習滿 20 次才算得出來（現在 {{ ret.n }} 次）。新單字當下的回想不算——那是練習，不是記憶。
+      </p>
+      <template v-else>
+        <div class="ret__top">
+          <b class="ret__big fig">{{ Math.round(ret.retention * 100) }}<small>%</small></b>
+          <p class="ret__say zh">隔一段時間回來還記得的比例。排程瞄準 90%；每答對一次就換更難的考法，所以實測會低一些。</p>
+        </div>
+        <div class="ret__rows">
+          <div v-for="t in retTasks" :key="t.key" class="ret__row">
+            <span class="ret__l zh">{{ t.label }}</span>
+            <span class="bar"><span class="bar__fill" :style="{ width: (t.retention === null ? 0 : t.retention * 100) + '%' }" /></span>
+            <span class="ret__v num">{{ t.retention === null ? '—' : Math.round(t.retention * 100) + '%' }}</span>
+            <span class="ret__n num">{{ t.n }} 次</span>
+          </div>
+        </div>
+        <p v-if="weakestTask" class="ret__weak zh">最弱的是「{{ weakestTask.label }}」。這一級的字會自動多出現幾次，不用另外做什麼。</p>
+      </template>
+    </section>
+
     <!-- volume -->
     <section class="card card--pad chart">
       <div class="chart__head">
@@ -297,6 +341,17 @@ function showTip (payload, evt) {
 </template>
 
 <style scoped>
+.ret__none { font-size: var(--step--1); color: var(--ink-2); line-height: 1.6; }
+.ret__top { display: flex; align-items: center; gap: var(--sp-4); margin-bottom: var(--sp-3); }
+.ret__big { font-size: 3.2rem; line-height: 1; font-weight: 500; }
+.ret__big small { font-size: 0.45em; color: var(--ink-2); margin-left: 2px; }
+.ret__say { font-size: var(--step--2); color: var(--ink-2); line-height: 1.6; }
+.ret__rows { display: flex; flex-direction: column; gap: 10px; }
+.ret__row { display: grid; grid-template-columns: 6.5em 1fr 3em 3.6em; gap: var(--sp-2); align-items: center; font-size: var(--step--2); }
+.ret__l { color: var(--ink); font-weight: 600; }
+.ret__v { text-align: right; font-size: var(--step--1); }
+.ret__n { text-align: right; color: var(--ink-3); }
+.ret__weak { margin-top: var(--sp-3); font-size: var(--step--2); color: var(--ink-2); line-height: 1.6; }
 .stats { display: flex; flex-direction: column; gap: var(--sp-4); }
 .stats__head { display: flex; flex-direction: column; gap: 3px; margin-bottom: var(--sp-1); }
 

@@ -2,9 +2,12 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWords } from '@/stores/words'
-import { useProgress } from '@/stores/progress'
+import { useProgress, todayKey } from '@/stores/progress'
 import { useSession } from '@/stores/session'
-import { gradeFromAnswer } from '@/lib/wordsrs'
+import { useAuth } from '@/stores/auth'
+import { useToast } from '@/stores/toast'
+import { gradeFromAnswer, reviewedToday } from '@/lib/wordsrs'
+import { scoped } from '@/lib/userScope'
 import { glossOf, shuffle, meaningOptions } from '@/lib/game'
 import { saveNote, loadNote } from '@/lib/notes'
 import { sfx } from '@/lib/sfx'
@@ -47,6 +50,8 @@ import MatchPairs from '@/components/games/MatchPairs.vue'
 
 const words = useWords()
 const progress = useProgress()
+const auth = useAuth()
+const toast = useToast()
 const session = useSession()
 const router = useRouter()
 
@@ -137,9 +142,33 @@ function pickGuess (o, i) {
 const guessRight = computed(() => guessPick.value !== null && !!guess.value?.options[guessPick.value]?.correct)
 const guessAnswer = computed(() => guess.value?.options.find(o => o.correct)?.zh || '')
 
+/* ---- where the learner got to, so leaving is not starting over ----
+ *
+ * Word Lab is the longest phase of the day and the only one that used to
+ * forget everything on exit: come back and all eight words were met again
+ * and — worse — recalled and graded again, a second scheduled review on the
+ * same day. The position is kept per learner for the day: words already met
+ * are not met again, words already graded are not asked again.
+ */
+const labKey = () => scoped('ngsl.lab', auth.userId)
+function readLab () {
+  try {
+    const raw = JSON.parse(localStorage.getItem(labKey()) || 'null')
+    if (raw?.day === todayKey() && raw.ids === ids.value.join(',')) return raw
+  } catch { /* ignore */ }
+  return { day: todayKey(), ids: ids.value.join(','), met: 0, graded: [] }
+}
+const lab = ref({ day: '', ids: '', met: 0, graded: [] })
+function saveLab (patch) {
+  lab.value = { ...lab.value, ...patch }
+  try { localStorage.setItem(labKey(), JSON.stringify(lab.value)) } catch { /* ignore */ }
+}
+const resumed = ref(false)
+
 async function nextWord () {
   const w = current.value
   if (w) await saveNote(w.id, note.value)
+  saveLab({ met: Math.max(lab.value.met, meetIndex.value + 1) })
   const met = meetIndex.value + 1
   const sinceMatch = met - matchFrom.value
   if ((sinceMatch >= MATCH_EVERY || met >= list.value.length) && sinceMatch >= 3) {
@@ -166,7 +195,11 @@ function onMatchDone () {
 const matchWords = computed(() => list.value.slice(matchFrom.value, meetIndex.value + 1))
 
 function startRecall () {
-  recallQueue.value = shuffle(list.value.map(w => ({ id: w.id, mode: 'recall', graded: true })), Date.now())
+  // a word that has had today's graded recall is not asked a second time
+  const done = new Set(lab.value.graded)
+  const todo = list.value.filter(w => !done.has(w.id) && !reviewedToday(progress.cards.get(w.id)))
+  if (!todo.length) return finish()
+  recallQueue.value = shuffle(todo.map(w => ({ id: w.id, mode: 'recall', graded: true })), Date.now())
   recallIndex.value = 0
   stage.value = 'recall'
 }
@@ -176,6 +209,7 @@ function onAnswer (a) {
   if (!item?.graded) return
   firstTry.value = new Map(firstTry.value).set(item.id, a.correct)
   progress.gradeCard(item.id, gradeFromAnswer(a), { mode: 'learn', elapsedMs: a.elapsedMs, level: 0 })
+  saveLab({ graded: [...new Set([...lab.value.graded, item.id])] })
   if (!a.correct) {
     // Re-taught by the reveal panel, then tried once more at the end — easier
     // direction, ungraded — so the word is not left on a failure.
@@ -194,6 +228,7 @@ function finish () {
   stage.value = 'done'
   sfx('win')
   session.markDone('learn')
+  try { localStorage.removeItem(labKey()) } catch { /* ignore */ }
 }
 
 function goNext () { router.push(session.nextRoute('learn')) }
@@ -206,6 +241,21 @@ onMounted(() => {
     session.markDone('learn')
     router.replace(session.nextRoute('learn'))
     return
+  }
+  // pick up where the learner left: skip the words already met today
+  lab.value = readLab()
+  const met = Math.min(lab.value.met, ids.value.length)
+  if (met > 0) {
+    resumed.value = true
+    toast.info(met >= ids.value.length ? '單字都看過了，接著做回想' : `接著上次：從第 ${met + 1} 個字開始`)
+    if (met >= ids.value.length) {
+      meetIndex.value = ids.value.length - 1
+      matchFrom.value = ids.value.length
+      startRecall()
+    } else {
+      meetIndex.value = met
+      matchFrom.value = met
+    }
   }
   loadHooks()
 })

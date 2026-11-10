@@ -6,6 +6,7 @@ import { useSession } from '@/stores/session'
 import { useSettings } from '@/stores/settings'
 import { useWords } from '@/stores/words'
 import { useAuth } from '@/stores/auth'
+import { scoped } from '@/lib/userScope'
 import { BANDS } from '@/config'
 import { wordPower, levelOf, titleOf } from '@/lib/xp'
 import { EXAMPLES } from '@/data/morphology'
@@ -34,8 +35,11 @@ const words = useWords()
 const router = useRouter()
 
 const WEEKDAY = ['日', '一', '二', '三', '四', '五', '六']
-const today = new Date()
-const dateLine = `${today.getMonth() + 1} 月 ${today.getDate()} 日　星期${WEEKDAY[today.getDay()]}`
+// on the store's clock, so a dashboard left open overnight shows today's date
+const dateLine = computed(() => {
+  const d = new Date(progress.now)
+  return `${d.getMonth() + 1} 月 ${d.getDate()} 日　星期${WEEKDAY[d.getDay()]}`
+})
 
 const coverage = computed(() => {
   const s = progress.stats
@@ -54,7 +58,7 @@ const accuracy = computed(() => {
   return t.total_count ? Math.round((t.correct_count / t.total_count) * 100) : null
 })
 const needsPlacement = computed(() =>
-  progress.loaded && progress.stats.seen === 0 && !localStorage.getItem('ngsl.placed')
+  progress.loaded && progress.stats.seen === 0 && !localStorage.getItem(scoped('ngsl.placed', auth.userId))
 )
 const needsKey = computed(() => progress.loaded && !settings.hasGeminiKey)
 const power = computed(() => levelOf(wordPower(progress.cards.values())))
@@ -78,10 +82,10 @@ function go (p) { if (p.unlocked) router.push(p.route) }
 const current = computed(() => session.phaseStatus.find(p => p.current))
 const currentIndex = computed(() => session.phaseStatus.findIndex(p => p.current))
 const ORDINAL = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
-const greeting = (() => {
-  const h = today.getHours()
+const greeting = computed(() => {
+  const h = new Date(progress.now).getHours()
   return h < 5 ? '夜深了' : h < 11 ? '早安' : h < 14 ? '午安' : h < 18 ? '下午好' : '晚安'
-})()
+})
 
 /** One word part a day: a course example, preferring words already met. */
 const wotd = computed(() => {
@@ -146,6 +150,13 @@ onUnmounted(() => session.stopClock())
         <span v-if="!current.empty && MINUTES(current)" class="now__min">約 {{ MINUTES(current) }} 分鐘</span>
       </button>
     </section>
+
+    <!-- the day's pace, when it differs from the setting, and why. Under the
+         now panel: above it, three lines of explanation push the one button
+         off the first screen. -->
+    <p v-if="session.pace.note" class="pace zh" :class="`pace--${session.pace.reason}`">
+      <span class="pace__t">{{ session.pace.reason === 'ready' ? '狀態很好' : '今天放慢' }}</span>{{ session.pace.note }}
+    </p>
 
     <!-- the timetable -->
     <section class="quest">
@@ -282,6 +293,10 @@ onUnmounted(() => session.stopClock())
 .lvl__streak { font-size: var(--step--2); font-weight: 600; color: var(--ink); opacity: 0.62; padding-right: 4px; }
 .lvl__streak--on { opacity: 1; color: var(--ink); }
 
+.pace { padding: 12px 16px; border-radius: var(--radius-lg); background: var(--amber-wash); color: var(--ink); font-size: var(--step--1); line-height: 1.6; }
+.pace--ready { background: var(--jade-wash); }
+.pace__t { display: inline-block; font-weight: 700; color: var(--amber); margin-right: 8px; }
+.pace--ready .pace__t { color: var(--jade); }
 .nudge { display: block; padding: 12px 16px; background: var(--amber-wash); color: var(--ink); font-size: var(--step--1); border-radius: var(--radius-lg); line-height: 1.55; }
 
 /* ---- now ---- */

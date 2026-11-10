@@ -73,7 +73,7 @@ export const useParts = defineStore('parts', () => {
   function recOf (id) { return rows.value.get(id) || null }
 
   const dueList = computed(() => {
-    const now = Date.now()
+    const now = progress.now
     return UNITS.filter(u => { const r = rows.value.get(u.id); return r && r.dueAt <= now })
   })
   const nextNew = computed(() => UNITS.find(u => !rows.value.has(u.id)) || null)
@@ -103,6 +103,7 @@ export const useParts = defineStore('parts', () => {
     persist(rec)
     progress.bumpDay({ grammar_correct: correct, grammar_total: total })
     if (grade === GRADE.AGAIN) progress.logError('parts', unitId, { correct, total, title: unit.title })
+    else progress.resolveErrorsFor('parts', unitId)     // passed since: no longer an open mistake
     return { rec, grade }
   }
 

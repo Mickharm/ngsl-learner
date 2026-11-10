@@ -1,12 +1,17 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { supabase } from '@/lib/supabase'
-import { idbGetAll, idbPutMany, idbPut, idbGet, idbDelete, STORE } from '@/lib/idb'
+import { idbGetAll, idbPutMany, idbPut, idbGet, idbDelete, idbClear, STORE } from '@/lib/idb'
 import { newCard, GRADE, STATE } from '@/lib/srs'
 import {
   scheduleWord, migrateLegacy, isMasteredV2, retrievabilityV2, dueSoonest,
-  ladderOf, isV2, easeToDifficulty, V2_BASE
+  ladderOf, isV2, easeToDifficulty, V2_BASE, reviewedToday
 } from '@/lib/wordsrs'
+import { measuredRetention } from '@/lib/pacing'
+import { recordConfusion, topConfusions, settleConfusion, pruneConfusions, contrastRound, isRealConfusion } from '@/lib/confusion'
+import { recordPart2, missedPart2 } from '@/lib/part2'
+import PART2 from '@/data/part2'
+import { useWords } from './words'
 import { STAGE_SIZE, STAGE_UNLOCK_RATIO } from '@/config'
 import AFFIX from '@/data/affix.json'
 const AFFIX_FAMILIES = AFFIX.families
@@ -59,6 +64,7 @@ function cardToRow (c, userId) {
 
 export const useProgress = defineStore('progress', () => {
   const auth = useAuth()
+  const wordStore = useWords()
   const settings = useSettings()
 
   /** wordId -> card */
@@ -69,9 +75,43 @@ export const useProgress = defineStore('progress', () => {
   const loaded = ref(false)
   const syncing = ref(false)
 
-  /** Mutations that could not reach Supabase yet. */
+  /**
+   * The clock the due lists run on.
+   *
+   * `Date.now()` inside a computed is read once and cached until some other
+   * dependency changes. A home-screen app is not reloaded for days, so the
+   * morning after, "what is due" was still last night's answer — usually
+   * nothing — and the review phase showed as empty until the first new word
+   * was graded and invalidated the cache by accident. Everything that asks
+   * "is it due / what day is it" reads this ref instead; it ticks every
+   * minute and whenever the app comes back to the foreground.
+   */
+  const now = ref(Date.now())
+  const dayKey = computed(() => todayKey(new Date(now.value)))
+  function tick () { now.value = Date.now() }
+
+  /** Graded reviews of the last 30 days: what retention is measured on. */
+  const reviews = ref([])
+  /** target|chosen → { n, last, clean } (lib/confusion.js); this device, this learner. */
+  const confusions = ref({})
+  /** 應答聽力 record: item id → { right, wrong, last, lastRight } */
+  const part2Log = ref({})
+
+  /**
+   * Mutations that could not reach Supabase yet. Every item carries the id of
+   * the learner who made it (`uid`): the login screen is a profile picker, so
+   * one device serves several accounts, and before v6.1 a queue left by one
+   * learner (offline, or signed out within a second of answering) was flushed
+   * under whoever signed in next.
+   */
   let outbox = []
   let flushTimer = null
+  const mine = i => !i.uid || i.uid === auth.userId
+
+  // `loaded` means "loaded for the learner who is signed in". The moment that
+  // changes, what is in memory is someone else's deck: nothing may plan a day
+  // from it (session.js fixes the day's pace on `loaded`).
+  watch(() => auth.userId, () => { loaded.value = false }, { flush: 'sync' })
 
   function blankDay (day) {
     return {
@@ -94,11 +134,34 @@ export const useProgress = defineStore('progress', () => {
    * load
    * ------------------------------------------------------------------ */
   async function load () {
-    const cached = await idbGetAll(STORE.CARDS)
-    if (cached.length) cards.value = new Map(cached.map(c => [c.wordId, migrateLegacy(c)]))
+    // The card mirror and the queue belong to whoever used this device last.
+    // If that is someone else, their mirror is not this learner's deck (it is
+    // rebuilt from the server below) and their queued writes stay queued,
+    // tagged, until they sign in again.
+    const owner = await idbGet(STORE.META, 'owner')
+    const sameOwner = !owner || !auth.userId || owner === auth.userId
+    // The queue is read from disk once. On a refresh the copy in memory is
+    // the newer one: enqueue() does not wait for its own write to land.
+    if (!loaded.value) {
+      const savedOutbox = await idbGet(STORE.META, 'outbox')
+      outbox = Array.isArray(savedOutbox) ? savedOutbox.map(i => (i.uid ? i : { ...i, uid: owner || auth.userId || null })) : []
+    }
 
-    const savedOutbox = await idbGet(STORE.META, 'outbox')
-    if (Array.isArray(savedOutbox)) outbox = savedOutbox
+    const cached = sameOwner ? await idbGetAll(STORE.CARDS) : []
+    cards.value = new Map(cached.map(c => [c.wordId, migrateLegacy(c)]))
+    if (!sameOwner) {
+      today.value = blankDay(todayKey())
+      history.value = []
+      errors.value = []
+      reviews.value = []
+      await idbClear(STORE.CARDS)
+    }
+    if (auth.userId) {
+      await idbPut(STORE.META, auth.userId, 'owner')
+      confusions.value = pruneConfusions((await idbGet(STORE.META, `confusions:${auth.userId}`)) || {})
+      part2Log.value = (await idbGet(STORE.META, `part2:${auth.userId}`)) || {}
+    }
+    tick()
 
     if (!auth.userId) { loaded.value = true; return }
 
@@ -125,19 +188,76 @@ export const useProgress = defineStore('progress', () => {
       // on the database before this version goes live.
       for (const r of rows) next.set(r.word_id, migrateLegacy(rowToCard(r)))
       // Anything still queued locally is newer than what the server returned.
-      for (const q of outbox) {
+      for (const q of outbox.filter(mine)) {
         if (q.kind === 'card') next.set(q.card.wordId, migrateLegacy(q.card))
         else if (q.kind === 'card-delete') next.delete(q.wordId)
       }
       cards.value = next
+      await idbClear(STORE.CARDS)
       await idbPutMany(STORE.CARDS, [...next.values()])
 
-      await loadDay()
+      // a queued 'day' write holds counts the server has not seen yet
+      if (!outbox.some(i => mine(i) && i.kind === 'day')) await loadDay()
       await loadHistory()
       await loadErrors()
+      await loadReviews()
       flush()
     } catch { /* offline: run from the local mirror */ }
+    tick()
     loaded.value = true
+  }
+
+  /**
+   * Bring the stores up to date without a page reload: the day has changed,
+   * or the app was in the background long enough that another device may
+   * have been used. Same merge as load() — the server's rows, then whatever
+   * is still queued here on top.
+   */
+  let refreshing = null
+  function refresh () {
+    if (!auth.userId || !loaded.value) return Promise.resolve()
+    if (refreshing) return refreshing
+    refreshing = (async () => {
+      try { await flush(); await load() } finally { refreshing = null }
+    })()
+    return refreshing
+  }
+
+  let hiddenAt = 0
+  const AWAY_MS = 5 * 60_000
+  async function wake () {
+    if (typeof document !== 'undefined' && document.visibilityState !== 'visible') { hiddenAt = Date.now(); return }
+    const away = hiddenAt ? Date.now() - hiddenAt : 0
+    hiddenAt = 0
+    const dayChanged = todayKey() !== today.value.day
+    tick()
+    if (dayChanged) today.value = blankDay(todayKey())
+    if (dayChanged || away > AWAY_MS) await refresh()
+  }
+  if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+    setInterval(() => {
+      const before = dayKey.value
+      tick()
+      // midnight passed with the app open on screen
+      if (dayKey.value !== before) wake()
+    }, 60_000)
+    document.addEventListener('visibilitychange', wake)
+    window.addEventListener('pageshow', e => { if (e.persisted) wake() })
+  }
+
+  async function loadReviews (days = 30) {
+    if (!auth.userId) return
+    const since = new Date(Date.now() - days * 86400000).toISOString()
+    const { data } = await supabase
+      .from('review_log').select('word_id, grade, mode, reviewed_at')
+      .eq('user_id', auth.userId)
+      .gte('reviewed_at', since)
+      .order('reviewed_at', { ascending: false })
+      .limit(4000)
+    const server = data || []
+    // rows still in the queue are not on the server yet
+    const pending = outbox.filter(i => mine(i) && i.kind === 'review').map(i => i.row)
+    reviews.value = [...pending, ...server]
   }
 
   async function loadDay () {
@@ -168,14 +288,32 @@ export const useProgress = defineStore('progress', () => {
       .is('resolved_at', null)
       .order('created_at', { ascending: false })
       .limit(300)
-    errors.value = data || []
+    const rows = data || []
+    // Listening misses from before they could be acted on: keep the newest
+    // 30 words' worth and close the rest, so they stop crowding the window.
+    const keep = new Set()
+    const stale = []
+    for (const e of rows) {
+      if (e.kind !== 'listen') continue
+      if (keep.size < 30 || keep.has(e.ref_id)) keep.add(e.ref_id)
+      else stale.push(e.id)
+    }
+    if (stale.length) {
+      supabase.from('error_log').update({ resolved_at: new Date().toISOString() }).in('id', stale).then(() => {}, () => {})
+    }
+    const gone = new Set(stale)
+    // rows queued here and not yet on the server are still open mistakes
+    const onServer = new Set(rows.map(e => `${e.kind}|${e.ref_id}|${Date.parse(e.created_at)}`))
+    const pending = errors.value.filter(e =>
+      String(e.id).startsWith('local-') && !onServer.has(`${e.kind}|${e.ref_id}|${Date.parse(e.created_at)}`))
+    errors.value = [...pending, ...rows.filter(e => !gone.has(e.id))]
   }
 
   /* ------------------------------------------------------------------ *
    * outbox — every write goes through here so offline never loses data
    * ------------------------------------------------------------------ */
   function enqueue (item) {
-    outbox.push(item)
+    outbox.push({ ...item, uid: auth.userId || null })
     idbPut(STORE.META, outbox, 'outbox')
     clearTimeout(flushTimer)
     flushTimer = setTimeout(flush, 900)
@@ -183,8 +321,10 @@ export const useProgress = defineStore('progress', () => {
 
   async function flush () {
     if (!auth.userId || !outbox.length || syncing.value) return
+    // only this learner's writes; anyone else's wait for them to sign in
+    const batch = outbox.filter(mine)
+    if (!batch.length) return
     syncing.value = true
-    const batch = outbox.slice()
     try {
       const cardRows = batch.filter(i => i.kind === 'card').map(i => cardToRow(i.card, auth.userId))
       const logRows = batch.filter(i => i.kind === 'review').map(i => ({ ...i.row, user_id: auth.userId }))
@@ -221,7 +361,8 @@ export const useProgress = defineStore('progress', () => {
         if (error) throw error
       }
 
-      outbox = outbox.slice(batch.length)
+      const sent = new Set(batch)
+      outbox = outbox.filter(i => !sent.has(i))
       await idbPut(STORE.META, outbox, 'outbox')
     } catch {
       // Leave the queue intact and retry on the next write or app start.
@@ -240,9 +381,24 @@ export const useProgress = defineStore('progress', () => {
   const seenIds = computed(() => new Set(cards.value.keys()))
 
   const dueCards = computed(() => {
-    const now = Date.now()
-    return dueSoonest([...cards.value.values()].filter(c => c.dueAt <= now), now)
+    const t = now.value
+    return dueSoonest([...cards.value.values()].filter(c => c.dueAt <= t), t)
   })
+
+  /** Words held, weakest memory first — what a short listening day is topped up with. */
+  const weakestIds = computed(() => {
+    const t = now.value
+    return [...cards.value.values()]
+      .filter(c => c.state !== STATE.NEW)
+      .map(c => ({ id: c.wordId, r: retrievabilityV2(c, t) }))
+      .sort((a, b) => a.r - b.r)
+      .slice(0, 60)
+      .map(x => x.id)
+  })
+
+  /** Measured retention: the last 30 days for the picture, the last 7 for pacing. */
+  const retention30 = computed(() => measuredRetention(reviews.value, { now: now.value, days: 30 }))
+  const retention7 = computed(() => measuredRetention(reviews.value, { now: now.value, days: 7 }))
 
   const learningCards = computed(() =>
     [...cards.value.values()].filter(c => c.state === STATE.LEARNING || c.state === STATE.RELEARNING)
@@ -368,6 +524,9 @@ export const useProgress = defineStore('progress', () => {
    */
   function gradeCard (wordId, grade, { mode = 'card', elapsedMs = null, level } = {}) {
     const existing = cards.value.get(wordId) || newCard(wordId)
+    // The word has had today's review already: this answer is practice. It
+    // changes nothing in the schedule and nothing in the day's counts.
+    if (reviewedToday(existing)) return existing
     const wasNew = existing.state === STATE.NEW
     const updated = scheduleWord(existing, grade, Date.now(), { level })
 
@@ -377,10 +536,9 @@ export const useProgress = defineStore('progress', () => {
     idbPutMany(STORE.CARDS, [updated])
 
     enqueue({ kind: 'card', card: updated })
-    enqueue({
-      kind: 'review',
-      row: { word_id: wordId, grade, mode, elapsed_ms: elapsedMs, reviewed_at: new Date().toISOString() }
-    })
+    const row = { word_id: wordId, grade, mode, elapsed_ms: elapsedMs, reviewed_at: new Date().toISOString() }
+    enqueue({ kind: 'review', row })
+    reviews.value = [row, ...reviews.value]
 
     bumpDay({
       new_count: wasNew ? 1 : 0,
@@ -467,6 +625,56 @@ export const useProgress = defineStore('progress', () => {
   )
 
   /**
+   * Words missed by ear, one entry per word (the newest miss), newest first.
+   *
+   * These rows were written from the first listening release on, and nothing
+   * ever read them: the notebook listed word / grammar / reading / talk
+   * mistakes only, so a word the learner could read but not hear was logged
+   * and never asked again, and the open rows piled up until they pushed the
+   * others out of the 300-row window the notebook loads. Now they are a tab
+   * of the notebook, they lead the next listening round (lib/listening.js
+   * listenTargets), and getting the word right by ear resolves them.
+   */
+  const listenErrors = computed(() => {
+    const seen = new Set()
+    const out = []
+    for (const e of errors.value) {
+      if (e.kind !== 'listen') continue
+      const id = Number(e.ref_id)
+      if (!Number.isFinite(id) || seen.has(id)) continue
+      // a word whose data is not on this device cannot be played back or asked
+      if (!wordStore.get(id)?.meanings?.length) continue
+      seen.add(id); out.push({ ...e, wordId: id })
+    }
+    return out
+  })
+
+  /** Units (字首字尾 / 基礎知識) whose last sitting failed and have not been passed since. */
+  const unitErrors = computed(() => {
+    const seen = new Set()
+    return errors.value.filter(e => {
+      if (e.kind !== 'parts' && e.kind !== 'essential') return false
+      const k = `${e.kind}:${e.ref_id}`
+      if (seen.has(k)) return false
+      seen.add(k); return true
+    })
+  })
+
+  /** Resolve every open row of one kind about one thing. */
+  function resolveErrorsFor (kind, refId) {
+    const open = errors.value.filter(e => e.kind === kind && String(e.ref_id) === String(refId))
+    if (!open.length) return 0
+    const ids = open.map(e => e.id)
+    errors.value = errors.value.filter(e => !ids.includes(e.id))
+    const remote = ids.filter(id => !String(id).startsWith('local-'))
+    if (auth.userId && remote.length) {
+      supabase.from('error_log').update({ resolved_at: new Date().toISOString() }).in('id', remote).then(() => {}, () => {})
+    }
+    return open.length
+  }
+  const clearListenErrors = wordId => resolveErrorsFor('listen', wordId)
+
+  /**
    * Words that are currently weak.
    *
    * Two signals feed this, and using only one of them was a bug: `lapses` is
@@ -521,7 +729,49 @@ export const useProgress = defineStore('progress', () => {
   }
 
   /** What the tab badge shows — must equal what the page can actually list. */
-  const mistakeCount = computed(() => troubleWordIds.value.size + questionErrors.value.length)
+  const mistakeCount = computed(() =>
+    troubleWordIds.value.size + questionErrors.value.length + listenErrors.value.length + unitErrors.value.length +
+    drillablePairs.value.length + part2Missed.value.length
+  )
+
+  /* ---------------- confusions & 應答聽力: this learner, this device ---------------- */
+
+  /**
+   * What goes to IndexedDB must be plain data. A ref's value is a reactive
+   * proxy, and so is every nested object read through it (so `{ ...ledger }`
+   * is a plain shell around proxies); a proxy cannot be structured-cloned and
+   * the write fails without a sound. The ledgers are small: copy them.
+   */
+  const plain = v => JSON.parse(JSON.stringify(v))
+
+  function noteConfusion (targetId, chosenId) {
+    const next = recordConfusion(confusions.value, targetId, chosenId)
+    if (next === confusions.value) return
+    confusions.value = next
+    if (auth.userId) idbPut(STORE.META, plain(next), `confusions:${auth.userId}`)
+  }
+  function settlePair (a, b) {
+    const next = settleConfusion(confusions.value, a, b)
+    confusions.value = next
+    if (auth.userId) idbPut(STORE.META, plain(next), `confusions:${auth.userId}`)
+  }
+  // every pick is kept in the ledger; only real confusions are listed and counted
+  const confusedPairs = computed(() =>
+    topConfusions(confusions.value, { now: now.value, limit: 40 })
+      .filter(p => isRealConfusion(p, wordStore.get(p.a), wordStore.get(p.b)))
+      .slice(0, 12)
+  )
+  /** The pairs the notebook lists: only ones a fair two-way question can be asked about. */
+  const drillablePairs = computed(() =>
+    contrastRound(confusedPairs.value, id => wordStore.get(id), { maxPairs: 12, seed: 1 }).map(r => ({ a: r.a, b: r.b, n: r.n }))
+  )
+  const part2Missed = computed(() => missedPart2(PART2, part2Log.value))
+
+  function notePart2 (id, correct) {
+    const next = recordPart2(part2Log.value, id, correct)
+    part2Log.value = next
+    if (auth.userId) idbPut(STORE.META, plain(next), `part2:${auth.userId}`)
+  }
 
   /** Clear the open word-level errors once a word is answered well again. */
   function clearWordErrors (wordId) {
@@ -564,13 +814,22 @@ export const useProgress = defineStore('progress', () => {
     today.value = blankDay(todayKey())
     history.value = []
     errors.value = []
-    outbox = []
-    await idbPut(STORE.META, [], 'outbox')
-    await idbPutMany(STORE.CARDS, [])
+    reviews.value = []
+    confusions.value = {}
+    part2Log.value = {}
+    outbox = outbox.filter(i => !mine(i))
+    await idbPut(STORE.META, outbox, 'outbox')
+    await idbClear(STORE.CARDS)
+    await idbDelete(STORE.META, `confusions:${auth.userId}`)
+    await idbDelete(STORE.META, `part2:${auth.userId}`)
   }
 
   return {
     cards, today, history, errors, loaded, syncing,
+    now, dayKey, tick, wake, refresh,
+    reviews, retention30, retention7, weakestIds,
+    listenErrors, unitErrors, resolveErrorsFor, clearListenErrors,
+    confusions, confusedPairs, drillablePairs, noteConfusion, settlePair, part2Log, part2Missed, notePart2,
     seenIds, dueCards, learningCards, stats, unlockedStage, streak, dayAccuracy,
     troubleWords, troubleWordIds, questionErrors, mistakeCount, clearWordErrors,
     load, loadDay, loadHistory, loadErrors, flush,

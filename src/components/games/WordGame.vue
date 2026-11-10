@@ -10,6 +10,8 @@ import { meaningOptions, wordOptions, letterTiles, glossOf, sameWord } from '@/l
 import { clozeSentence, LADDER } from '@/lib/wordsrs'
 import { speak } from '@/lib/tts'
 import { useSettings } from '@/stores/settings'
+import { useWords } from '@/stores/words'
+import { useProgress } from '@/stores/progress'
 
 /**
  * One retrieval task for one word, in one of the five ladder modes.
@@ -36,6 +38,8 @@ const props = defineProps({
 const emit = defineEmits(['answer', 'next'])
 
 const settings = useSettings()
+const wordsStore = useWords()
+const progressStore = useProgress()
 const shownAt = ref(Date.now())
 const settled = ref(false)
 const result = ref(null)          // { correct, hinted }
@@ -67,6 +71,7 @@ function reset () {
   shownAt.value = Date.now()
   settled.value = false
   result.value = null
+  if (typeof confused !== 'undefined') confused.value = null
   picked.value = null
   hinted.value = false
   typed.value = ''
@@ -95,11 +100,29 @@ const revealChars = computed(() => {
   return m + (result.value?.correct ? 0 : (props.word.examples?.[0]?.en?.length || 0))
 })
 
+/**
+ * The other word, when a wrong answer was a real word: the distractor that
+ * was picked, or what was typed. That pick is recorded as a confusion
+ * (lib/confusion.js) — the notebook drills the pair head to head — and the
+ * reveal sets the two words side by side instead of only striking one out.
+ */
+const confused = ref(null)
+function otherWord (extra) {
+  let id = extra.givenId ?? null
+  if (!id && extra.given) id = wordsStore.lookup(String(extra.given))
+  if (!id || id === props.word.id) return null
+  const w = wordsStore.get(id)
+  return w?.meanings?.length ? w : null
+}
+const short = w => (w?.meanings?.[0]?.zh || '').replace(/[（(][^）)]*[）)]/g, '').split(/[;；]/)[0].trim()
+
 function settle (correct, extra = {}) {
   if (settled.value) return
   settled.value = true
   given.value = extra.given || ''
   result.value = { correct, hinted: !!extra.hinted }
+  confused.value = correct ? null : otherWord(extra)
+  if (confused.value) progressStore.noteConfusion(props.word.id, confused.value.id)
   sfx(correct ? 'good' : 'bad')
   if (!correct) buzz(40)
   emit('answer', {
@@ -107,7 +130,8 @@ function settle (correct, extra = {}) {
     hinted: !!extra.hinted,
     elapsedMs: Date.now() - shownAt.value,
     mode: props.mode,
-    given: extra.given ?? null
+    given: extra.given ?? null,
+    confusedWith: confused.value?.id ?? null
   })
   // Hear the word once more on the reveal — sound + spelling + meaning together.
   if (props.mode !== 'meaning' && props.mode !== 'listen') say(props.word.headword)
@@ -116,12 +140,12 @@ function settle (correct, extra = {}) {
 function pickMeaning (o, i) {
   if (settled.value) return
   picked.value = i
-  settle(o.correct, { given: o.zh })
+  settle(o.correct, { given: o.zh, givenId: o.id })
 }
 function pickWord (o, i) {
   if (settled.value) return
   picked.value = i
-  settle(o.correct, { given: o.text })
+  settle(o.correct, { given: o.text, givenId: o.id })
 }
 
 /* spell */
@@ -286,7 +310,12 @@ onUnmounted(() => clearTimeout(timer))
         <AudioButton :text="word.headword" size="md" />
       </div>
       <p class="reveal__zh"><span class="wg__pos">{{ pos }}</span><span class="gloss">{{ word.meanings?.map(m => m.zh).join('；') }}</span></p>
-      <p v-if="!result.correct && given" class="reveal__given zh">你的答案：<s>{{ given }}</s></p>
+      <div v-if="!result.correct && confused" class="reveal__vs">
+        <span class="reveal__vs-t zh">你選的是另一個字</span>
+        <p><b>{{ confused.headword }}</b><span class="zh">{{ short(confused) }}</span></p>
+        <p><b>{{ word.headword }}</b><span class="zh">{{ short(word) }}</span></p>
+      </div>
+      <p v-else-if="!result.correct && given" class="reveal__given zh">你的答案：<s>{{ given }}</s></p>
       <p v-if="!result.correct && word.examples?.[0]" class="reveal__ex">{{ word.examples[0].en }}<br><span class="zh dim">{{ word.examples[0].zh }}</span></p>
     </AnswerSheet>
   </section>
@@ -366,6 +395,12 @@ onUnmounted(() => clearTimeout(timer))
 .reveal__top { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); }
 .reveal__zh { font-size: var(--step-1); color: var(--ink); }
 .reveal__given { font-size: var(--step--1); color: var(--ink-3); }
+.reveal__vs { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: var(--r-inset); background: var(--amber-wash); }
+.reveal__vs-t { font-size: var(--step--2); font-weight: 700; color: var(--amber); }
+.reveal__vs p { display: flex; align-items: baseline; gap: 10px; font-size: var(--step--1); }
+.reveal__vs b { font-family: var(--font-word); font-size: var(--step-0); min-width: 5.5em; }
+.reveal__vs p:first-of-type b { color: var(--redpen); }
+.reveal__vs p:last-of-type b { color: var(--jade); }
 .reveal__given s { color: var(--redpen); font-family: var(--font-word); }
 .reveal__ex { font-family: var(--font-word); font-size: var(--step-0); line-height: 1.55; background: var(--surface-2); border-radius: var(--r-inset); padding: 10px 12px; }
 
