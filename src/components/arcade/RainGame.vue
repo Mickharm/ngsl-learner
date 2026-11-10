@@ -153,7 +153,7 @@ onUnmounted(() => { cancelAnimationFrame(raf); clearTimeout(nextTimer) })
   position: relative; height: min(44dvh, 360px); overflow: hidden;
   border-radius: var(--radius-xl);
   /* a pane of glass the words fall down; the ground is the bottom edge */
-  background: var(--surface); -webkit-backdrop-filter: blur(20px) saturate(112%); backdrop-filter: blur(20px) saturate(112%);
+  background: var(--surface); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%);
   box-shadow: var(--rim), var(--shadow-1);
 }
 .drop { position: absolute; left: 0; right: 0; top: 6px; display: flex; justify-content: center; will-change: transform; }

@@ -735,7 +735,7 @@ onUnmounted(() => { session.stopClock(); stopSpeaking() })
   box-shadow: var(--glass-rim), var(--shadow-2);
 }
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .comp { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(115%); backdrop-filter: blur(24px) saturate(115%); }
+  .comp { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(145%); backdrop-filter: blur(24px) saturate(145%); }
 }
 @media (prefers-reduced-transparency: reduce) { .comp { background: var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 .comp__tools { display: flex; gap: 6px; padding: 0 2px; }

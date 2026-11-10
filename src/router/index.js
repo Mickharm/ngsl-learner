@@ -8,9 +8,9 @@ import { useAuth } from '@/stores/auth'
  */
 
 const routes = [
-  { path: '/login', name: 'login', component: () => import('@/views/LoginView.vue'), meta: { public: true, chrome: false } },
+  { path: '/login', name: 'login', component: () => import('@/views/LoginView.vue'), meta: { public: true, chrome: false, scene: 'open' } },
   { path: '/setup', name: 'setup', component: () => import('@/views/PlacementView.vue'), meta: { chrome: false } },
-  { path: '/', name: 'dashboard', component: () => import('@/views/DashboardView.vue') },
+  { path: '/', name: 'dashboard', component: () => import('@/views/DashboardView.vue'), meta: { scene: 'open' } },
   { path: '/learn', name: 'learn', component: () => import('@/views/LearnView.vue'), meta: { chrome: false } },
   { path: '/review', name: 'review', component: () => import('@/views/ReviewView.vue'), meta: { chrome: false } },
   { path: '/grammar', name: 'grammar', component: () => import('@/views/GrammarView.vue'), meta: { chrome: false } },
@@ -29,7 +29,7 @@ const routes = [
   // emoji sticker book went with the emoji.
   { path: '/arcade', redirect: '/games' },
   { path: '/collection', redirect: '/me' },
-  { path: '/summary', name: 'summary', component: () => import('@/views/SummaryView.vue'), meta: { chrome: false } },
+  { path: '/summary', name: 'summary', component: () => import('@/views/SummaryView.vue'), meta: { chrome: false, scene: 'open' } },
   { path: '/errors', name: 'errors', component: () => import('@/views/ErrorsView.vue') },
   { path: '/travel', name: 'travel', component: () => import('@/views/TravelView.vue') },
   { path: '/stats', name: 'stats', component: () => import('@/views/StatsView.vue') },

@@ -17,7 +17,7 @@ onMounted(() => {
   const W = c.width = window.innerWidth * dpr
   const H = c.height = window.innerHeight * dpr
   const ctx = c.getContext('2d')
-  const colors = ['#ffc531', '#2f6fed', '#7a3fd0', '#148f55', '#d93a40']
+  const colors = ['#e2bd62', '#165e83', '#7ebea5', '#c98f9c', '#3f7ea3']
   const letters = 'ABCDEFGHIJKLMNOPRSTUVWY'
   const parts = Array.from({ length: 90 }, () => ({
     x: W / 2 + (Math.random() - 0.5) * W * 0.3,
@@ -42,7 +42,7 @@ onMounted(() => {
       ctx.fillStyle = p.c
       ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s)
       ctx.fillStyle = '#fff'
-      ctx.font = `700 ${p.s * 0.7}px Lexend, sans-serif`
+      ctx.font = `700 ${p.s * 0.7}px Andika, sans-serif`
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
       ctx.fillText(p.ch, 0, p.s * 0.04)
       ctx.restore()

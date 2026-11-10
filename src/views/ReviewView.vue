@@ -195,7 +195,7 @@ onUnmounted(() => session.stopClock())
 .tally__sep { color: var(--ink-3); }
 
 .sum { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); text-align: center; padding-top: var(--sp-6); }
-.sum__big { font-size: var(--step-6); color: var(--jade); line-height: 1; }
+.sum__big { font-size: 4rem; color: var(--jade); line-height: 1; font-family: var(--font-fig); font-variant-numeric: lining-nums; font-weight: 500; }
 .sum__label { color: var(--ink-2); font-size: var(--step--1); }
 .sum__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); width: 100%; margin-top: var(--sp-2); }
 .sum__cell { padding: var(--sp-3) var(--sp-2); display: flex; flex-direction: column; gap: 2px; font-size: var(--step--2); color: var(--ink-3); }

@@ -1,30 +1,40 @@
 /* ==========================================================================
-   NGSL Learner v5.1 — 霞（kasumi）: low-key Japanese glass
+   NGSL Learner v6 — 一日山水: one landscape, one light
 
-   v5.0 was Apple glass over a saturated aurora. Two problems, one cause:
-   colour was loud, and the glass did not read as glass — a frosted pane over
-   a formless gradient has nothing to blur, so it looks like milky plastic.
+   v5 was frosted glass over a pale field: tasteful, and almost nothing to
+   look at. Glass is seen by what is behind it and by the light on it, and
+   there was neither. v6 puts a place behind the app and a light in it.
 
-   Glass is seen through what is behind it. So the backdrop now has structure,
-   drawn from Japanese painting: すやり霞 (long bands of mist), 遠山 (layered
-   far mountains) and a pale moon, all in 日本の伝統色 at low saturation —
-   白練 paper, 青鈍 hills, 藍 ink. Panels blur it for real; as a page scrolls,
-   the hills and bands slide soft behind every card, and that is the 透.
+   The scene (src/lib/scene.js, painted by Backdrop.vue): five ridgelines in a
+   sea of cloud under a sky. The sun — the moon, in the dark theme — travels
+   an arc across it, one station for each period of the day's timetable:
+   dawn with nothing done, a gold dusk when the last period is finished; at
+   night a crescent that waxes to full. The picture is the progress bar.
 
-   Colour roles (hex from 和色 references; sources differ slightly):
+   Everything in front of it is one material, glass, lit from that light:
+   --lx is where the light is across the screen (Backdrop publishes it), and
+   every panel carries a wash of light on its top edge at that position. So
+   as the day goes on the highlights on the panels move with the sun.
+
+   Where it is quiet on purpose: inside a lesson the range recedes to a pale
+   band behind the header and text rests on plain paper. The scene is for
+   arriving and for finishing; the work in between gets an even field.
+
+   Colour roles (和色, unchanged since v5.1 so nothing has to be relearned):
      藍 #165e83   action           茜 #b7282e   wrong / remove
      千歳緑 #316745 right (text)    青磁 #7ebea5 right (fill, muted)
      芥子 #d0af4c  highlight        琥珀 #bf783a caution
-   Learners keep their colour, muted: Dai 灰桜, Xin 秘色, 玟廷 芥子.
+   Learners: Dai 灰桜, Xin 秘色, 玟廷 芥子 — each tints their own sky and
+   has their own mountain range.
 
-   Two material layers (Apple HIG › Materials):
-     content   panels: real blur, thin fill, light along the top edge
-     controls  tab bar / header / sheet / composer: thicker, floating
+   Type: 明朝 for titles (Songti TC on Apple, Noto Serif TC elsewhere) with
+   Newsreader as its Latin and figures, so "Mick" and "8/8" in a title are
+   set in a face drawn for them; the system sans for UI; Andika for the
+   English being learned (single-storey a and g).
+
    A lite mode (設定 › 玻璃效果, :root[data-glass="lite"]) and
-   prefers-reduced-transparency drop the blur for solid fills.
-
-   Type: 明朝 for headings (Songti TC on Apple, Noto Serif TC elsewhere),
-   the system sans for UI, Andika for English (single-storey a and g).
+   prefers-reduced-transparency drop the blur for solid fills; the scene
+   stays, since it costs one paint.
    ========================================================================== */
 
 @font-face {
@@ -41,14 +51,26 @@
   font-display: swap;
   src: url('../assets/fonts/andika-latin-700-normal.woff2') format('woff2');
 }
+/* The Latin half of the title face. Restricted to Latin so CJK falls through
+   to 明朝; the optical-size axis gives large sizes their display cut. */
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('../assets/fonts/newsreader-latin-opsz-normal.woff2') format('woff2-variations');
+  unicode-range: U+0020-007E, U+00A0-00FF, U+2010-2015, U+2018-201D, U+2026;
+}
 
 :root {
   --font-sys: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', 'PingFang TC', 'Noto Sans TC', 'Microsoft JhengHei', system-ui, sans-serif;
   --font-word: 'Andika', -apple-system, 'PingFang TC', 'Noto Sans TC', system-ui, sans-serif;
   --font-ui: var(--font-sys);
   --font-zh: var(--font-sys);
-  /* headings: 明朝. The name --font-kai is kept from v4 so every heading follows. */
-  --font-kai: 'Songti TC', 'Noto Serif TC', 'Source Han Serif TC', 'PMingLiU', serif;
+  /* titles: 明朝, Latin and figures from Newsreader. The name --font-kai is
+     kept from v4 so every heading follows. */
+  --font-kai: 'Newsreader', 'Songti TC', 'Noto Serif TC', 'Source Han Serif TC', 'PMingLiU', serif;
+  --font-fig: 'Newsreader', 'Songti TC', 'Noto Serif TC', serif;
   --font-mono: var(--font-sys);
 
   --step--2: 0.75rem;
@@ -66,176 +88,179 @@
 
   --radius-sm: 10px;
   --radius: 12px;
-  --radius-lg: 20px;
-  --radius-xl: 24px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
   --radius-pill: 999px;
-  --r-panel: 20px;
-  --r-control: 14px;
+  --r-panel: 22px;
+  --r-control: 15px;
   --r-inset: 12px;
 
-  /* backdrop: 白練 paper; the scene is drawn by Backdrop.vue */
-  --bg:        #edece8;
-  --sky:       #e4e1e0;      /* tinted per learner below */
-  --moon:      #ebe2e0;
-  --mist:      rgba(255, 255, 255, 0.5);
-  --hill-1:    #d9dbd6;      /* far */
-  --hill-2:    #c9cdc7;
-  --hill-3:    #b9beb7;      /* near: 青鈍, lightened */
-  --a1: #c4979b; --a2: #8fadb9; --a3: #c4a862;   /* all three learners, muted */
+  /* where the light is (Backdrop.vue keeps these current) */
+  --lx: 22%;
+  --ly: 240px;
 
-  /* labels: 墨 */
-  --ink:         #282725;
-  --ink-2:       #5b5853;
-  --ink-3:       #8b8781;
-  --rule:        rgba(60, 55, 50, 0.12);
-  --rule-strong: rgba(60, 55, 50, 0.24);
+  /* the paper the content rests on; the sky above it is painted */
+  --bg:        #f0eee9;
 
-  /* content material: thin, blurred, lit along the top edge */
-  --paper:       #f3f2ef;
-  --surface:     rgba(251, 251, 249, 0.62);
-  --surface-solid: #f7f6f3;
-  --surface-2:   rgba(60, 55, 50, 0.07);
-  --surface-3:   rgba(60, 55, 50, 0.13);
-  --rim:         inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 0 0 0.5px rgba(255, 255, 255, 0.55), 0 0 0 0.5px rgba(60, 55, 50, 0.07);
+  /* labels: 墨, a little toward 藍 so it sits in the scene's air */
+  --ink:         #1c2229;
+  --ink-2:       #4d555e;
+  --ink-3:       #838a92;
+  --rule:        rgba(28, 40, 58, 0.11);
+  --rule-strong: rgba(28, 40, 58, 0.22);
 
-  /* control glass */
-  --glass:       rgba(248, 248, 246, 0.42);
-  --glass-thick: rgba(246, 245, 242, 0.76);
-  --glass-solid: #f3f2ef;
-  --glass-rim:   inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(255, 255, 255, 0.2), inset 0 0 0 0.5px rgba(255, 255, 255, 0.6), 0 0 0 0.5px rgba(60, 55, 50, 0.08);
+  /* glass, content weight: thin, blurred, lit from the light */
+  --paper:       #f4f3ef;
+  --surface:     rgba(255, 255, 255, 0.54);
+  --surface-solid: #f8f7f4;
+  --surface-2:   rgba(28, 40, 58, 0.06);
+  --surface-3:   rgba(28, 40, 58, 0.12);
+  --sheen:       rgba(255, 255, 255, 0.6);
+  --rim:         inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 0 0 0.5px rgba(255, 255, 255, 0.6), 0 0 0 0.5px rgba(28, 40, 58, 0.07);
+
+  /* glass, control weight: tab bar, headers, sheets */
+  --glass:       rgba(255, 255, 255, 0.46);
+  --glass-thick: rgba(250, 250, 248, 0.8);
+  --glass-solid: #f6f5f1;
+  --glass-rim:   inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.25), inset 0 0 0 0.5px rgba(255, 255, 255, 0.65), 0 0 0 0.5px rgba(28, 40, 58, 0.09);
   --nav-bg:      var(--glass);
 
   /* staff ruling */
-  --line:        rgba(22, 94, 131, 0.22);
-  --line-base:   rgba(183, 40, 46, 0.45);
+  --line:        rgba(22, 94, 131, 0.24);
+  --line-base:   rgba(183, 40, 46, 0.5);
 
   /* tint & semantic colours */
   --pen:         #165e83;   /* 藍 */
+  --pen-hi:      #2a7aa3;   /* the lit top of a 藍 control */
   --pen-ink:     #ffffff;
-  --pen-wash:    rgba(22, 94, 131, 0.09);
+  --pen-wash:    rgba(22, 94, 131, 0.1);
+  --pen-glow:    rgba(22, 94, 131, 0.42);
   --redpen:      #b7282e;   /* 茜 */
   --redpen-wash: rgba(183, 40, 46, 0.08);
   --red-fill:    #b5463f;
   --jade:        #316745;   /* 千歳緑 */
   --jade-ink:    #2a5a3c;
-  --jade-wash:   rgba(126, 190, 165, 0.2);
-  --jade-edge:   rgba(49, 103, 69, 0.3);
+  --jade-wash:   rgba(126, 190, 165, 0.22);
+  --jade-edge:   rgba(49, 103, 69, 0.32);
   --green:       #6f9e86;   /* 青磁, deepened for fills */
   --amber:       #92602a;   /* 琥珀, text-safe */
-  --amber-wash:  rgba(191, 120, 58, 0.11);
-  --amber-edge:  rgba(191, 120, 58, 0.32);
+  --amber-wash:  rgba(191, 120, 58, 0.12);
+  --amber-edge:  rgba(191, 120, 58, 0.34);
   --rose:        #b7282e;
   --rose-wash:   rgba(183, 40, 46, 0.08);
   --rose-edge:   rgba(183, 40, 46, 0.28);
   /* v5.2: no second accent — the old violet role is the 藍 action colour */
   --violet:      var(--pen);
   --violet-wash: var(--pen-wash);
+  /* gold of the light itself: the level, the streak, a record */
+  --gold:        #a9781f;
+  --gold-fill:   #e2bd62;
+  --gold-wash:   rgba(226, 189, 98, 0.24);
 
   /* word-part marks: 鴇 / 芥子 / 秘色 */
-  --hl-yellow:   rgba(208, 175, 76, 0.34);
-  --hl-pink:     rgba(214, 140, 150, 0.3);
-  --hl-blue:     rgba(110, 160, 182, 0.28);
-  --hl-green:    rgba(126, 190, 165, 0.32);
-  --sun:         #d6bb6a;
+  --hl-yellow:   rgba(208, 175, 76, 0.36);
+  --hl-pink:     rgba(214, 140, 150, 0.32);
+  --hl-blue:     rgba(110, 160, 182, 0.3);
+  --hl-green:    rgba(126, 190, 165, 0.34);
+  --sun:         #e2bd62;
   --sun-edge:    #b99b45;
   --sun-ink:     #282725;
   --sun-wash:    rgba(208, 175, 76, 0.26);
 
-  --t-prefix: #282725; --t-prefix-bg: var(--hl-pink);   --t-prefix-edge: rgba(190, 110, 120, 0.6);
-  --t-root:   #282725; --t-root-bg:   var(--hl-yellow); --t-root-edge:   rgba(176, 145, 60, 0.7);
-  --t-suffix: #282725; --t-suffix-bg: var(--hl-blue);   --t-suffix-edge: rgba(80, 130, 155, 0.6);
-  --t-base:   #282725; --t-base-bg:   transparent;      --t-base-edge:   var(--rule-strong);
+  --t-prefix: #1c2229; --t-prefix-bg: var(--hl-pink);   --t-prefix-edge: rgba(190, 110, 120, 0.6);
+  --t-root:   #1c2229; --t-root-bg:   var(--hl-yellow); --t-root-edge:   rgba(176, 145, 60, 0.7);
+  --t-suffix: #1c2229; --t-suffix-bg: var(--hl-blue);   --t-suffix-edge: rgba(80, 130, 155, 0.6);
+  --t-base:   #1c2229; --t-base-bg:   transparent;      --t-base-edge:   var(--rule-strong);
 
-  --slab:        rgba(40, 39, 37, 0.9);    /* 墨 panel */
+  --slab:        rgba(24, 32, 44, 0.9);    /* 墨 panel */
   --slab-ink:    #f1f0ec;
 
-  --shadow-1: 0 1px 2px rgba(40, 35, 30, 0.04), 0 10px 28px -16px rgba(40, 35, 30, 0.22);
-  --shadow-2: 0 2px 6px rgba(40, 35, 30, 0.05), 0 18px 40px -18px rgba(40, 35, 30, 0.3);
-  --shadow-3: 0 28px 60px -24px rgba(40, 35, 30, 0.36);
+  /* shadows take the colour of the range, not of soot */
+  --shadow-1: 0 1px 2px rgba(30, 44, 70, 0.05), 0 14px 30px -18px rgba(30, 44, 70, 0.3);
+  --shadow-2: 0 2px 6px rgba(30, 44, 70, 0.06), 0 22px 44px -20px rgba(30, 44, 70, 0.38);
+  --shadow-3: 0 30px 64px -24px rgba(30, 44, 70, 0.45);
 
   --focus: #165e83;
   color-scheme: light;
 }
 
-/* each learner's sky and moon, muted */
-:root[data-learner="pink"]   { --sky: #e9e0e1; --moon: #e9dada; --a1: #c4979b; --a2: #e3cfd0; --a3: #a99aae; }
-:root[data-learner="blue"]   { --sky: #dde5e8; --moon: #d3e1e5; --a1: #6f95a6; --a2: #c6d8de; --a3: #8ea79a; }
-:root[data-learner="yellow"] { --sky: #e9e5d8; --moon: #ebe2c6; --a1: #b99a52; --a2: #e6dcc0; --a3: #b2a48a; }
+/* Learners keep their colour for small marks; the sky and range are tinted
+   in scene.js. */
+:root                         { --a1: #c4979b; --a2: #8fadb9; --a3: #c4a862; }
+:root[data-learner="pink"]    { --a1: #c98f9c; --a2: #e6cdd3; --a3: #a892b0; }
+:root[data-learner="blue"]    { --a1: #5f97a8; --a2: #c2dbe0; --a3: #86ab9c; }
+:root[data-learner="yellow"]  { --a1: #c39f4c; --a2: #ecdfba; --a3: #b59f7c; }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    /* 墨夜: sumi night, the hills a shade lighter than the sky */
-    --bg: #151615; --sky: #1a1c1c; --moon: #262928; --mist: rgba(255, 255, 255, 0.045);
-    --hill-1: #202322; --hill-2: #1b1e1d; --hill-3: #171918;
-    --ink: #ecebe6; --ink-2: rgba(236, 235, 230, 0.7); --ink-3: rgba(236, 235, 230, 0.44);
-    --rule: rgba(236, 235, 230, 0.1); --rule-strong: rgba(236, 235, 230, 0.2);
-    --paper: #151615; --surface: rgba(46, 48, 47, 0.5); --surface-solid: #222423;
-    --surface-2: rgba(236, 235, 230, 0.07); --surface-3: rgba(236, 235, 230, 0.13);
-    --rim: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 0 0.5px rgba(255, 255, 255, 0.07);
-    --glass: rgba(40, 42, 41, 0.42); --glass-thick: rgba(34, 36, 35, 0.8); --glass-solid: #222423;
-    --glass-rim: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 0.5px rgba(255, 255, 255, 0.09);
-    --line: rgba(143, 180, 200, 0.26); --line-base: rgba(214, 110, 110, 0.5);
-    --pen: #3f7ea3; --pen-ink: #ffffff; --pen-wash: rgba(110, 160, 190, 0.15);
-    --redpen: #d98479; --redpen-wash: rgba(217, 132, 121, 0.13); --red-fill: #a9524a;
-    --jade: #93c3a9; --jade-ink: #a8d0ba; --jade-wash: rgba(126, 190, 165, 0.14); --jade-edge: rgba(126, 190, 165, 0.35);
+/* 月夜: night blue, not soot. Glass is thin and cool; the moon lights it. */
+    --bg: #0c1118;
+    --ink: #e9edf4; --ink-2: rgba(233, 237, 244, 0.72); --ink-3: rgba(233, 237, 244, 0.46);
+    --rule: rgba(200, 216, 246, 0.1); --rule-strong: rgba(200, 216, 246, 0.2);
+    --paper: #0c1118; --surface: rgba(44, 58, 84, 0.42); --surface-solid: #18202d;
+    --surface-2: rgba(200, 216, 246, 0.07); --surface-3: rgba(200, 216, 246, 0.14);
+    --sheen: rgba(170, 196, 242, 0.13);
+    --rim: inset 0 1px 0 rgba(214, 228, 255, 0.16), inset 0 0 0 0.5px rgba(214, 228, 255, 0.08);
+    --glass: rgba(34, 46, 68, 0.5); --glass-thick: rgba(21, 28, 41, 0.84); --glass-solid: #161d29;
+    --glass-rim: inset 0 1px 0 rgba(214, 228, 255, 0.18), inset 0 0 0 0.5px rgba(214, 228, 255, 0.1);
+    --line: rgba(143, 180, 214, 0.28); --line-base: rgba(214, 110, 110, 0.5);
+    --pen: #3f7ea3; --pen-hi: #4a8ab0; --pen-ink: #ffffff; --pen-wash: rgba(110, 165, 205, 0.17); --pen-glow: rgba(70, 140, 190, 0.5);
+    --redpen: #de8a80; --redpen-wash: rgba(222, 138, 128, 0.14); --red-fill: #a9524a;
+    --jade: #93c8ac; --jade-ink: #a8d4bd; --jade-wash: rgba(126, 190, 165, 0.15); --jade-edge: rgba(126, 190, 165, 0.38);
     --green: #5e8a74;
-    --amber: #d2a46a; --amber-wash: rgba(210, 164, 106, 0.13); --amber-edge: rgba(210, 164, 106, 0.35);
-    --rose: #d98479; --rose-wash: rgba(217, 132, 121, 0.13); --rose-edge: rgba(217, 132, 121, 0.35);
+    --amber: #d8aa6e; --amber-wash: rgba(216, 170, 110, 0.14); --amber-edge: rgba(216, 170, 110, 0.36);
+    --rose: #de8a80; --rose-wash: rgba(222, 138, 128, 0.14); --rose-edge: rgba(222, 138, 128, 0.36);
     --violet: var(--pen); --violet-wash: var(--pen-wash);
+    --gold: #e3c57c; --gold-fill: #cfae5a; --gold-wash: rgba(226, 189, 98, 0.16);
     --hl-yellow: rgba(208, 175, 76, 0.3); --hl-pink: rgba(214, 140, 150, 0.3);
-    --hl-blue: rgba(110, 160, 182, 0.3); --hl-green: rgba(126, 190, 165, 0.28);
-    --sun: #c9ad5e; --sun-edge: #a68c40; --sun-ink: #1d1c1a; --sun-wash: rgba(208, 175, 76, 0.22);
-    --t-prefix: #ecebe6; --t-prefix-edge: rgba(214, 140, 150, 0.7);
-    --t-root: #ecebe6; --t-root-edge: rgba(208, 175, 76, 0.7);
-    --t-suffix: #ecebe6; --t-suffix-edge: rgba(110, 160, 182, 0.7);
-    --t-base: #ecebe6; --t-base-edge: var(--rule-strong);
-    --slab: rgba(60, 62, 60, 0.6); --slab-ink: #ecebe6;
-    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 30px -16px rgba(0, 0, 0, 0.6);
-    --shadow-2: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
-    --shadow-3: 0 28px 60px -24px rgba(0, 0, 0, 0.8);
-    --focus: #6fa3c2;
+    --hl-blue: rgba(110, 160, 182, 0.32); --hl-green: rgba(126, 190, 165, 0.28);
+    --sun: #cfae5a; --sun-edge: #a68c40; --sun-ink: #16181c; --sun-wash: rgba(208, 175, 76, 0.22);
+    --t-prefix: #e9edf4; --t-prefix-edge: rgba(214, 140, 150, 0.7);
+    --t-root: #e9edf4; --t-root-edge: rgba(208, 175, 76, 0.7);
+    --t-suffix: #e9edf4; --t-suffix-edge: rgba(110, 160, 182, 0.7);
+    --t-base: #e9edf4; --t-base-edge: var(--rule-strong);
+    --slab: rgba(52, 66, 94, 0.62); --slab-ink: #e9edf4;
+    --shadow-1: 0 1px 2px rgba(0, 4, 12, 0.3), 0 14px 32px -16px rgba(0, 4, 12, 0.7);
+    --shadow-2: 0 20px 44px -18px rgba(0, 4, 12, 0.78);
+    --shadow-3: 0 30px 64px -24px rgba(0, 4, 12, 0.86);
+    --focus: #7fb2d6;
     color-scheme: dark;
   }
-  :root:not([data-theme="light"])[data-learner="pink"]   { --sky: #1d1a1c; --moon: #2c2728; }
-  :root:not([data-theme="light"])[data-learner="blue"]   { --sky: #171c1f; --moon: #232c30; }
-  :root:not([data-theme="light"])[data-learner="yellow"] { --sky: #1d1b16; --moon: #2d2a20; }
 }
 :root[data-theme="dark"] {
-  /* 墨夜: sumi night, the hills a shade lighter than the sky */
-  --bg: #151615; --sky: #1a1c1c; --moon: #262928; --mist: rgba(255, 255, 255, 0.045);
-  --hill-1: #202322; --hill-2: #1b1e1d; --hill-3: #171918;
-  --ink: #ecebe6; --ink-2: rgba(236, 235, 230, 0.7); --ink-3: rgba(236, 235, 230, 0.44);
-  --rule: rgba(236, 235, 230, 0.1); --rule-strong: rgba(236, 235, 230, 0.2);
-  --paper: #151615; --surface: rgba(46, 48, 47, 0.5); --surface-solid: #222423;
-  --surface-2: rgba(236, 235, 230, 0.07); --surface-3: rgba(236, 235, 230, 0.13);
-  --rim: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 0 0.5px rgba(255, 255, 255, 0.07);
-  --glass: rgba(40, 42, 41, 0.42); --glass-thick: rgba(34, 36, 35, 0.8); --glass-solid: #222423;
-  --glass-rim: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 0.5px rgba(255, 255, 255, 0.09);
-  --line: rgba(143, 180, 200, 0.26); --line-base: rgba(214, 110, 110, 0.5);
-  --pen: #3f7ea3; --pen-ink: #ffffff; --pen-wash: rgba(110, 160, 190, 0.15);
-  --redpen: #d98479; --redpen-wash: rgba(217, 132, 121, 0.13); --red-fill: #a9524a;
-  --jade: #93c3a9; --jade-ink: #a8d0ba; --jade-wash: rgba(126, 190, 165, 0.14); --jade-edge: rgba(126, 190, 165, 0.35);
+/* 月夜: night blue, not soot. Glass is thin and cool; the moon lights it. */
+  --bg: #0c1118;
+  --ink: #e9edf4; --ink-2: rgba(233, 237, 244, 0.72); --ink-3: rgba(233, 237, 244, 0.46);
+  --rule: rgba(200, 216, 246, 0.1); --rule-strong: rgba(200, 216, 246, 0.2);
+  --paper: #0c1118; --surface: rgba(44, 58, 84, 0.42); --surface-solid: #18202d;
+  --surface-2: rgba(200, 216, 246, 0.07); --surface-3: rgba(200, 216, 246, 0.14);
+  --sheen: rgba(170, 196, 242, 0.13);
+  --rim: inset 0 1px 0 rgba(214, 228, 255, 0.16), inset 0 0 0 0.5px rgba(214, 228, 255, 0.08);
+  --glass: rgba(34, 46, 68, 0.5); --glass-thick: rgba(21, 28, 41, 0.84); --glass-solid: #161d29;
+  --glass-rim: inset 0 1px 0 rgba(214, 228, 255, 0.18), inset 0 0 0 0.5px rgba(214, 228, 255, 0.1);
+  --line: rgba(143, 180, 214, 0.28); --line-base: rgba(214, 110, 110, 0.5);
+  --pen: #3f7ea3; --pen-hi: #4a8ab0; --pen-ink: #ffffff; --pen-wash: rgba(110, 165, 205, 0.17); --pen-glow: rgba(70, 140, 190, 0.5);
+  --redpen: #de8a80; --redpen-wash: rgba(222, 138, 128, 0.14); --red-fill: #a9524a;
+  --jade: #93c8ac; --jade-ink: #a8d4bd; --jade-wash: rgba(126, 190, 165, 0.15); --jade-edge: rgba(126, 190, 165, 0.38);
   --green: #5e8a74;
-  --amber: #d2a46a; --amber-wash: rgba(210, 164, 106, 0.13); --amber-edge: rgba(210, 164, 106, 0.35);
-  --rose: #d98479; --rose-wash: rgba(217, 132, 121, 0.13); --rose-edge: rgba(217, 132, 121, 0.35);
+  --amber: #d8aa6e; --amber-wash: rgba(216, 170, 110, 0.14); --amber-edge: rgba(216, 170, 110, 0.36);
+  --rose: #de8a80; --rose-wash: rgba(222, 138, 128, 0.14); --rose-edge: rgba(222, 138, 128, 0.36);
   --violet: var(--pen); --violet-wash: var(--pen-wash);
+  --gold: #e3c57c; --gold-fill: #cfae5a; --gold-wash: rgba(226, 189, 98, 0.16);
   --hl-yellow: rgba(208, 175, 76, 0.3); --hl-pink: rgba(214, 140, 150, 0.3);
-  --hl-blue: rgba(110, 160, 182, 0.3); --hl-green: rgba(126, 190, 165, 0.28);
-  --sun: #c9ad5e; --sun-edge: #a68c40; --sun-ink: #1d1c1a; --sun-wash: rgba(208, 175, 76, 0.22);
-  --t-prefix: #ecebe6; --t-prefix-edge: rgba(214, 140, 150, 0.7);
-  --t-root: #ecebe6; --t-root-edge: rgba(208, 175, 76, 0.7);
-  --t-suffix: #ecebe6; --t-suffix-edge: rgba(110, 160, 182, 0.7);
-  --t-base: #ecebe6; --t-base-edge: var(--rule-strong);
-  --slab: rgba(60, 62, 60, 0.6); --slab-ink: #ecebe6;
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 30px -16px rgba(0, 0, 0, 0.6);
-  --shadow-2: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
-  --shadow-3: 0 28px 60px -24px rgba(0, 0, 0, 0.8);
-  --focus: #6fa3c2;
+  --hl-blue: rgba(110, 160, 182, 0.32); --hl-green: rgba(126, 190, 165, 0.28);
+  --sun: #cfae5a; --sun-edge: #a68c40; --sun-ink: #16181c; --sun-wash: rgba(208, 175, 76, 0.22);
+  --t-prefix: #e9edf4; --t-prefix-edge: rgba(214, 140, 150, 0.7);
+  --t-root: #e9edf4; --t-root-edge: rgba(208, 175, 76, 0.7);
+  --t-suffix: #e9edf4; --t-suffix-edge: rgba(110, 160, 182, 0.7);
+  --t-base: #e9edf4; --t-base-edge: var(--rule-strong);
+  --slab: rgba(52, 66, 94, 0.62); --slab-ink: #e9edf4;
+  --shadow-1: 0 1px 2px rgba(0, 4, 12, 0.3), 0 14px 32px -16px rgba(0, 4, 12, 0.7);
+  --shadow-2: 0 20px 44px -18px rgba(0, 4, 12, 0.78);
+  --shadow-3: 0 30px 64px -24px rgba(0, 4, 12, 0.86);
+  --focus: #7fb2d6;
   color-scheme: dark;
 }
-:root[data-theme="dark"][data-learner="pink"]   { --sky: #1d1a1c; --moon: #2c2728; }
-:root[data-theme="dark"][data-learner="blue"]   { --sky: #171c1f; --moon: #232c30; }
-:root[data-theme="dark"][data-learner="yellow"] { --sky: #1d1b16; --moon: #2d2a20; }
 
 /* ---------- reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }
@@ -253,6 +278,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior-y: none;
   min-height: 100dvh;
+  font-optical-sizing: auto;
 }
 
 button, input, select, textarea { font: inherit; color: inherit; }
@@ -304,10 +330,12 @@ img, svg { display: block; max-width: 100%; }
   font-family: var(--font-kai);
   font-size: var(--step-4);
   font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1.12;
+  letter-spacing: 0.015em;
+  line-height: 1.14;
   text-wrap: balance;
 }
+/* a figure set as display: the level, a score, the day's count */
+.fig { font-family: var(--font-fig); font-variant-numeric: lining-nums tabular-nums; font-weight: 500; letter-spacing: -0.01em; }
 .section-title {
   font-family: var(--font-kai);
   font-size: var(--step-1);
@@ -319,6 +347,8 @@ img, svg { display: block; max-width: 100%; }
 .dim   { color: var(--ink-3); }
 .num   { font-family: var(--font-ui); font-variant-numeric: tabular-nums; font-weight: 600; }
 .zh    { font-family: var(--font-zh); }
+/* a title stays 明朝 even where the markup also says .zh */
+.page-title.zh, .section-title.zh { font-family: var(--font-kai); }
 
 /* ---------- surfaces ---------- */
 /* ---------- materials ----------
@@ -329,7 +359,7 @@ img, svg { display: block; max-width: 100%; }
    Safari ignores custom properties inside -webkit-backdrop-filter, so the
    values are literal. */
 .card {
-  background: var(--surface);
+  background: radial-gradient(130% 110px at var(--lx) 0, var(--sheen), transparent 70%), var(--surface);
   border: 0;
   border-radius: var(--radius-lg);
   box-shadow: var(--rim), var(--shadow-1);
@@ -353,8 +383,9 @@ img, svg { display: block; max-width: 100%; }
    States are the same everywhere: selected = 藍 outline, right = 青磁 wash +
    千歳緑 text, wrong = 茜 wash + strike, mute = 40%.
    ========================================================================== */
-.card, .qbox, .wcard, .missbox, .ask, .gs__missed, .reader, .rq, .prac, .quest, .pl, .power, .metrics, .prog, .titem, .qitem, .game, .fam, .me__card, .probe__card, .book, .sum__verdict, .report, .sum__cell, .grp, .scene {
-  background: var(--surface);
+.card, .qbox, .wcard, .missbox, .ask, .gs__missed, .reader, .rq, .prac, .quest, .pl, .titem, .qitem, .game, .fam, .me__card, .probe__card, .book, .sum__verdict, .report, .sum__cell, .grp, .scene {
+  /* the wash of light along the top edge sits where the light is (--lx) */
+  background: radial-gradient(130% 110px at var(--lx) 0, var(--sheen), transparent 70%), var(--surface);
   border: 0;
   border-radius: var(--r-panel);
   box-shadow: var(--rim), var(--shadow-1);
@@ -363,15 +394,15 @@ img, svg { display: block; max-width: 100%; }
   background: var(--surface);
   border: 0;
   border-radius: var(--r-control);
-  box-shadow: var(--rim), 0 1px 2px rgba(40, 35, 30, 0.05), 0 6px 14px -10px rgba(40, 35, 30, 0.22);
+  box-shadow: var(--rim), 0 1px 2px rgba(30, 44, 70, 0.05), 0 8px 18px -12px rgba(30, 44, 70, 0.3);
   color: var(--ink);
   transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1), background 0.2s, box-shadow 0.2s, opacity 0.2s, color 0.2s;
 }
 .opt:active:not(:disabled), .optw:active:not(:disabled), .gopt:active:not(:disabled), .popt:active:not(:disabled), .qopt:active:not(:disabled), .dopt:active:not(:disabled), .quiz__opt:active:not(:disabled), .mcard:active:not(:disabled), .opt-card:active:not(:disabled), .zone:active:not(:disabled), .tile:active:not(:disabled), .topic:active:not(:disabled), .seqcard:active:not(:disabled) { transform: scale(0.97); transition-duration: 0.08s; }
 .opt:disabled, .optw:disabled, .gopt:disabled, .popt:disabled, .qopt:disabled, .dopt:disabled, .quiz__opt:disabled, .mcard:disabled, .opt-card:disabled, .zone:disabled, .tile:disabled, .topic:disabled, .seqcard:disabled { cursor: default; }
-.card, .qbox, .wcard, .missbox, .ask, .gs__missed, .reader, .rq, .prac, .quest, .pl, .power, .metrics, .prog, .game, .fam, .me__card, .probe__card, .book, .sum__verdict, .report, .sum__cell, .grp, .scene, .opt, .optw, .gopt, .popt, .qopt, .dopt, .quiz__opt, .opt-card, .zone {
-  -webkit-backdrop-filter: blur(20px) saturate(112%);
-  backdrop-filter: blur(20px) saturate(112%);
+.card, .qbox, .wcard, .missbox, .ask, .gs__missed, .reader, .rq, .prac, .quest, .pl, .game, .fam, .me__card, .probe__card, .book, .sum__verdict, .report, .sum__cell, .grp, .scene, .opt, .optw, .gopt, .popt, .qopt, .dopt, .quiz__opt, .opt-card, .zone {
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  backdrop-filter: blur(22px) saturate(140%);
 }
 
 /* states */
@@ -390,7 +421,7 @@ img, svg { display: block; max-width: 100%; }
 /* word tiles you pick up and place: one look in every drill and game */
 .wtile, .tok, .tapw {
   background: var(--surface-solid); border: 0; border-radius: 10px;
-  box-shadow: var(--rim), 0 1px 2px rgba(40, 35, 30, 0.06), 0 4px 10px -8px rgba(40, 35, 30, 0.25);
+  box-shadow: var(--rim), 0 1px 2px rgba(30, 44, 70, 0.07), 0 5px 12px -8px rgba(30, 44, 70, 0.3);
   color: var(--ink);
   transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1), background 0.2s, box-shadow 0.2s;
 }
@@ -405,7 +436,7 @@ img, svg { display: block; max-width: 100%; }
 
 /* section headings (H2): 明朝 is for page and section titles only */
 .sec__t, .quest__title, .sec, .grp__title, .chart__title, .section-title {
-  font-family: var(--font-kai); font-size: 1.1875rem; font-weight: 700; letter-spacing: 0.02em; line-height: 1.3; color: var(--ink);
+  font-family: var(--font-kai); font-size: 1.25rem; font-weight: 700; letter-spacing: 0.02em; line-height: 1.3; color: var(--ink);
 }
 
 /* content pictures (emoji) muted to sit with the palette */
@@ -414,8 +445,8 @@ img, svg { display: block; max-width: 100%; }
 /* control glass: thicker, floating over everything */
 .glass {
   background: var(--glass);
-  -webkit-backdrop-filter: blur(28px) saturate(115%);
-  backdrop-filter: blur(28px) saturate(115%);
+  -webkit-backdrop-filter: blur(28px) saturate(145%);
+  backdrop-filter: blur(28px) saturate(145%);
   box-shadow: var(--glass-rim), var(--shadow-2);
 }
 .glass--thick { background: var(--glass-thick); }
@@ -423,12 +454,12 @@ img, svg { display: block; max-width: 100%; }
 /* without blur (old browsers, 設定 › 玻璃效果 › 簡化, reduce transparency),
    every material turns into a near-solid fill: legible first */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  :root { --surface: rgba(250, 250, 248, 0.9); --glass: rgba(246, 245, 242, 0.95); --glass-thick: rgba(246, 245, 242, 0.97); }
+  :root { --surface: rgba(251, 251, 249, 0.9); --glass: rgba(248, 247, 244, 0.95); --glass-thick: rgba(248, 247, 244, 0.97); }
 }
-:root[data-glass="lite"] { --surface: rgba(250, 250, 248, 0.9); --glass: rgba(246, 245, 242, 0.95); --glass-thick: rgba(246, 245, 242, 0.97); }
-:root[data-glass="lite"][data-theme="dark"] { --surface: rgba(38, 40, 39, 0.92); --glass: rgba(34, 36, 35, 0.95); --glass-thick: rgba(34, 36, 35, 0.97); }
+:root[data-glass="lite"] { --surface: rgba(251, 251, 249, 0.9); --glass: rgba(248, 247, 244, 0.95); --glass-thick: rgba(248, 247, 244, 0.97); }
+:root[data-glass="lite"][data-theme="dark"] { --surface: rgba(26, 34, 48, 0.93); --glass: rgba(22, 29, 41, 0.95); --glass-thick: rgba(22, 29, 41, 0.97); }
 @media (prefers-color-scheme: dark) {
-  :root[data-glass="lite"]:not([data-theme="light"]) { --surface: rgba(38, 40, 39, 0.92); --glass: rgba(34, 36, 35, 0.95); --glass-thick: rgba(34, 36, 35, 0.97); }
+  :root[data-glass="lite"]:not([data-theme="light"]) { --surface: rgba(26, 34, 48, 0.93); --glass: rgba(22, 29, 41, 0.95); --glass-thick: rgba(22, 29, 41, 0.97); }
 }
 :root[data-glass="lite"] *, :root[data-glass="lite"] *::before, :root[data-glass="lite"] *::after {
   -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
@@ -470,9 +501,11 @@ img, svg { display: block; max-width: 100%; }
 .btn:active:not(:disabled) { transform: scale(0.96); transition-duration: 0.08s; }
 .btn:disabled { opacity: 0.38; cursor: not-allowed; }
 
+/* the one filled control on a screen: 藍, lit from above, with its own
+   colour in the shadow under it */
 .btn--primary {
-  background: var(--pen); color: var(--pen-ink);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 6px 16px -10px rgba(22, 60, 80, 0.5);
+  background: linear-gradient(180deg, var(--pen-hi), var(--pen) 62%); color: var(--pen-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(0, 0, 0, 0.12), 0 12px 24px -12px var(--pen-glow);
 }
 .btn--ink { background: var(--pen-wash); color: var(--pen); }
 
@@ -515,7 +548,7 @@ img, svg { display: block; max-width: 100%; }
 }
 .input {
   width: 100%;
-  min-height: 48px;
+  min-height: 50px;
   padding: 0 var(--sp-4);
   background: var(--surface);
   border: 0;
@@ -556,7 +589,7 @@ textarea.input { min-height: 96px; padding: var(--sp-3); resize: vertical; line-
 
 /* ---------- progress ---------- */
 .bar { height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
-.bar__fill { height: 100%; border-radius: 3px; background: var(--green); transition: width 0.5s cubic-bezier(0.3, 1, 0.4, 1); }
+.bar__fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--green), var(--jade)); transition: width 0.5s cubic-bezier(0.3, 1, 0.4, 1); }
 .bar__fill--amber { background: var(--amber); }
 
 /* ---------- divider ---------- */
@@ -567,8 +600,8 @@ textarea.input { min-height: 96px; padding: var(--sp-3); resize: vertical; line-
 .scroll-x::-webkit-scrollbar { display: none; }
 
 /* ---------- transitions ---------- */
-.page-enter-active { transition: opacity 0.18s ease-out, transform 0.22s cubic-bezier(0.2, 0.9, 0.3, 1); }
-.page-enter-from { opacity: 0; transform: scale(0.992) translateY(4px); }
+.page-enter-active { transition: opacity 0.26s ease-out, transform 0.42s cubic-bezier(0.2, 0.9, 0.2, 1); }
+.page-enter-from { opacity: 0; transform: translateY(10px); }
 .page-leave-active { display: none; }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.18s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
@@ -597,8 +630,8 @@ textarea.input { min-height: 96px; padding: var(--sp-3); resize: vertical; line-
   pointer-events: none;
 }
 .toast {
-  background: rgba(40, 39, 37, 0.82); color: #f1f0ec;
-  -webkit-backdrop-filter: blur(20px) saturate(110%); backdrop-filter: blur(20px) saturate(110%);
+  background: rgba(22, 30, 42, 0.84); color: #f1f0ec;
+  -webkit-backdrop-filter: blur(20px) saturate(150%); backdrop-filter: blur(20px) saturate(150%);
   padding: var(--sp-3) var(--sp-5); border-radius: var(--radius-pill);
   font-size: var(--step--1); font-weight: 500;
   box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.14), var(--shadow-3);

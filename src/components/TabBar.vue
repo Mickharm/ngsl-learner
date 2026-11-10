@@ -39,11 +39,12 @@ const isActive = t => t.to === '/' ? route.path === '/' : t.match.some(m => rout
 </template>
 
 <style scoped>
-/* iOS 26 tab bar: a floating glass capsule; the selected tab sits in a lens */
+/* A floating glass capsule. The selected tab sits in a lens: a brighter pane
+   of the same glass, lit from where the light is. */
 .tabbar {
   position: fixed; z-index: 200;
-  left: max(12px, calc(50% - 300px)); right: max(12px, calc(50% - 300px));
-  bottom: calc(env(safe-area-inset-bottom) + 10px);
+  left: max(14px, calc(50% - 290px)); right: max(14px, calc(50% - 290px));
+  bottom: calc(env(safe-area-inset-bottom) + 12px);
   display: grid; grid-template-columns: repeat(5, 1fr);
   padding: 5px;
   border-radius: 999px;
@@ -51,18 +52,23 @@ const isActive = t => t.to === '/' ? route.path === '/' : t.match.some(m => rout
   box-shadow: var(--glass-rim), var(--shadow-2);
 }
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .tabbar { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(115%); backdrop-filter: blur(24px) saturate(115%); }
+  .tabbar { background: var(--glass); -webkit-backdrop-filter: blur(26px) saturate(150%); backdrop-filter: blur(26px) saturate(150%); }
 }
 @media (prefers-reduced-transparency: reduce) { .tabbar { background: var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 .tab {
   position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
-  min-height: 54px; padding: 4px 2px; border-radius: 999px; color: var(--ink);
-  transition: color 0.2s, background 0.25s, transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1);
+  min-height: 54px; padding: 4px 2px; border-radius: 999px; color: var(--ink-2);
+  transition: color 0.2s, background 0.25s, box-shadow 0.25s, transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 .tab:active { transform: scale(0.92); }
 .tab__icon { width: 26px; height: 26px; display: grid; place-items: center; }
-.tab__icon svg { width: 24px; height: 24px; }
-.tab--on { color: var(--pen); background: var(--surface-2); }
-.tab__label { font-size: 10.5px; font-weight: 600; font-family: var(--font-zh); letter-spacing: 0; }
+.tab__icon svg { width: 23px; height: 23px; stroke-width: 1.8; }
+.tab--on {
+  color: var(--pen);
+  background: radial-gradient(120% 100% at 50% 0, var(--sheen), transparent 75%), var(--surface);
+  box-shadow: var(--rim), 0 6px 14px -8px rgba(30, 44, 70, 0.35);
+}
+.tab--on .tab__icon svg { stroke-width: 2.1; }
+.tab__label { font-size: 10.5px; font-weight: 600; font-family: var(--font-zh); letter-spacing: 0.02em; }
 .tab__badge { position: absolute; top: 3px; left: 50%; margin-left: 7px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--red-fill); color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; line-height: 1; box-shadow: 0 0 0 2px var(--glass-solid); }
 </style>

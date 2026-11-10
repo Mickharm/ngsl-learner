@@ -116,7 +116,7 @@ function next () { router.push(session.nextRoute('play')) }
   background: var(--glass-solid); box-shadow: var(--glass-rim), var(--shadow-1);
 }
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .gs__hud { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(115%); backdrop-filter: blur(24px) saturate(115%); }
+  .gs__hud { background: var(--glass); -webkit-backdrop-filter: blur(26px) saturate(150%); backdrop-filter: blur(26px) saturate(150%); }
 }
 .gs__back { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: var(--ink); background: var(--surface-2); }
 .gs__back svg { width: 20px; height: 20px; }
@@ -127,7 +127,7 @@ function next () { router.push(session.nextRoute('play')) }
 .gs__score { display: flex; align-items: baseline; gap: 3px; font-size: var(--step-1); min-width: 56px; justify-content: flex-end; }
 .gs__score small { font-size: var(--step--2); color: var(--ink-3); }
 .gs__timer { height: 5px; margin: 8px 24px 0; border-radius: 3px; background: var(--surface-3); overflow: hidden; max-width: 560px; align-self: center; width: calc(100% - 48px); }
-.gs__timer span { display: block; height: 100%; border-radius: 3px; background: var(--pen); transform-origin: left; transition: transform 0.2s linear; }
+.gs__timer span { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--pen), var(--pen-hi)); transform-origin: left; transition: transform 0.2s linear; }
 .gs__timer--low span { background: var(--red-fill); }
 .gs__goal { text-align: center; font-size: var(--step--1); color: var(--ink-2); padding-top: 8px; }
 .gs__combo {
@@ -138,8 +138,8 @@ function next () { router.push(session.nextRoute('play')) }
 .gs__field { flex: 1; width: 100%; max-width: 600px; margin: 0 auto; padding: var(--sp-4); padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-5)); display: flex; flex-direction: column; }
 
 .gs__over { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); text-align: center; padding-top: var(--sp-4); }
-.gs__comment { font-size: var(--step-2); font-weight: 700; letter-spacing: -0.01em; }
-.gs__final { font-size: var(--step-4); line-height: 1; font-family: var(--font-word); }
+.gs__comment { font-size: var(--step-3); font-weight: 700; letter-spacing: 0.03em; }
+.gs__final { font-size: var(--step-6); line-height: 1; font-family: var(--font-fig); font-variant-numeric: lining-nums; font-weight: 500; }
 .gs__final span { font-size: var(--step-0); color: var(--ink-3); }
 .gs__record { font-weight: 700; background: var(--sun); color: var(--sun-ink); padding: 2px 12px; border-radius: 999px; }
 .gs__bestline { color: var(--ink-3); font-size: var(--step--1); }

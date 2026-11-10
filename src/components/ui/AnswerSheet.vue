@@ -130,7 +130,7 @@ onUnmounted(() => {
   animation: sheet-up 0.42s cubic-bezier(0.2, 1.05, 0.3, 1);
 }
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .as { background: var(--glass-thick); -webkit-backdrop-filter: blur(30px) saturate(115%); backdrop-filter: blur(30px) saturate(115%); }
+  .as { background: var(--glass-thick); -webkit-backdrop-filter: blur(30px) saturate(145%); backdrop-filter: blur(30px) saturate(145%); }
 }
 @media (prefers-reduced-transparency: reduce) { .as { background: var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 /* a tint along the top edge says right / wrong before any word is read */
@@ -147,12 +147,11 @@ onUnmounted(() => {
 .as__next {
   position: relative; overflow: hidden;
   min-height: 52px; border-radius: 999px;
-  background: var(--pen); color: var(--pen-ink); font-weight: 600; font-size: var(--step-0);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  background: linear-gradient(180deg, var(--pen-hi), var(--pen) 62%); color: var(--pen-ink); font-weight: 600; font-size: var(--step-0);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 12px 24px -12px var(--pen-glow);
   transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 .as__next:active { transform: scale(0.97); }
-.as__next--wrong { background: var(--pen); color: var(--pen-ink); }
 .as__bar { position: absolute; inset: 0; background: rgba(255, 255, 255, 0.24); transform-origin: left; }
 .as__label { position: relative; }
 @media (prefers-reduced-motion: reduce) { .as { animation: none; } }

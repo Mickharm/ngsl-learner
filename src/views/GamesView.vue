@@ -69,7 +69,7 @@ const list = computed(() => GAMES.filter(g => g.id !== 'wordle').map(g => ({
 .games__lead { color: var(--ink-2); font-size: var(--step--1); line-height: 1.6; margin-top: 6px; }
 
 /* today's puzzle: the one dark, thick-material panel on the page */
-.daily { display: grid; grid-template-columns: auto 1fr auto; gap: var(--sp-3); align-items: center; padding: var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-5); border-radius: var(--r-panel); text-align: left; background: var(--surface); box-shadow: var(--rim), var(--shadow-1); -webkit-backdrop-filter: blur(20px) saturate(112%); backdrop-filter: blur(20px) saturate(112%); transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
+.daily { display: grid; grid-template-columns: auto 1fr auto; gap: var(--sp-3); align-items: center; padding: var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-5); border-radius: var(--r-panel); text-align: left; background: var(--surface); box-shadow: var(--rim), var(--shadow-1); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%); transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1); }
 .daily:active { transform: scale(0.97); }
 .daily__tiles { display: grid; grid-template-columns: repeat(5, 22px); gap: 3px; }
 .dt { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 6px; background: var(--surface-3); font-family: var(--font-word); font-weight: 700; font-size: 0.75rem; color: var(--ink); }

@@ -63,12 +63,14 @@ onMounted(() => {
     <SessionHeader title="今日結算" />
 
     <main class="shell sum">
+      <!-- the scene shows through here: the arc with every station passed -->
+      <div class="sum__sky" aria-hidden="true" />
       <header class="sum__head">
-        <div class="sum__stamp"><Stamp :ratio="accuracy ?? 0" :text="t.total_count ? '' : '待補'" :size="112" /></div>
-        <div>
-          <p class="sum__date">{{ t.day }}</p>
-          <h1 class="page-title">今天的課上完了</h1>
+        <div class="sum__title">
+          <p class="sum__date fig">{{ t.day }}</p>
+          <h1 class="page-title">今天的課<br>上完了</h1>
         </div>
+        <div class="sum__stamp"><Stamp :ratio="accuracy ?? 0" :text="t.total_count ? '' : '待補'" :size="116" /></div>
       </header>
       <p class="sum__verdict zh">{{ verdict }}</p>
 
@@ -121,10 +123,13 @@ onMounted(() => {
 .view { min-height: 100dvh; }
 .sum { display: flex; flex-direction: column; gap: var(--sp-4); }
 
-.sum__head { display: flex; align-items: center; gap: var(--sp-4); padding-top: var(--sp-3); }
-.sum__stamp { flex-shrink: 0; }
-.sum__date { color: var(--ink-2); font-size: var(--step--1); font-weight: 600; }
-.sum__head .page-title { font-size: var(--step-3); line-height: 1.2; }
+/* 76px = the sticky header + the shell's top padding (each also adds the
+   safe-area inset, hence × 2); the title starts in the cloud under the range */
+.sum__sky { height: calc(40vh - 76px - env(safe-area-inset-top) * 2 + 26px); height: calc(40lvh - 76px - env(safe-area-inset-top) * 2 + 26px); min-height: 130px; margin-bottom: calc(var(--sp-4) * -1); }
+.sum__head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--sp-4); padding: 0 4px; }
+.sum__stamp { flex-shrink: 0; margin-bottom: 4px; }
+.sum__date { color: var(--ink-2); font-size: var(--step-0); }
+.sum__head .page-title { font-size: clamp(2.3rem, 11vw, 2.9rem); line-height: 1.12; letter-spacing: 0.03em; }
 .sum__verdict { font-size: var(--step-0); color: var(--ink); line-height: 1.6; padding: 14px 16px; }
 .report { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; }
 .report th { text-align: left; font-weight: 500; color: var(--ink); padding: 13px 16px; font-size: var(--step-0); }

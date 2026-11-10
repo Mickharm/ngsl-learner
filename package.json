@@ -1,6 +1,6 @@
 {
   "name": "ngsl-learner",
-  "version": "5.2.2",
+  "version": "6.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,7 +15,7 @@
     "test:models": "node scripts/test-model-resolution.mjs",
     "test:answer": "node scripts/test-answer.mjs",
     "test:format": "node scripts/test-format.mjs",
-    "test": "npm run test:srs && npm run test:models && npm run test:answer && npm run test:format && npm run test:drills && npm run test:affix && npm run test:tts && npm run test:wordsrs && npm run test:pictures && npm run test:grammar && npm run test:stories && npm run test:morphology && npm run test:arcade && npm run test:scramble && npm run test:talk && npm run test:storyplan",
+    "test": "npm run test:srs && npm run test:models && npm run test:answer && npm run test:format && npm run test:drills && npm run test:affix && npm run test:tts && npm run test:wordsrs && npm run test:pictures && npm run test:grammar && npm run test:stories && npm run test:morphology && npm run test:arcade && npm run test:scramble && npm run test:talk && npm run test:storyplan && npm run test:scene",
     "test:drills": "node scripts/test-drills.mjs",
     "test:srs": "node scripts/test-srs.mjs",
     "test:affix": "node scripts/test-affix.mjs",
@@ -29,7 +29,8 @@
     "test:arcade": "node scripts/test-arcade.mjs",
     "test:scramble": "node scripts/test-scramble.mjs",
     "test:talk": "node scripts/test-talk.mjs",
-    "test:storyplan": "node scripts/test-story-plan.mjs"
+    "test:storyplan": "node scripts/test-story-plan.mjs",
+    "test:scene": "node scripts/test-scene.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

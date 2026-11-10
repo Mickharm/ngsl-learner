@@ -52,7 +52,7 @@ const pct = computed(() => props.total ? Math.min(100, (props.current / props.to
   position: relative; overflow: hidden;
 }
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .shead__bar { background: var(--glass); -webkit-backdrop-filter: blur(24px) saturate(115%); backdrop-filter: blur(24px) saturate(115%); }
+  .shead__bar { background: var(--glass); -webkit-backdrop-filter: blur(26px) saturate(150%); backdrop-filter: blur(26px) saturate(150%); }
 }
 @media (prefers-reduced-transparency: reduce) { .shead__bar { background: var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 
@@ -84,9 +84,10 @@ const pct = computed(() => props.total ? Math.min(100, (props.current / props.to
 .shead__slash { color: var(--ink-3); margin: 0 1px; }
 
 .shead__fill {
-  position: absolute; left: 22px; bottom: 6px; height: 3px; border-radius: 2px;
+  position: absolute; left: 22px; bottom: 5px; height: 3px; border-radius: 2px;
   max-width: calc(100% - 44px);
-  background: var(--pen);
+  background: linear-gradient(90deg, var(--pen), var(--pen-hi));
+  box-shadow: 0 0 10px var(--pen-glow);
   transition: width 0.45s cubic-bezier(0.3, 1, 0.4, 1);
 }
 </style>

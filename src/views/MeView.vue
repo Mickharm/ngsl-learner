@@ -41,7 +41,7 @@ const links = computed(() => [
         <h1 class="page-title me__name">{{ auth.displayName }}</h1>
         <p class="me__title zh">{{ titleOf(power.level) }}，字力 <b class="num">{{ power.xp }}</b>，連續 <b class="num">{{ progress.streak }}</b> 天</p>
       </div>
-      <span class="me__lv num">Lv.{{ power.level }}</span>
+      <span class="me__lv">Lv.{{ power.level }}</span>
     </header>
 
     <section class="card ladder">
@@ -77,31 +77,32 @@ const links = computed(() => [
 
 <style scoped>
 .me { display: flex; flex-direction: column; gap: var(--sp-5); }
-.me__card { position: relative; display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-4); }
+.me__card { position: relative; display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-5); border-radius: var(--radius-xl); }
 .me__id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.me__school { font-size: var(--step--2); color: var(--ink-3); letter-spacing: 0.1em; }
+.me__school { font-size: var(--step--2); color: var(--ink-3); letter-spacing: 0.12em; }
 .me__name { font-size: var(--step-4); }
 .me__title { color: var(--ink-2); font-size: var(--step--1); }
-.me__lv { width: 76px; height: 76px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; color: #fff; font-weight: 700; font-size: var(--step-1); background: linear-gradient(160deg, var(--a1), var(--a3)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 8px 18px -12px rgba(40, 35, 30, 0.5); }
+/* the level as a small sun */
+.me__lv { width: 78px; height: 78px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; color: var(--sun-ink); font-family: var(--font-fig); font-weight: 600; font-size: var(--step-2); background: radial-gradient(circle at 38% 30%, #fff7dc, var(--gold-fill) 72%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 0 0 6px var(--gold-wash), 0 12px 26px -12px rgba(170, 120, 30, 0.6); }
 .ladder { padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
 .ladder__lead { font-size: var(--step--1); color: var(--ink-2); line-height: 1.6; }
 .ladder__rows { display: flex; flex-direction: column; gap: 8px; }
 .lr { display: grid; grid-template-columns: 4.5em 1fr 3em; gap: var(--sp-2); align-items: center; }
 .lr__l { font-size: var(--step--1); font-weight: 700; }
 .lr__bar { height: 12px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
-.lr__bar span { display: block; height: 100%; background: var(--hl-blue); min-width: 2px; }
-.lr__n { text-align: right; color: var(--ink-2); font-size: var(--step--1); font-family: var(--font-word); }
-.mini { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule-strong); }
-.mini__c { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 2px; }
-.mini__c + .mini__c { border-left: 1px solid var(--rule); }
-.mini__c b { font-size: var(--step-1); font-family: var(--font-word); }
+.lr__bar span { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--pen), var(--pen-hi)); opacity: 0.75; min-width: 2px; }
+.lr__n { text-align: right; color: var(--ink-2); font-size: var(--step-0); font-family: var(--font-fig); font-variant-numeric: lining-nums tabular-nums; }
+.mini { display: grid; grid-template-columns: repeat(4, 1fr); }
+.mini__c { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 2px; }
+.mini__c + .mini__c { box-shadow: inset 0.5px 0 0 var(--rule-strong); }
+.mini__c b { font-size: var(--step-3); line-height: 1.15; font-family: var(--font-fig); font-variant-numeric: lining-nums tabular-nums; font-weight: 500; }
 .mini__c span { font-size: var(--step--2); color: var(--ink-3); }
-.links { display: flex; flex-direction: column; }
-.links li { border-bottom: 1px solid var(--rule); }
-.links li:first-child { border-top: 1px solid var(--rule); }
-.link { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-4) 2px; }
+.links { display: flex; flex-direction: column; border-radius: var(--r-panel); overflow: hidden; background: radial-gradient(130% 110px at var(--lx) 0, var(--sheen), transparent 70%), var(--surface); box-shadow: var(--rim), var(--shadow-1); -webkit-backdrop-filter: blur(22px) saturate(140%); backdrop-filter: blur(22px) saturate(140%); }
+.links li + li { box-shadow: inset 0 0.5px 0 var(--rule); }
+.link { display: flex; align-items: center; gap: var(--sp-3); padding: var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-5); transition: background 0.15s; }
+.link:active { background: var(--surface-2); }
 .link__body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-.link__t { font-weight: 700; font-family: var(--font-sys); font-size: var(--step-1); }
+.link__t { font-weight: 650; font-family: var(--font-sys); font-size: var(--step-0); }
 .link__s { font-size: var(--step--2); color: var(--ink-3); }
 .link__badge { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--redpen); color: #fff; font-size: var(--step--2); display: grid; place-items: center; }
 .link svg { width: 18px; height: 18px; color: var(--ink-3); }

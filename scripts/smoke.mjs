@@ -376,12 +376,17 @@ await ctx.route('**/generativelanguage.googleapis.com/**', async route => {
 
 const checks = []
 const shots = []
+// SHOT_VP=1 also saves what the phone actually shows (the first viewport, with
+// the fixed chrome where it really sits) as vp-<name>.png, for design review;
+// SMOKE_STOP=<name> ends the run after that shot, for a quick look at one screen.
 async function shot (name) {
   await page.waitForTimeout(650)
   const f = join(SHOTS, `${DARK ? 'dark-' : ''}${name}.png`)
   await page.screenshot({ path: f, fullPage: true })
+  if (process.env.SHOT_VP) await page.screenshot({ path: join(SHOTS, `vp-${DARK ? 'dark-' : ''}${name}.png`) })
   shots.push(name)
   console.log(`  · ${name}`)
+  if (process.env.SMOKE_STOP === name) { await browser.close(); server.close(); process.exit(0) }
 }
 
 async function tap (selector, { timeout = 6000 } = {}) {
@@ -390,6 +395,39 @@ async function tap (selector, { timeout = 6000 } = {}) {
   await el.click({ timeout })
   await page.waitForTimeout(300)
 }
+
+
+/* ------------------------------------------------------------------ *
+ * v6: the scene. It is the day's progress indicator, so it gets checked
+ * like one — what is painted, where the light is, and what it does when a
+ * period is finished or a lesson is entered.
+ * ------------------------------------------------------------------ */
+async function sceneProbe () {
+  return page.evaluate(() => {
+    const c = document.querySelector('.bd__c')
+    if (!c) return null
+    const ctx = c.getContext('2d')
+    const at = (fx, fy) => Array.from(ctx.getImageData(Math.floor(c.width * fx), Math.floor(c.height * fy), 1, 1).data.slice(0, 3))
+    // average a short horizontal run so one grain speck cannot decide a check
+    const band = fy => {
+      const d = ctx.getImageData(Math.floor(c.width * 0.2), Math.floor(c.height * fy), Math.floor(c.width * 0.6), 1).data
+      let r = 0, g = 0, b = 0, n = d.length / 4
+      for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2] }
+      return [r / n, g / n, b / n]
+    }
+    const cs = getComputedStyle(document.documentElement)
+    const bg = cs.getPropertyValue('--bg').trim()
+    const hex = bg.replace('#', '')
+    const paper = [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16))
+    return {
+      w: c.width, h: c.height,
+      top: at(0.5, 0.02), sky: band(0.1), range: band(0.33), low: band(0.6), foot: band(0.97),
+      paper, lx: parseFloat(cs.getPropertyValue('--lx')), ly: parseFloat(cs.getPropertyValue('--ly')),
+      themeColor: document.querySelector('meta[name="theme-color"]')?.getAttribute('content')
+    }
+  })
+}
+const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
 
 console.log(`\n=== NGSL smoke (${DARK ? 'dark' : 'light'}) ===`)
 
@@ -491,6 +529,26 @@ await page.waitForTimeout(1200)
 await page.locator('.quest').first().waitFor({ state: 'visible', timeout: 8000 }).catch(() => {})
 await page.waitForTimeout(500)
 await shot('05-dashboard')
+
+// v6: the first screen is a view, one sentence and one button
+await page.waitForTimeout(2200)   // the opening (light rising) has finished
+const sceneHome0 = await sceneProbe()
+{
+  const p = sceneHome0
+  checks.push(['the scene is painted behind the app', !!p && p.w > 0 && dist(p.sky, p.foot) > 25, p ? `sky=${p.sky.map(Math.round)} foot=${p.foot.map(Math.round)}` : 'no canvas'])
+  checks.push(['the scene ends in the page colour (no seam under the range)', !!p && dist(p.foot, p.paper) < 9 && dist(p.low, p.paper) < 12, p ? `foot=${p.foot.map(Math.round)} low=${p.low.map(Math.round)} paper=${p.paper}` : ''])
+  checks.push(['on 今天 the range stands in the upper part of the screen', !!p && dist(p.range, p.paper) > 30, p ? `range=${p.range.map(Math.round)} paper=${p.paper}` : ''])
+  checks.push(['the light publishes its position for the glass (--lx)', !!p && p.lx > 0 && p.lx < 100 && p.ly > 0, p ? `--lx=${p.lx} --ly=${p.ly}` : ''])
+  checks.push(['the status bar takes the colour of the sky', !!p && /^#[0-9a-f]{6}$/i.test(p.themeColor || ''), p?.themeColor])
+  const vh = page.viewportSize().height
+  const go = await page.locator('.now .btn').first().boundingBox().catch(() => null)
+  const bar = await page.locator('.tabbar').first().boundingBox().catch(() => null)
+  checks.push(['the one filled button is on the first screen, clear of the tab bar', !!go && !!bar && go.y + go.height <= bar.y + 2 && go.y > vh * 0.4, go && bar ? `button ends ${Math.round(go.y + go.height)}, tab bar starts ${Math.round(bar.y)}` : 'no button / tab bar'])
+  const nowT = (await page.locator('.now__t').first().innerText().catch(() => '')).trim()
+  const curT = (await page.locator('.step--current .step__label').first().innerText().catch(() => '')).trim()
+  checks.push(['the now-panel names the period the timetable marks as current', !!nowT && nowT === curT, `now="${nowT}" timetable="${curT}"`])
+  checks.push(['only one filled button on 今天', (await page.locator('.home .btn--primary').count().catch(() => 0)) === 1, `${await page.locator('.home .btn--primary').count().catch(() => -1)} primary buttons`])
+}
 
 // Placement now sets a per-learner ceiling instead of pointing everyone at all
 // 2,801 words. The dashboard shows the scope it actually settled on.
@@ -630,6 +688,11 @@ await page.goto(URL_BASE + '#/learn', { waitUntil: 'networkidle' })
 await page.waitForTimeout(1500)
 await shot('06-wordlab-meet')
 
+{
+  const p = await sceneProbe()
+  checks.push(['inside a lesson the range recedes: mid-screen is plain paper', !!p && dist(p.range, p.paper) < 12, p ? `at 33%: ${p.range.map(Math.round)} paper=${p.paper}` : 'no canvas'])
+}
+
 // v3: the learner guesses the meaning before the card is shown
 checks.push([
   'Word Lab asks for a guess before showing the word card',
@@ -652,7 +715,7 @@ checks.push([
       await page.locator('.meet .ana__whole').first().isVisible().catch(() => false)),
   'anatomy or legend missing on the meet card'
 ])
-checks.push(['there is no drawing canvas any more', !(await page.locator('canvas').count().catch(() => 0)), 'a canvas is still on the card'])
+checks.push(['there is no drawing canvas any more', !(await page.locator('.meet canvas, .wcard canvas').count().catch(() => 0)), 'a canvas is still on the card'])
 await page.locator('.mine__open').first().click().catch(() => {})
 await page.waitForTimeout(150)
 await page.locator('textarea.mine__note').first().fill('I wait for the bus every day.').catch(() => {})
@@ -1241,6 +1304,13 @@ await page.waitForTimeout(700)
   checks.push(['review comes before new words in the day', order[0] === '複習挑戰' && order[1] === '新單字', order.join(' → ')])
   checks.push(['the day carries a word part of the day', await page.locator('.wotd .ana').isVisible().catch(() => false), 'no 今日零件'])
   await shot('16q-dashboard-v2')
+  // v6: periods have been finished since shot 05, so the light has travelled
+  await page.waitForTimeout(2400)
+  const p = await sceneProbe()
+  const doneNow = await page.locator('.step--done').count().catch(() => 0)
+  checks.push(['finishing periods moves the light along its arc', !!p && !!sceneHome0 && doneNow > 0 && p.lx > sceneHome0.lx + 3, `--lx ${sceneHome0?.lx} → ${p?.lx} with ${doneNow} periods done`])
+  const sum = (await page.locator('.hero__sum').innerText().catch(() => '')).replace(/\s+/g, ' ')
+  checks.push(['the hero counts the same periods the timetable ticks', new RegExp(`上完\\s*${doneNow}\\s*/\\s*8`).test(sum), `hero="${sum}" ticks=${doneNow}`])
 }
 
 /* ------------------------------------------------------------------ *
@@ -1325,7 +1395,7 @@ await page.waitForTimeout(700)
 }
 
 // remaining screens
-for (const [route, name] of [['#/errors', '17-errors'], ['#/stats', '18-stats'], ['#/browse', '19-browse'], ['#/travel', '20-travel'], ['#/settings', '21-settings'], ['#/summary', '22-summary']]) {
+for (const [route, name] of [['#/errors', '17-errors'], ['#/stats', '18-stats'], ['#/browse', '19-browse'], ['#/travel', '20-travel'], ['#/courses', '20b-courses'], ['#/me', '20c-me'], ['#/settings', '21-settings'], ['#/summary', '22-summary']]) {
   await page.goto(URL_BASE + route, { waitUntil: 'networkidle' })
   await page.waitForTimeout(800)
   await shot(name)

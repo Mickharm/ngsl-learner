@@ -46,20 +46,20 @@ const uid = Math.random().toString(36).slice(2, 8)
 </template>
 
 <style scoped>
-.medal { overflow: visible; filter: drop-shadow(0 10px 22px rgba(30, 30, 70, 0.18)); animation: spring-in 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
-.medal__disc { fill: var(--surface); stroke: rgba(255, 255, 255, 0.6); stroke-width: 0.5; }
-.medal__track { fill: none; stroke: var(--surface-3); stroke-width: 9; }
+.medal { overflow: visible; filter: drop-shadow(0 12px 24px rgba(30, 44, 70, 0.26)); animation: spring-in 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
+.medal__disc { fill: var(--surface-solid); stroke: rgba(255, 255, 255, 0.5); stroke-width: 0.75; }
+.medal__track { fill: none; stroke: var(--surface-3); stroke-width: 7; }
 .medal__arc {
-  fill: none; stroke-width: 9; stroke-linecap: round;
+  fill: none; stroke-width: 7; stroke-linecap: round;
   stroke-dasharray: var(--c); stroke-dashoffset: var(--c);
   animation: ring-fill 1.1s 0.2s cubic-bezier(0.3, 0.9, 0.3, 1) forwards;
 }
-.medal__s1 { stop-color: var(--pen); }
+.medal__s1 { stop-color: var(--gold-fill); }
 .medal__s2 { stop-color: var(--pen); }
 .medal__g { font-family: var(--font-kai); font-weight: 700; font-size: 30px; fill: var(--ink); letter-spacing: 0; }
 .medal__g--long { font-size: 26px; }
 .medal__g--xl { font-size: 19px; }
-.medal__d { font-family: var(--font-sys); font-weight: 600; font-size: 10px; fill: var(--ink-3); }
+.medal__d { font-family: var(--font-fig); font-weight: 500; font-size: 11px; fill: var(--ink-3); }
 @keyframes ring-fill { to { stroke-dashoffset: var(--off); } }
 @media (prefers-reduced-motion: reduce) { .medal { animation: none; } .medal__arc { animation: none; stroke-dashoffset: var(--off); } }
 </style>

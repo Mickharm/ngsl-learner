@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 import { useToast } from '@/stores/toast'
 import { PROFILES } from '@/config'
+import SkyOrb from '@/components/ui/SkyOrb.vue'
 
 /**
  * Three named profiles instead of an email field — this instance is for
@@ -95,13 +96,16 @@ async function submit () {
     </div>
 
     <div v-else class="login__inner">
+      <!-- the scene shows through here -->
+      <div class="login__sky" aria-hidden="true" />
+
       <section class="brand">
-        <p class="brand__kicker">每天一頁的</p>
+        <p class="brand__kicker kai">每天一頁的</p>
         <h1 class="brand__title"><span class="staff brand__staff">English</span></h1>
-        <p class="brand__sub">高頻 2801 字，從字的零件學起</p>
+        <p class="brand__sub zh">高頻 2801 字，從字的零件學起</p>
       </section>
 
-      <!-- ---------- profile chooser: one exercise book each ---------- -->
+      <!-- ---------- profile chooser: each learner has their own sky ---------- -->
       <section v-if="!picked" class="pick">
         <p class="pick__label zh">點你的名字</p>
         <div class="pick__grid">
@@ -110,22 +114,23 @@ async function submit () {
             class="book" :class="`book--${p.accent}`"
             @click="choose(p)"
           >
-            <span class="book__orb" aria-hidden="true">{{ p.name[0] }}</span>
+            <SkyOrb :learner="p.accent" :size="68" />
             <span class="book__name">{{ p.name }}</span>
           </button>
         </div>
       </section>
 
       <!-- ---------- password ---------- -->
-      <form v-else class="form card card--pad" @submit.prevent="submit">
+      <form v-else class="form card" @submit.prevent="submit">
         <header v-if="picked" class="who__head">
-          <span class="book__orb who__orb" :class="`book--${picked.accent}`" aria-hidden="true">{{ picked.name[0] }}</span>
+          <SkyOrb :learner="picked.accent" :size="48" />
           <div class="who__meta">
-            <div class="who__hi">{{ picked.name }}</div>
+            <div class="who__hi kai">{{ picked.name }}</div>
             <div class="who__mail">{{ picked.email }}</div>
           </div>
           <button type="button" class="btn btn--quiet btn--sm zh" @click="back">換人</button>
         </header>
+
         <p v-if="mode === 'signup'" class="first zh">第一次使用：自己設定一組密碼（至少 6 個字），之後就用它登入。建立後會先做一個 5 分鐘的程度測驗。</p>
 
         <div class="field">
@@ -176,62 +181,48 @@ async function submit () {
 </template>
 
 <style scoped>
+/* The same composition as 今天: the range above, the words in the cloud
+   under it, left-aligned. */
 .login {
   min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  padding: calc(env(safe-area-inset-top) + var(--sp-6)) var(--sp-4) calc(env(safe-area-inset-bottom) + var(--sp-6));
+  display: flex; justify-content: center;
+  padding: calc(env(safe-area-inset-top) + var(--sp-4)) var(--sp-5) calc(env(safe-area-inset-bottom) + var(--sp-6));
 }
 .login__inner {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   display: flex;
   flex-direction: column;
   gap: var(--sp-5);
 }
+/* the range stands at 40% of the viewport; the brand starts just under it */
+.login__sky { height: calc(40vh - 16px - env(safe-area-inset-top) + 26px); height: calc(40lvh - 16px - env(safe-area-inset-top) + 26px); min-height: 150px; margin-bottom: calc(var(--sp-5) * -1); }
 
-.brand { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; }
-.brand__kicker { font-size: var(--step-0); font-weight: 600; color: var(--ink-2); }
-.brand__title { font-size: clamp(3rem, 16vw, 4.2rem); font-weight: 700; line-height: 1; }
-.brand__staff { padding: 0 0.25em; }
-.brand__sub { font-size: var(--step-0); color: var(--ink-2); margin-top: var(--sp-2); }
-.brand__staff { --line: rgba(60, 60, 67, 0.22); }
+.brand { display: flex; flex-direction: column; align-items: flex-start; }
+.brand__kicker { font-size: var(--step-1); font-weight: 700; color: var(--ink-2); letter-spacing: 0.12em; }
+.brand__title { font-size: clamp(3.6rem, 19vw, 4.6rem); font-weight: 700; line-height: 1; margin: 2px 0 0 -0.12em; }
+.brand__staff { padding: 0 0.12em; --line: rgba(28, 40, 58, 0.2); }
+.brand__sub { font-size: var(--step-0); color: var(--ink-2); margin-top: var(--sp-3); }
 
-.pick { display: flex; flex-direction: column; align-items: center; gap: var(--sp-4); }
-.pick__label { font-size: var(--step-0); font-weight: 600; color: var(--ink-2); }
+.pick { display: flex; flex-direction: column; gap: var(--sp-3); }
+.pick__label { font-size: var(--step--1); font-weight: 600; color: var(--ink-2); }
 .pick__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); width: 100%; }
 
-/* a glass tile per learner, lit by an orb in their own colour */
+/* a glass tile per learner, with their sky on it */
 .book {
-  --o1: #ff8db8; --o2: #c8a6ff;
   position: relative;
-  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
   padding: 18px 8px 14px;
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  box-shadow: var(--rim), var(--shadow-1);
   transition: transform 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
 }
 .book:active { transform: scale(0.95); }
-.book--pink { --o1: #c99599; --o2: #a99aae; }
-.book--blue { --o1: #7398a8; --o2: #8ea79a; }
-.book--yellow { --o1: #c2a35a; --o2: #b2977a; }
-.book__orb {
-  width: clamp(56px, 18vw, 72px); aspect-ratio: 1; border-radius: 50%;
-  display: grid; place-items: center;
-  font-family: var(--font-sys); font-weight: 700; font-size: clamp(1.4rem, 6vw, 1.8rem); color: #fff;
-  background: radial-gradient(120% 120% at 30% 18%, rgba(255, 255, 255, 0.35), transparent 45%), linear-gradient(160deg, var(--o1), var(--o2));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -4px 10px rgba(0, 0, 0, 0.06), 0 8px 18px -12px rgba(40, 35, 30, 0.5);
-  text-shadow: none;
-}
-.book__name { font-size: var(--step-0); font-weight: 650; letter-spacing: -0.01em; }
+.book__name { font-family: var(--font-kai); font-size: var(--step-1); font-weight: 700; letter-spacing: 0.02em; }
 
-.form { display: flex; flex-direction: column; gap: var(--sp-3); padding: var(--sp-5); }
+.form { display: flex; flex-direction: column; gap: var(--sp-3); padding: var(--sp-5); border-radius: var(--radius-xl); }
 .who__head { display: flex; align-items: center; gap: var(--sp-3); padding-bottom: var(--sp-3); box-shadow: inset 0 -0.5px 0 var(--rule); }
-.who__orb { width: 48px; font-size: 1.2rem; flex-shrink: 0; }
 .first { font-size: var(--step--1); line-height: 1.6; color: var(--ink-2); background: var(--pen-wash); padding: 10px 12px; border-radius: var(--radius); }
 .who__meta { flex: 1; min-width: 0; }
-.who__hi { font-size: var(--step-1); font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
+.who__hi { font-size: var(--step-2); font-weight: 700; line-height: 1.2; letter-spacing: 0.02em; }
 .who__mail {
   font-family: var(--font-mono); font-size: var(--step--2); color: var(--ink-3);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -250,10 +241,10 @@ async function submit () {
 .remember__d { font-size: var(--step--2); color: var(--ink-3); line-height: 1.5; }
 
 /* ---- silent re-login ---- */
-.resume { display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); }
+.resume { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-3); padding-top: 46vh; }
 .resume__dot {
   width: 34px; height: 34px; border-radius: 50%;
-  border: 3px solid var(--rule); border-top-color: var(--jade);
+  border: 3px solid var(--rule); border-top-color: var(--pen);
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -267,6 +258,5 @@ async function submit () {
   padding: var(--sp-3);
   line-height: 1.6;
 }
-
-.hint { font-size: var(--step--2); color: var(--ink-3); line-height: 1.6; text-align: center; }
+.hint { font-size: var(--step--2); color: var(--ink-3); line-height: 1.6; }
 </style>

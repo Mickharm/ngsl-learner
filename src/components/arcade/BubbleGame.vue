@@ -145,7 +145,7 @@ onUnmounted(() => clearTimeout(timer))
 .tank {
   position: relative; height: min(56dvh, 460px); overflow: hidden; border-radius: var(--radius);
   border-radius: var(--radius-xl);
-  background: var(--surface); -webkit-backdrop-filter: blur(20px) saturate(112%); backdrop-filter: blur(20px) saturate(112%);
+  background: var(--surface); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%);
   box-shadow: var(--rim), var(--shadow-1);
 }
 .bub {

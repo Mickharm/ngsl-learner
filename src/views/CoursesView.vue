@@ -100,18 +100,18 @@ function openCourse (c) { router.push(c.to) }
 <style scoped>
 .courses { display: flex; flex-direction: column; gap: var(--sp-6); }
 .lead { color: var(--ink-2); font-size: var(--step--1); line-height: 1.6; margin-top: 6px; }
-.toc { display: flex; flex-direction: column; }
-.toc__item { padding: var(--sp-4) 0; border-top: 1px solid var(--rule-strong); }
-.toc__item:last-child { border-bottom: 1px solid var(--rule-strong); }
+.toc { display: flex; flex-direction: column; padding: 4px var(--sp-5); border-radius: var(--radius-xl); background: radial-gradient(130% 110px at var(--lx) 0, var(--sheen), transparent 70%), var(--surface); box-shadow: var(--rim), var(--shadow-1); -webkit-backdrop-filter: blur(22px) saturate(140%); backdrop-filter: blur(22px) saturate(140%); }
+.toc__item { padding: var(--sp-4) 0; }
+.toc__item + .toc__item { border-top: 0.5px solid var(--rule-strong); }
 .toc__row { width: 100%; display: flex; align-items: baseline; gap: var(--sp-2); text-align: left; }
-.toc__n { font-size: var(--step--1); color: var(--redpen); flex-shrink: 0; }
+.toc__n { font-size: var(--step--1); color: var(--pen); font-weight: 600; flex-shrink: 0; }
 .toc__t { font-size: var(--step-2); font-weight: 700; }
-.toc__dots { flex: 1; border-bottom: 2px dotted var(--rule-strong); transform: translateY(-5px); min-width: 12px; }
-.toc__p { font-size: var(--step-1); font-family: var(--font-word); }
+.toc__dots { flex: 1; border-bottom: 1.5px dotted var(--rule-strong); transform: translateY(-5px); min-width: 12px; }
+.toc__p { font-size: var(--step-2); font-family: var(--font-fig); font-variant-numeric: lining-nums; }
 .toc__p small { font-size: 0.7em; color: var(--ink-3); }
 .toc__s { font-size: var(--step--1); color: var(--ink-2); margin-top: 2px; }
 .toc__bar { display: block; height: 4px; background: var(--surface-3); margin-top: 10px; border-radius: 2px; overflow: hidden; }
-.toc__bar span { display: block; height: 100%; background: var(--pen); }
+.toc__bar span { display: block; height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--pen), var(--pen-hi)); }
 .toc__more { margin-top: 8px; font-size: var(--step--1); color: var(--pen); }
 .points { display: flex; flex-direction: column; margin-top: 8px; }
 .point { width: 100%; display: grid; grid-template-columns: 26px 1fr auto; gap: var(--sp-2); align-items: center; padding: 9px 2px; text-align: left; border-bottom: 0.5px solid var(--rule); }
