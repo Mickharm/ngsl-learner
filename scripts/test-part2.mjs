@@ -6,7 +6,7 @@
  */
 import fs from 'node:fs'
 import PART2, { KIND_TIP, KIND_LABEL, trapText } from '../src/data/part2.js'
-import { tokensOf, coverageOf, recordPart2, missedPart2, selectPart2, layoutPart2, scriptPart2 } from '../src/lib/part2.js'
+import { tokensOf, coverageOf, recordPart2, missedPart2, selectPart2, layoutPart2, lineOf } from '../src/lib/part2.js'
 import { listenTargets } from '../src/lib/listening.js'
 import { makeLookup } from '../src/lib/lexicon.js'
 
@@ -167,10 +167,11 @@ ok(hard / total <= 0.02, `words outside the first ${RANK_CAP} ranks are at most 
   ok(positions.size === 3, 'the right answer turns up in every position')
   ok(JSON.stringify(layoutPart2(it, 5)) === JSON.stringify(laid), 'same seed, same layout')
 
-  const script = scriptPart2(laid)
-  ok(script.length === 4 && script[0].text === it.q, 'the question is spoken first')
-  ok(script.slice(1).every((s, i) => s.text.startsWith(`${'ABC'[i]}. `)), 'then A, B, C, each with its letter')
-  ok(script[0].pitch !== script[1].pitch, 'question and responses are told apart by pitch')
+  const q = lineOf(laid, 'q')
+  ok(q && q.text === it.q, 'the question can be played on its own')
+  ok([0, 1, 2].every(i => lineOf(laid, i)?.text === laid.options[i].en), 'each response is played on its own, without its letter')
+  ok(lineOf(laid, 3) === null, 'there is no fourth response')
+  ok(q.pitch !== lineOf(laid, 0).pitch, 'question and responses are told apart by pitch')
 }
 
 /* ---- which words the listening round is about ---- */

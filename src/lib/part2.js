@@ -122,14 +122,18 @@ export function layoutPart2 (item, seed = 1) {
 }
 
 /**
- * What to say, in order. The question and the responses use the same voice
- * at two pitches: a second voice would be more like the test, but two voices
- * are mastered at different loudness and v5.2.1 pinned one voice per session
- * for exactly that reason.
+ * One line to speak: the question (`'q'`) or response 0–2. Each is played on
+ * its own, when the learner asks for it — the test plays the three responses
+ * once in a row, but run together the learner has forgotten A by the time C
+ * ends, and cannot go back to the one they were unsure of.
+ *
+ * Question and responses use the same voice at two pitches: a second voice
+ * would be more like the test, but two voices are mastered at different
+ * loudness and v5.2.1 pinned one voice per session for exactly that reason.
+ * The letter is not read out: it is on the button that was tapped.
  */
-export function scriptPart2 (laid) {
-  return [
-    { text: laid.q, pitch: 1, gap: 650 },
-    ...laid.options.map(o => ({ text: `${o.letter}. ${o.en}`, pitch: 1.12, gap: 450 }))
-  ]
+export function lineOf (laid, which) {
+  if (which === 'q') return { text: laid.q, pitch: 1 }
+  const o = laid.options[which]
+  return o ? { text: o.en, pitch: 1.12 } : null
 }

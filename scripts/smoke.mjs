@@ -1119,7 +1119,7 @@ await shot('16c-listen-intro')
 }
 
 /* ------------------------------------------------------------------ *
- * v6.1 應答聽力: a spoken question, three spoken responses, three letters
+ * 應答聽力: question on demand, each response played on its own, three letters
  * ------------------------------------------------------------------ */
 let p2Missed = false
 {
@@ -1134,19 +1134,39 @@ let p2Missed = false
   await page.waitForTimeout(900)
   const spokenBefore = await page.evaluate(() => window.__tts.spoken.length)
   await page.locator('button:has-text("開始")').first().click().catch(() => {})
-  await page.waitForTimeout(2600)   // question + A + B + C
+  await page.waitForTimeout(1200)   // the question, and only the question
   await shot('16e2-part2-item')
-  const letters = await page.locator('.abc__btn').allInnerTexts().catch(() => [])
+  const letters = await page.locator('.abc__letter').allInnerTexts().catch(() => [])
   checks.push(['a 應答 item shows three letters', letters.map(t => t.trim()).join('') === 'ABC', letters.join('|')])
+  checks.push(['each letter has its own play and its own pick', (await page.locator('.abc__play').count().catch(() => 0)) === 3 && (await page.locator('.abc__btn').count().catch(() => 0)) === 3, 'not three of each'])
   const before = await page.locator('.lis').innerText().catch(() => '')
   checks.push(['and no English at all before the answer', !/[A-Za-z]{3,}/.test(before), before.replace(/\s+/g, ' ').slice(0, 80)])
-  const said = (await page.evaluate(n => window.__tts.spoken.slice(n), spokenBefore)).filter(u => u.volume > 0)
-  checks.push(['the question is spoken, then A, B and C', said.length >= 4 && /^A\. /.test(said[1].text) && /^B\. /.test(said[2].text) && /^C\. /.test(said[3].text), said.map(u => u.text.slice(0, 18)).join(' / ')])
+  const heard = async () => (await page.evaluate(n => window.__tts.spoken.slice(n), spokenBefore)).filter(u => u.volume > 0)
+  const first = await heard()
+  checks.push(['opening the item plays the question alone, not the responses', first.length === 1, first.map(u => u.text.slice(0, 18)).join(' / ')])
+  // responses only when asked, one at a time, in whatever order
+  await page.locator('.abc__play').nth(2).click().catch(() => {})
+  await page.waitForTimeout(700)
+  await page.locator('.abc__play').nth(0).click().catch(() => {})
+  await page.waitForTimeout(700)
+  const said = await heard()
+  checks.push(['tapping C then A plays exactly C then A, without the letter read out', said.length === 3 && said[1].text !== said[2].text && !/^[ABC]\. /.test(said[1].text), said.map(u => u.text.slice(0, 18)).join(' / ')])
   checks.push(['question and responses differ in pitch, not in voice', said.length >= 2 && said[0].pitch !== said[1].pitch && said[0].voiceURI === said[1].voiceURI, said.slice(0, 2).map(u => `${u.pitch}@${u.voiceURI}`).join(' vs ')])
+  checks.push(['playing a response does not answer it', (await page.locator('.tx').count().catch(() => 0)) === 0, 'transcript appeared'])
+  await page.keyboard.press('2')
+  await page.waitForTimeout(500)
+  const k2 = await heard()
+  checks.push(['the 2 key plays response B', k2.length === 4, k2.map(u => u.text.slice(0, 18)).join(' / ')])
+  await shot('16e2b-part2-heard')
 
   await page.locator('.abc__btn').first().click().catch(() => {})
   await page.waitForTimeout(500)
   await shot('16e3-part2-explained')
+  {
+    const shown = (await page.locator('.tx__o .tx__en').allInnerTexts().catch(() => [])).map(t => t.trim())
+    const k = (await heard()).map(u => u.text)
+    checks.push(['what was played was C, A, B as laid out', shown.length === 3 && k[1] === shown[2] && k[2] === shown[0] && k[3] === shown[1], `${k.slice(1).join(' / ')} vs ${shown.join(' / ')}`])
+  }
   const opts = await page.locator('.tx__o').count().catch(() => 0)
   const right = await page.locator('.tx__o--right').count().catch(() => 0)
   const whys = await page.locator('.tx__o:not(.tx__o--right) .tx__why').allInnerTexts().catch(() => [])
@@ -1174,7 +1194,7 @@ let p2Missed = false
   checks.push(['the verdict is stated in words', p2Missed ? /正解是 [ABC]/.test(clear.verdict) : clear.verdict === '接得上', clear.verdict])
   await page.locator('.tx__next').click().catch(() => {})
   await page.waitForTimeout(600)
-  checks.push(['下一題 brings three letters again and hides the transcript', (await page.locator('.abc__btn').count().catch(() => 0)) === 3 && (await page.locator('.tx').count().catch(() => 0)) === 0, 'did not advance'])
+  checks.push(['下一題 brings three letters again and hides the transcript', (await page.locator('.abc__play').count().catch(() => 0)) === 3 && (await page.locator('.tx').count().catch(() => 0)) === 0, 'did not advance'])
   await page.keyboard.press('b')
   await page.waitForTimeout(400)
   const byKey = await store('progress', s => Object.keys(s.part2Log).length)

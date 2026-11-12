@@ -13,7 +13,7 @@ import { speak, stopSpeaking, ttsSupported } from '@/lib/tts'
 import { buildListenRound, LISTEN_LABEL } from '@/lib/listening'
 import { matchesAnswer } from '@/lib/answer'
 import PART2, { KIND_LABEL } from '@/data/part2'
-import { selectPart2, layoutPart2, scriptPart2 } from '@/lib/part2'
+import { selectPart2, layoutPart2, lineOf } from '@/lib/part2'
 
 /**
  * Listening phase, in two parts.
@@ -170,6 +170,8 @@ const p2Picked = ref(null)
 const p2Settled = ref(false)
 const p2Plays = ref(0)
 const p2Speaking = ref(-1)        // which line is being spoken: 0 question, 1-3 options
+const p2Heard = ref([])           // lines played at least once: 'q', 0, 1, 2
+const p2Slow = ref(false)
 const p2Results = ref([])         // { id, correct }
 const p2 = computed(() => p2Items.value[p2Index.value] || null)
 const p2Correct = computed(() => p2Results.value.filter(r => r.correct).length)
@@ -186,27 +188,26 @@ function buildP2 () {
   p2Items.value = picked.map((it, i) => layoutPart2(it, daySeed() + i * 13 + (progress.part2Log[it.id]?.right || 0) + (progress.part2Log[it.id]?.wrong || 0)))
 }
 
-const pause = ms => new Promise(r => setTimeout(r, ms))
-
-/** Speak the question, then A, B, C. Any new call or an answer cuts it off. */
-async function playP2 (slow = false) {
+/**
+ * Speak one line: the question ('q') or response 0–2. The learner plays each
+ * one when they want it, as often as they want — never the whole set in a
+ * row. A new call or an answer cuts off whatever is playing.
+ */
+async function playP2 (which = 'q') {
   if (!p2.value) return
+  const line = lineOf(p2.value, which)
+  if (!line) return
   const run = ++p2Run
   stopSpeaking()
   p2Plays.value++
-  const lines = scriptPart2(p2.value)
-  for (let i = 0; i < lines.length; i++) {
-    if (run !== p2Run) return
-    p2Speaking.value = i
-    await speak(lines[i].text, {
-      rate: slow ? 0.7 : settings.state.ttsRate,
-      pitch: lines[i].pitch,
-      voiceURI: settings.state.ttsVoiceURI,
-      leadIn: settings.state.ttsLeadIn
-    })
-    if (run !== p2Run) return
-    await pause(slow ? lines[i].gap * 1.4 : lines[i].gap)
-  }
+  if (!p2Heard.value.includes(which)) p2Heard.value = [...p2Heard.value, which]
+  p2Speaking.value = which === 'q' ? 0 : which + 1
+  await speak(line.text, {
+    rate: p2Slow.value ? 0.7 : settings.state.ttsRate,
+    pitch: line.pitch,
+    voiceURI: settings.state.ttsVoiceURI,
+    leadIn: settings.state.ttsLeadIn
+  })
   if (run === p2Run) p2Speaking.value = -1
 }
 
@@ -215,7 +216,8 @@ function resetP2 () {
   p2Settled.value = false
   p2Plays.value = 0
   p2Speaking.value = -1
-  if (settings.state.autoPlayAudio) playP2()
+  p2Heard.value = []
+  if (settings.state.autoPlayAudio) playP2('q')
 }
 
 function startP2 () {
@@ -277,7 +279,10 @@ function skipPhase () {
   router.push(session.nextRoute('listen'))
 }
 
-/** 應答 by keyboard: A / B / C (or 1 / 2 / 3) to answer, Enter to move on. */
+/**
+ * 應答 by keyboard: Space / Q plays the question, 1 / 2 / 3 play a response,
+ * A / B / C answer, Enter moves on.
+ */
 function onP2Key (e) {
   if (stage.value !== 'p2' || !p2.value || e.metaKey || e.ctrlKey || e.altKey) return
   if (/input|textarea/i.test(document.activeElement?.tagName || '')) return
@@ -286,8 +291,12 @@ function onP2Key (e) {
     if (e.key === 'Enter' && !/button|a/i.test(document.activeElement?.tagName || '')) { e.preventDefault(); nextP2() }
     return
   }
+  if (/button/i.test(document.activeElement?.tagName || '') && (e.key === ' ' || e.key === 'Enter')) return
   const k = e.key.length === 1 ? e.key.toLowerCase() : ''
-  const i = k ? Math.max('abc'.indexOf(k), '123'.indexOf(k)) : -1
+  if (k === ' ' || k === 'q') { e.preventDefault(); playP2('q'); return }
+  const n = k ? '123'.indexOf(k) : -1
+  if (n >= 0 && n < p2.value.options.length) { e.preventDefault(); playP2(n); return }
+  const i = k ? 'abc'.indexOf(k) : -1
   if (i >= 0 && i < p2.value.options.length) { e.preventDefault(); chooseP2(i) }
 }
 
@@ -323,8 +332,8 @@ onUnmounted(() => { p2Run++; session.stopClock(); stopSpeaking(); window.removeE
           </div>
           <h1 class="lis__title zh">{{ free ? '應答聽力' : '聽力練習' }}</h1>
           <p v-if="free" class="lis__desc zh">
-            一共出 {{ p2Count }} 題。先聽一個問題，再聽 A、B、C 三個回應，選出接得上的那一個。
-            <strong>畫面上只有三個字母</strong>——這就是多益聽力 Part 2 的考法。
+            一共出 {{ p2Count }} 題。先播放問題，再自己點 A、B、C 分別聽三個回應（哪個不確定就再點一次），選出接得上的那一個。
+            <strong>畫面上只有三個字母</strong>，英文答完才會顯示。
           </p>
           <p v-else class="lis__desc zh">
             一共出 {{ wordCount + p2Count }} 題。
@@ -432,32 +441,34 @@ onUnmounted(() => { p2Run++; session.stopClock(); stopSpeaking(); window.removeE
           <span class="tally num">{{ p2Correct }} / {{ p2Results.length }}</span>
         </div>
 
-        <div class="player" :class="{ 'player--small': p2Settled }">
-          <button v-if="!p2Settled" class="player__big" :class="{ 'player__big--on': p2Speaking >= 0 }" aria-label="播放問題與三個回應" @click="playP2(false)">
+        <div v-if="!p2Settled" class="player">
+          <button class="player__big" :class="{ 'player__big--on': p2Speaking === 0 }" aria-label="播放問題" @click="playP2('q')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M11 5 6.5 9H3v6h3.5L11 19z" /><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
             </svg>
           </button>
-          <div class="player__row">
-            <button class="btn btn--ghost btn--sm zh" @click="playP2(false)">再聽一次</button>
-            <button class="btn btn--ghost btn--sm zh" @click="playP2(true)">放慢</button>
-          </div>
-          <p v-if="!p2Settled || p2Speaking >= 0" class="player__count zh">
-            <template v-if="p2Speaking === 0">正在唸問題…</template>
-            <template v-else-if="p2Speaking > 0">正在唸 {{ 'ABC'[p2Speaking - 1] }}…</template>
-            <template v-else>已播放 {{ p2Plays }} 次</template>
-          </p>
+          <p class="player__label zh">{{ p2Speaking === 0 ? '正在唸問題…' : p2Heard.includes('q') ? '再聽一次問題' : '播放問題' }}</p>
+          <button class="chip chip--toggle zh" :class="{ 'chip--on': p2Slow }" :aria-pressed="p2Slow" @click="p2Slow = !p2Slow">放慢</button>
         </div>
 
-        <!-- before the answer: three letters and nothing else -->
+        <!-- before the answer: three letters, each played on its own and picked on its own -->
         <div v-if="!p2Settled" class="abc">
-          <button
-            v-for="(o, i) in p2.options" :key="o.letter"
-            class="abc__btn" :class="{ 'abc__btn--say': p2Speaking === i + 1 }"
-            :aria-label="`選 ${o.letter}`"
-            @click="chooseP2(i)"
-          >{{ o.letter }}</button>
+          <div v-for="(o, i) in p2.options" :key="o.letter" class="abc__opt">
+            <button
+              class="abc__play" :class="{ 'abc__play--on': p2Speaking === i + 1, 'abc__play--heard': p2Heard.includes(i) }"
+              :aria-label="`播放回應 ${o.letter}`"
+              @click="playP2(i)"
+            >
+              <span class="abc__letter fig">{{ o.letter }}</span>
+              <span class="abc__hint zh">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.5 9H3v6h3.5L11 19z" /><path d="M15.5 8.5a5 5 0 0 1 0 7" /></svg>
+                {{ p2Speaking === i + 1 ? '播放中' : p2Heard.includes(i) ? '再聽' : '聽' }}
+              </span>
+            </button>
+            <button class="abc__btn zh" :aria-label="`選 ${o.letter}`" @click="chooseP2(i)">選 {{ o.letter }}</button>
+          </div>
         </div>
+        <p v-if="!p2Settled" class="abc__keys zh">鍵盤：空白鍵 問題 · 1 2 3 聽回應 · A B C 作答</p>
 
         <!-- after: the whole exchange, with each trap named -->
         <div v-else class="tx">
@@ -475,7 +486,7 @@ onUnmounted(() => { p2Run++; session.stopClock(); stopSpeaking(); window.removeE
           >
             <span class="tx__l fig">{{ o.letter }}</span>
             <div class="tx__body">
-              <p class="tx__en">{{ o.en }}</p>
+              <p class="tx__en">{{ o.en }} <AudioButton :text="o.en" size="sm" /></p>
               <p class="tx__zh zh">{{ o.zh }}</p>
               <p v-if="!o.correct" class="tx__why zh">{{ o.why }}</p>
             </div>
@@ -603,20 +614,38 @@ onUnmounted(() => { p2Run++; session.stopClock(); stopSpeaking(); window.removeE
 .lis__plan span { display: flex; flex-direction: column; font-weight: 600; font-size: var(--step--1); }
 .lis__plan small { font-weight: 400; font-size: var(--step--2); color: var(--ink-2); }
 
-/* 應答: three letters, nothing to read */
+/* 應答: three letters, nothing to read; each response is played on demand */
 .player__big--on { box-shadow: 0 0 0 6px var(--pen-wash); }
-.player--small { padding: 0; flex-direction: row; justify-content: flex-start; gap: var(--sp-3); }
+.player__label { font-size: var(--step--1); color: var(--ink-2); min-height: 1.4em; }
+.chip--toggle { cursor: pointer; }
+.chip--toggle.chip--on { background: var(--pen-wash); color: var(--pen); box-shadow: inset 0 0 0 1px var(--pen); }
 .abc { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); }
-.abc__btn {
-  min-height: 92px; border-radius: var(--r-panel);
-  font-family: var(--font-fig); font-size: 2.4rem; font-weight: 500; color: var(--ink);
+.abc__opt { display: flex; flex-direction: column; gap: var(--sp-2); }
+.abc__play {
+  min-height: 104px; border-radius: var(--r-panel);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  color: var(--ink);
   background: radial-gradient(130% 80px at var(--lx) 0, var(--sheen), transparent 70%), var(--surface);
   box-shadow: var(--rim), var(--shadow-1);
   -webkit-backdrop-filter: blur(22px) saturate(140%); backdrop-filter: blur(22px) saturate(140%);
   transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1), box-shadow 0.2s;
 }
-.abc__btn:active { transform: scale(0.95); }
-.abc__btn--say { box-shadow: var(--rim), inset 0 0 0 2px var(--pen), var(--shadow-1); }
+.abc__play:active { transform: scale(0.95); }
+.abc__letter { font-family: var(--font-fig); font-size: 2.4rem; font-weight: 500; line-height: 1; }
+.abc__hint { display: inline-flex; align-items: center; gap: 4px; font-size: var(--step--2); color: var(--ink-3); }
+.abc__hint svg { width: 14px; height: 14px; }
+.abc__play--heard .abc__hint { color: var(--ink-2); }
+.abc__play--on { box-shadow: var(--rim), inset 0 0 0 2px var(--pen), var(--shadow-1); }
+.abc__play--on .abc__hint { color: var(--pen); }
+.abc__btn {
+  min-height: 44px; border-radius: var(--r-control);
+  font-weight: 600; font-size: var(--step--1); color: var(--pen);
+  background: var(--surface); box-shadow: var(--rim), inset 0 0 0 1px var(--pen-wash);
+  transition: transform 0.15s, background 0.15s;
+}
+.abc__btn:active { transform: scale(0.96); background: var(--pen-wash); }
+.abc__keys { margin-top: var(--sp-2); text-align: center; font-size: var(--step--2); color: var(--ink-3); }
+@media (hover: none) { .abc__keys { display: none; } }
 
 .tx { display: flex; flex-direction: column; gap: var(--sp-2); }
 .tx__q { padding: var(--sp-3) var(--sp-4); border-radius: var(--r-control); background: var(--surface-2); }
